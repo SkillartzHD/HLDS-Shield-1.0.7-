@@ -1,0 +1,1397 @@
+#include <amxmodx>
+#include <fakemeta>
+#include <amxmisc>
+#include <orpheu_advanced>
+#include <orpheu>
+#include <okapi>
+// linux singature
+
+#define fakeplayer "CSTRIKE_FAKEPLAYERS"
+#define suspicious "CSTRIKE_SUSPICIOUS"
+#define ilegalcommand "CSTRIKE_ILEGALCMD"
+#define cmdbug "CSTRIKE_CRASH"
+#define namebug "CSTRIKE_SetValueForStarKey"
+#define netbug "CSTRIKE_NETLONG"
+#define steamidhack "CSTRIKE_STEAMID"
+#define autobuybug "CSTRIKE_SETAUTOBUY"
+#define processfilex "CSTRIKE_PROCESSFILE"
+#define netch "CSTRIKE_NETCHANNEL"
+#define bugclc "CSTRIKE_CLC_COMMAND"
+#define overload3 "CSTRIKE_RUNCMD"
+#define killbug "CSTRIKE_KILLBUG"
+#define overload2 "CSTRIKE_RESOUCESLIST"
+#define hldsrcon "CSTRIKE_RCON"
+#define fullupdatespam "CSTRIKE_FULLUPDATE"
+#define voicedatabug "CSTRIKE_VOICEDATA"
+#define radiofunction "CSTRIKE_RADIO"
+#define newbug "CSTRIKE_CONNECTIONSPAM"
+#define hldsoverflowed "CSTRIKE_OVERFLOWED"
+#define a2ack "CSTRIKE_ACK"
+#define ilegalban "CSTRIKE_BANBUG"
+#define hlproxy "CSTRIKE_HLPROXY"
+#define cmdrun "CSTRIKE_RUNCMD"
+#define query "CSTRIKE_QUERY"
+#define spambot "CSTRIKE_SPAMBOT"
+#define hltvbug "CSTRIKE_HLTV"
+#define adminbug "CSTRIKE_ADMINBUG"
+#define safefile "CSTRIKE_SAFEFILEDOWNLOAD"
+#define exploit "CSTRIKE_EXPLOIT"
+#define hldsbug "CSTRIKE_HLDSBUG"
+#define hldspawn "CSTRIKE_SPAWN"
+#define hldsres "CSTRIKE_SENDRES"
+#define hldsprintf "CSTRIKE_CONPRINTF"
+
+#define loc "addons/amxmodx/configs/settings/HLDS_SafeFileToDownload.ini"
+#define loc2 "addons/amxmodx/configs/settings/HLDS_MemoryHack.cfg"
+#define settings "addons/amxmodx/configs/settings/HLDS-Shield.log"
+#define locatie "addons/amxmodx/configs/settings/HLDS_FilesCheck.ini"
+
+#define SV_Spawn_f_linux "SV_Spawn_f"
+#define Host_Say_f_linux "Host_Say_f"
+#define SVC_PingSignature_linux "net_from"
+#define SV_ParseStringCommand_linux "SV_ParseStringCommand"
+#define SV_SendRes_f_linux "SV_SendRes_f"
+#define SV_ConnectClient_f_linux "SV_ConnectClient"
+#define SV_DropClient_linux "SV_DropClient"
+#define SV_ParseConsistencyResponse_linux "SV_ParseConsistencyResponse"
+#define Host_kill_f_linux "Host_Kill_f"
+#define NET_GetLong_linux "NET_GetLong"
+#define SV_voicedatalinux "SV_ParseVoiceData"
+#define SV_Reslinux "SV_ParseResourceList"
+#define Info_ValueForKey_linux "Info_SetValueForStarKey"
+#define SV_ConnectionlessPacket_linux "SV_ConnectionlessPacket"
+#define Con_Printf_linux "Con_Printf"
+#define COM_UnMunge_linux "COM_UnMunge"
+#define SafeFileDownload_linux "IsSafeFileToDownload"
+#define SV_RejectConnection_linux "SV_RejectConnection"
+//#define SV_ParseResourceList_linux "SV_ParseResourceList"
+#define COM_FileWrite_linux "COM_WriteFile"
+#define SV_ProcessFile_linux "SV_ProcessFile"
+#define FS_Open_linux "FS_Open"
+#define Netchan_CheckForCompletion_linux "Netchan_CheckForCompletion" // Netchan_CopyFileFragments
+#define SV_RunCmd_linux "SV_RunCmd"
+#define SV_New_f_linux "SV_New_f"
+#define SV_AddIP_f_linux "SV_AddIP_f"
+#define SV_Rcon_f_linux "SV_Rcon"
+
+//my settings 
+#define varmax 33
+#define a_max 32
+#define b_max 44
+#define string1 "You were detected for ^3"
+#define string3 "%s User ^"%s^" with IP (%s) has been detected for %s [%d/%d]"
+#define string4 "%s The connection from ^"%s^" has been detected for %s [%d/%d]"
+#define string5 "%s User ^"%s^" with IP (%s) has been detected for %s ||| Argument : %s %s [%d/%d]"
+#define string6 "%s Console has been detected for %s ||| Argument : %s %s [%d/%d]"
+#define string17 "%s The connection from %s has been detected for %s %s"
+#define string7 "%s The connection from %s has been detected for %s"
+#define string8 "%s User ^"%s^" with IP (%s) has been detected for %s"
+#define string9 "%s The connection from ^"%s^" has been detected for %s ||| Argument : %s [%d/%d]"
+#define string10 "%s User ^"%s^" with IP (%s) has been detected for %s ||| Argument : %s"
+#define Pmax 0x21
+#define V0nr 0x00
+#define V1nr 0x01
+#define V2nr 0x02
+#define V3nr 0x03
+#define V4nr 0x04
+#define MAX_BUFFER_IP 32
+#define console_max 255
+//
+
+
+//globalll
+new PrintUnknown
+new mungelimit[varmax],getip[varmax],getip2[varmax],floodtimer,memory,memory2,holax,SV_RconCvar,LimitPrintfRcon
+new Array:cslBlock, g_ConsoleStr,hola,fuck,memhack
+new LimitResources,VAC
+new limitb[varmax],local,limita[varmax],limit[varmax]
+new GameData,SendBadDropClient,ParseConsistencyResponse
+enum net_adr {
+	type=0x00,
+	ip[0x04]=0x04
+}
+enum {
+	BUFFER_MAXIM = 64
+}
+new savefilename[100],savedata[100]
+new Array: g_aArray,Array: g_blackList;
+new messagelong[102]
+new PrintUnMunge
+new usercheck[33]
+new checkuser[33]
+new LimitExploit,LimitSV_ConnectClient,LimitQuery,LimitImpulse,locala[varmax],LimitPrintf,LimitMunge,PauseDlfile,BanTime;
+new KillBug;
+new OrpheuFunction:long
+//
+
+
+new const MessageHook[][]={
+	"#cstrike_","#career_","#vac_","#serverbrowser_","#cam_","#valve_",
+	"#ba_","#t0","#of","#player","#vgui_","#spec","#spect","#steam","#gameui_","#app_",
+	"#admin_","#game_","#czero_","#obs_","#WizardPanel_","#QueryBox_",
+	"#textentry_","#FileOpenDialog","#PropertyDialog","#MessageBox_OK","#Frame_","#SysMenu_","#IME","%s",
+	"#Team_Select", "#Team_Select_Spect", "#IG_Team_Select", "#IG_Team_Select_Spect", "#IG_VIP_Team_Select", "#IG_VIP_Team_Select_Spect", "#Terrorist_Select",
+	"#CT_Select", "#Buy", "#CT_BuyItem", "#T_BuyItem", "#DCT_BuyItem", "#DT_BuyItem", "#CT_BuyPistol", "#T_BuyPistol", "#AS_BuyShotgun", "#BuyShotgun",
+	"#CT_BuySubMachineGun", "#T_BuySubMachineGun", "#AS_CT_BuySubMachineGun", "#AS_T_BuySubMachineGun", "#T_BuyRifle", "#CT_BuyRifle", "#AS_T_BuyRifle",
+	"#AS_CT_BuyRifle", "#AS_T_BuyMachineGun", "#BuyMachineGun", "#RadioA", "#RadioB", "#RadioC", "#AK47", "#SG552", "#M4A1", "#Famas", "#Galil", "#Aug", "#Scout",
+	"#ArcticWarfareMagnum", "#G3SG1", "#SG550", "#USP45", "#Glock18", "#DesertEagle", "#P228", "#Beretta96G", "#FiveSeven", "#Super90", "#XM1014", "#mp5navy", "#tmp",
+	"#FNP90", "#Mac10", "#UMP45", "#M249", "#Krieg552", "#M4A1_Short", "#Schmidt", "#Magnum", "#D3AU1", "#Krieg550", "#KM45Tactical", "#Sidearm9X19mm", "#NightHawk",
+	"#P228Compact", "#Dual40", "#ESFiveSeven", "#Leone12", "#AutoShotgun", "#SubMachineGun", "#SchmidtMP", "#ESC90", "#Mac10_Short", "#KMUMP45", "#ESM249", "#TEAMS",
+	"#PLAYERS", "#CLASS", "#SCORE", "#DEATHS", "#LATENCY", "#VOICE", "#Menu_OK", "#Menu_Cancel", "#Menu_Spectate", "#Team_AutoAssign", "#Target_Bombed", "#VIP_Escaped",
+	"#VIP_Assassinated", "#Terrorists_Escaped", "#CTs_PreventEscape", "#Escaping_Terrorists_Neutralized", "#Bomb_Defused", "#CTs_Win", "#Terrorists_Win", "#Round_Draw",
+	"#All_Hostages_Rescued", "#Target_Saved", "#Hostages_Not_Rescued", "#Terrorists_Not_Escaped", "#VIP_Not_Escaped", "#Cannot_Buy_This", "#Not_Enough_Money", "#Weapon_Not_Available",
+	"#Already_Have_Kevlar", "#Already_Have_Kevlar_Helmet", "#Already_Have_Kevlar_Bought_Helmet", "#Cannot_Carry_Anymore", "#Already_Have_One", "#Cannot_Switch_From_VIP", "#All_Teams_Full",
+	"#Terrorists_Full", "#CTs_Full", "#Too_Many_Terrorists", "#Too_Many_CTs", "#Wait_3_Seconds", "#Only_1_Team_Change", "#Ignore_Broadcast_Messages", "#Ignore_Broadcast_Team_Messages",
+	"#Accept_All_Messages", "#Ignore_Radio", "#Accept_Radio", "#Command_Not_Available", "#Defusing_Bomb_With_Defuse_Kit", "#Defusing_Bomb_Without_Defuse_Kit", "#Killed_Hostage",
+	"#Injured_Hostage", "#Auto_Team_Balance_Next_Round", "#All_VIP_Slots_Full", "#Killed_Teammate", "#Banned_For_Killing_Teammates", "#Cannot_Vote_Map", "#Weapon_Cannot_Be_Dropped",
+	"#Terrorist_Escaped", "#C4_Plant_At_Bomb_Spot", "#C4_Plant_Must_Be_On_Ground", "#C4_Arming_Cancelled", "#Bomb_Planted", "#C4_Activated_At_Bomb_Spot", "#Switch_To_BurstFire",
+	"#Switch_To_SemiAuto", "#Switch_To_FullAuto", "#TRAINING1", "#TRAINING2", "#TRAINING3", "#TRAINING4", "#TRAINING5", "#TRAINING6", "#TRAINING7", "#GAMESAVED", "#Cannot_Vote_Need_More_People",
+	"#Map_Vote_Extend", "#Cannot_Vote_With_Less_Than_Three", "#Cover_me", "#You_take_the_point", "#Hold_this_position", "#Regroup_team", "#Follow_me", "#Taking_fire", "#Go_go_go", "#Team_fall_back",
+	"#Stick_together_team", "#Get_in_position_and_wait", "#Storm_the_front", "#Report_in_team", "#Affirmative", "#Roger_that", "#Enemy_spotted", "#Need_backup", "#Sector_clear", "#In_position",
+	"#Reporting_in", "#Get_out_of_there", "#Negative", "#Enemy_down", "#Hostage_down", "#Fire_in_the_hole", "#Cant_buy", "#VIP_cant_buy", "#CT_cant_buy", "#Terrorist_cant_buy", "#Vote", "#Votes",
+	"#Friend", "#Enemy", "#Hostage", "#Health", "#Map_descr_not_avail", "#Class_descr_not_avail", "#Phoenix_Connexion", "#L337_Krew", "#Arctic_Avengers", "#Guerilla_Warfare", "#Auto_Select",
+	"#Seal_Team_6", "#GSG_9", "#SAS", "#GIGN", "#Kevlar", "#Kevlar_Vest", "#Kevlar_Helmet", "#Kevlar_Vest_Ballistic_Helmet", "#Flashbang", "#HE_Grenade", "#High_Explosive_Grenade", "#Smoke_Grenade",
+	"#Defusal_Kit", "#Bomb_Defusal_Kit", "#NightVision", "#Nightvision_Goggles", "#TactShield", "#TactShield_Desc", "#Pistols", "#Buy_pistols", "#Shotguns", "#Buy_shotguns", "#SMGs", "#Buy_smgs",
+	"#Rifles", "#Buy_rifles", "#MachineGuns", "#Buy_machineguns", "#Prim_Ammo", "#Buy_prim_ammo", "#Sec_Ammo", "#Buy_sec_ammo", "#Equipment", "#Buy_equipment", "#Terrorist_Forces", "#CT_Forces",
+	"#VIP", "#WINS", "#BOMB", "#DEAD", "#SCORES", "#Player", "#Player_plural", "#Got_defuser", "#Got_bomb", "#Mic_Volume", "#Speaker_Volume", "#Voice_Properties", "#Cannot_Be_Spectator",
+	"#Map_Description_not_available", "#Muted", "#Unmuted", "#No_longer_hear_that_player", "#OBS_NONE", "#OBS_CHASE_LOCKED", "#OBS_CHASE_FREE", "#OBS_ROAMING", "#OBS_IN_EYE", "#OBS_MAP_FREE",
+	"#OBS_MAP_CHASE", "#SPECT_OPTIONS", "#CAM_OPTIONS", "#Name_change_at_respawn", "#C4_Defuse_Must_Be_On_Ground", "#Spectators", "#Unassigned", "#Only_CT_Can_Move_Hostages", "#Selection_Not_Available",
+	"#Alias_Not_Avail", "T0A0TITLE", "C0A0TITLE", "C0A1TITLE", "C1A1TITLE", "C1A2TITLE", "C1A3TITLE", "C1A4TITLE", "C2A1TITLE", "C2A2TITLE", "C2A3TITLE", "C2A4TITLE1", "C2A4TITLE2", "C2A5TITLE",
+	"C3A1TITLE", "C3A2TITLE", "C4A1TITLE", "C4A1ATITLE", "C4A2TITLE", "C4A3TITLE", "C5TITLE","","","",""
+}
+new const CommandAllowInpfnClientConnect[][]={
+	"sendres","dlfile","new","sendents","_","amxxauth","connect","U","V","TSource",
+	"rcon","getchallenge","challenge","dropclient","  "
+}
+new const SafeDownload[][]={
+	".cfg",".dll",".asi",".ini",".amxx",
+	".sma",".so",".mix",".sav",".log",".ztmp",".sys",
+	".exe",".vbs",".lst",".com","xeno.wad","pak0.pak",".dylib",
+	"iga_static.wad","itsitaly.wad","torntextures.wad","de_storm.wad",
+	"de_piranesi.wad","de_airstrip.wad","de_aztec.wad","	.wad",
+	"cs_office.wad","cs_bdog.wad","cs_cbble.wad","chateau.wad",
+	"halflife.wad","cs_havana.wad","..","\",":"
+}
+new const RadioCommand[][] = {
+	"coverme","takepoint","holdpos","regroup","followme","takingfire","go",
+	"fallback","sticktog","getingpos","stormfront","report","enemyspot","needbackup",
+	"sectorclear","inposition","reportingin","getout","negative","enemydown","radio1",
+	"radio2","radio3"
+}
+new const ShieldServerCvarBlock[][]={
+	"exit","host_killtime","addip","motdfile","motd_write","quit","shutdownserver",
+	"user","hostname","sv_timeout","cd","motd","alias","rcon_password","stuffcmds"
+}
+
+//WINDOWS SIGNATURE
+new SV_Spawn_f[] = {
+	0x55,0x8B,0xEC,0xDEF,0xDEF,
+	0x00,0xDEF,0x00,0xDEF,0xDEF,0xDEF,
+	0xDEF,0x00,0x6A,0xDEF,0xDEF,0x45,
+	0xDEF,0x6A,0x00,0x50,0xDEF,0xDEF,
+	0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,
+	0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,
+	0xDEF,0x45,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF
+}
+new SV_Addip[] = {
+	0x55,0x8B,0xEC,0x83,0xEC,0x18,0x53,0x56,0x57,0xE8,0xDEF,0xDEF,0xDEF,0xDEF,
+	0x83,0xF8,0x03,0x74,0xDEF,0x68,0xDEF,0xDEF,0xDEF,0xDEF,0xE8,0xDEF,0xDEF,0xDEF,0xDEF,0x83,
+	0xC4,0x04,0x5F,0x5E,0x5B,0x8B,0xE5,0x5D,0xC3
+}
+new SV_ParseConsistencyResponse[] = {
+	0x55,0x8B,0xEC,0x81,0xEC,0xDEF,0xDEF,0x00,0x00,0x53,0x56,0x57,
+	0x33,0xDEF,0xDEF,0xDEF,0xDEF,0x45,0xDEF,0x89,0x45,0xDEF,0x50,0xDEF,0x45,0x88,0x50,0xDEF,0x80,0xDEF,0xDEF,0xDEF
+}
+
+new Host_kill_f[] = {
+	0x8B,0x0D,0xDC,0x5D,0xDEF,0xDEF,0xDEF,0x81,0xDEF,0xDEF,0x,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF
+}
+new Con_Printf_f[] = {
+	0x55,0x8B,0xEC,0xB8,0x00,0x10,0x00,0x00,0xE8,0xDEF,0xDEF,
+	0xDEF,0xDEF,0x8B,0x4D,0xDEF,0x8D,0x45,0x0C,0xDEF,0x51,
+	0x8D,0x95,0xDEF,0xDEF,0xDEF,0xDEF,0x68,0x00,0x10,0x00,0x00
+}
+new NET_GetLong_windows[] = {
+	0x55,0x8B,0xEC,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0x53,
+	0x56,0x57,0xDEF,0x41,0xDEF,0xDEF,0x49,0xDEF,0xDEF,0x4D,
+	0xDEF,0xDEF,0x45,0xDEF,0xDEF,0x5D,0xDEF,0xDEF,0xDEF,0xDEF,
+	0x00,0x00,0x00,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,
+	0xDEF,0xDEF,0xDEF,0xDEF
+}
+new SV_RejectConnection[] = {
+	0x55,0x8B,0xEC,0xDEF,0xDEF,0x00,0xDEF,0x00,0x00,0xDEF,0xDEF,
+	0xDEF,0x56,0xDEF,0x45,0xDEF,0x57,0x50,0x51,0xDEF,0xDEF,
+	0x00,0xDEF,0xDEF,0xDEF,0x68,0x00,0xDEF,0x00,0x00,0x52
+}
+new SV_SendRes_f[] = {
+	0x55,0xDEF,0xDEF,0xDEF,0xDEF,0x00,0xDEF,0x00,0xDEF,0xDEF,0xDEF,
+	0xDEF,0x00,0x6A,0xDEF,0xDEF,0x45,0xDEF,0x6A,0x00,0x50,0xDEF,
+	0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,
+	0xDEF,0xDEF,0xDEF
+}
+new SV_DropClient[] = {
+	0x55,0x8B,0xDEF,0x81,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0x8B,0x4D,
+	0xDEF,0x53,0x56,0x8D,0x45,0xDEF,0x57,0x50,0x51,0x8D,0x95
+}
+new SV_ConnectClient[] = {
+	0x55,0x8B,0xEC,0x81,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,
+	0x53,0x56,0x57,0xB9,0x05,0x00,0x00,0x00,0xBE,0xDEF,
+	0xDEF,0xDEF,0xDEF,0x8D,0xDEF,0xDEF,0x33,0xDB,0x68,
+	0xDEF,0xDEF,0xDEF,0xDEF
+}
+new COM_FileWrite[] = {
+	0x55,0x8B,0xEC,0xDEF,0xDEF,0xDEF,0xDEF,0x00,0x00,0xDEF,0x45,0xDEF,0x56,0x50,0x68,0xDEF
+}
+new clc_res[] = {
+	0x55,0x8B,0xEC,0x83,0xEC,0x24,0x53,0x56,0x57,0xE8,
+	0xDEF,0xDEF,0xDEF,0xDEF,0x8B,0xF0,0xA1
+}
+new voice_data[] = {
+	0x55,0x8B,0xEC,0xDEF,0xDEF,0xDEF,0x00,0x00,0xDEF,
+	0xDEF,0xDEF,0xDEF,0x00,0x8B,0xDEF,0x84,0xDEF,0xDEF,0xDEF,0x56,0x8B
+}
+new SV_Rcon[] = {
+	0x55,0x8B,0xEC,0x81,0xEC,0x04,0x06,0x00,0x00,0x53,0x56,0x57
+}
+new Netchan_CheckForCompletion[] = {
+	0x55,0x8B,0xEC,0x83,0xDEF,0xDEF,0xDEF,0x45,0xDEF,0x53,0x56,0x57,0xDEF,0xDEF,0xDEF,0x33,
+	0xDEF,0x8B,0xDEF,0xDEF,0xDEF,0xDEF,0x00,0x00,0x85,0xDEF,0x74,0x48,0x33,0xDEF,0x43,0xDEF
+	//0x55,0x8B,0xEC,0xDEF,0xDEF,0xDEF,0xDEF,0x45,0xDEF,0xDEF,0xDEF,0xDEF,0x53,
+	//0x56,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0x00,0x00,0x57,0x33,0xDEF,0x33,0xDEF,0xDEF,
+	//0xDEF,0x74,0x55,0xDEF,0x56
+}
+
+new Netchan_CheckForCompletion4554[] = {
+	0x55,0x8B,0xEC,0xDEF,0xDEF,0xDEF,0xDEF,0x45,0xDEF,0xDEF,0xDEF,0xDEF,0x53,
+	0x56,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0x00,0x00,0x57,0x33,0xDEF,0x33,0xDEF,0xDEF,
+	0xDEF,0x74,0x55,0xDEF,0x56
+}
+new SV_ProcessFile[] = {
+	0x55,0x8B,0xEC,0xDEF,0xDEF,0xDEF,0xDEF,0x45,0xDEF,0x53,0x56,0x57,0xDEF,0x38,0xDEF,0x74
+}
+new Info_SetValueForKey_f[] = {
+	0x55,0x8B,0xEC,0xDEF,0x45,0xDEF,0xDEF,0x38,0x2A,0x75,0xDEF,0x68,0xDEF,0xDEF,0xDEF,0xDEF // universal 
+}
+new SVC_PingSignature[] = { 
+	0x55, 0x8B, 0xDEF, 0x83, 0xDEF, 0xDEF, 0x56, 0x57, 0x0C 
+}
+
+new IsSafeFileDownload6153[] = {
+	0x55,0x8B,0xEC,0x81,0xDEF,0xDEF,0xDEF,0x00,0x00,0xDEF,0x45,0xDEF,0x57,0x85,0xDEF,0xDEF,
+	0x84,0xDEF,0xDEF,0x00,0x00,0xDEF,0xDEF,0xDEF,0x00,0x00,0x50,0xDEF,0x85,0xDEF,0xDEF,0xDEF
+	//0x55,0x8B,0xEC,0xDEF,0xDEF,0xDEF,0xDEF,0x00,0x00,0xDEF,0x45,0xDEF,0x57,0xDEF,0xDEF,0xDEF,
+	//0xDEF,0x71,0xDEF,0x00,0x00,0x68,0xDEF,0xDEF,0x00,0x00,0x50,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,
+	//0xDEF,0x50,0xDEF,0xDEF,0x65,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0x51,0xDEF,0xDEF,
+	//0x6A,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF
+}
+
+new IsSafeFileDownload4554[] = {
+	0x55,0x8b,0xec,0x56,0x8b,0x75,0xDEF,0x85,0xf6,
+	0x57,0x0f,0x84,0xDEF,0xDEF,0xDEF,0xDEF,0x6A,0x04
+}
+new SV_New_fw[] = {
+	0x55,0x8B,0xEC,0xDEF,0xDEF,0xDEF,0xDEF,0x00,
+	0xDEF,0x43,0x22,0xDEF,0x00,0x53,0x56,0x57
+}
+new SV_New_fw6153[] = {
+	0x55,0x8B,0xEC,0xDEF,0xDEF,0xDEF,0xDEF,0x00,0xDEF,0x43,
+	0xDEF,0xDEF,0xDEF,0x53,
+	0x56,0x57,0x33,0xDEF,0xDEF,0xDEF,0xDEF,0x45,0xDEF,0x57,
+	0x50,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF
+}
+new COM_UnMunges4554[] = {
+	//0x55,0x8B,0xEC,0x83,0xDEF,0xDEF,0xDEF,0x45,0xDEF,0xDEF,0x45,0xDEF,0x00,0x00,0x00,0x00 // com_munge
+	//0x55,0x8B,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0x54,0xDEF,0xDEF,0xDEF,0x33,0xDEF,0x53,0xDEF /process
+	0x55,0x8B,0xEC,0x51,0xDEF,0x45,0xDEF,0x53,0x24,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF //com_unmunge
+	//0x55,0x8B,0xEC,0xDEF,0x55,0xDEF,0xDEF,0x45,0xDEF,0x53,0xDEF,0xDEF,0xDEF,0x56,0x57,0xDEF validate
+	//0x55,0x8B,0xEC,0x51,0xDEF,0x45,0xDEF,0x53,0x24,0xDEF,0x33,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF // com_munge2
+	//0x55,0x8B,0xEC,0xDEF,0xDEF,0xDEF,0xDEF,0x45,0xDEF,0xDEF,0x45,0xDEF,0x00,0x00,0x00,0x00 // com_unmunge2
+	//0x55,0x8B,0xEC,0x83,0xEC,0x24,0x53,0x56,0x57,0xE8,0xDEF,0xDEF,0xDEF,0xDEF,0x8B,0xF0,0xA1 // sv_parseResourceList
+	//0x55,0x8B,0xEC,0xDEF,0xDEF,0xDEF,0xDEF,0x45,0xDEF,0x53,0x56,0x57,0xDEF,0x38,0xDEF,0x74 // sv_processfile
+	//0x55,0x8B,0xEC,0xDEF,0xDEF,0x34,0xDEF,0x00,0x00,0x53,0x56,0x57,0xDEF,0xDEF,0xDEF,0x33 //netchan
+}
+new SV_ParseStringCommand[] = {
+	0x00
+}
+new SV_RunCmd[] = {
+	0x55,0x8B,0xEC,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0x45,0xDEF,
+	0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0x33,0xDEF,0x53
+}
+new FS_Open[] = {	
+	0x55,0x8B,0xEC,0x8B,0x55,0xDEF,0x8B,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,
+	0x6A,0xDEF,0x52,0x8B,0x55,0xDEF,0x8B,0x01,0x52,0xFF,0xDEF,0x28 
+}
+new COM_UnMunges6153[] = {
+	0x55,0x8B,0xEC,0xDEF,0x45,0xDEF,0x56,0xDEF,0x75,0xDEF,0x57,0xDEF,0xDEF,0xDEF,0x56,0x50
+	//0x55,0x8B,0xEC,0x83,0xDEF,0xDEF,0xDEF,0x45,0xDEF,0xDEF,0x45,0xDEF,0x00,0x00,0x00,0x00 // com_munge
+	//0x55,0x8B,0xEC,0x51,0xDEF,0x45,0xDEF,0x53,0x24,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF //com_unmunge
+	//0x55,0x8B,0xEC,0x51,0xDEF,0x45,0xDEF,0x53,0x24,0xDEF,0x33,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF // com_munge2
+	//0x55,0x8B,0xEC,0xDEF,0x45,0xDEF,0x56,0xDEF,0x75,0xDEF,0x57,0xDEF,0xDEF,0xDEF,0x56,0x50
+	//0x55,0x8B,0xEC,0x81,0xEC,0xDEF,0xDEF,0xDEF,0xDEF,0x56,0xB1,0xDEF, //sv_begindownload
+	//0xB0,0xDEF,0x57,0xC6,0xDEF,0xDEF,0xDEF,0xC6,0xDEF,0xDEF,0xDEF,0xC6,0xDEF,0xDEF,0xDEF,0x88 // end
+}
+new Host_Say_f[] = {
+	0x55,0x8b,0xec,0x81,0xec,0xDEF,0xDEF,0xDEF,0xDEF,0xa1,
+	0xDEF,0xDEF,0xDEF,0xDEF,0x57,0x85,0xc0,0x74,0xDEF,0x83,
+	0x3d,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0x0f,0x85,0xDEF,0xDEF,
+	0xDEF,0xDEF,0xe8,0xDEF,0xDEF,0xDEF,0xDEF,0x5f,0x8b,0xe5,
+	0x5d,0xc3,0xe8,0xDEF,0xDEF,0xDEF,0xDEF,0x83,0xf8,0xDEF,
+	0x0f,0x8c,0xDEF,0xDEF,0xDEF,0xDEF,0xe8,0xDEF,0xDEF,0xDEF,
+	0xDEF,0x8b,0xf8,0x85,0xff,0x89,0x7d,0xDEF,0x0f,0x84,0xDEF,
+	0xDEF,0xDEF,0xDEF,0xa1,0xDEF,0xDEF,0xDEF,0xDEF,0x89,0x45,
+	0xDEF,0x8a,0x07
+}
+new SV_ConnectionlessPacket6153[] = {
+	0x56,0x57,0xDEF,0x39,0xDEF,0xDEF,0xDEF,0xDEF,
+	0x64,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF
+}
+new SV_ConnectionlessPacket4554[] = {
+	0x55,0xDEF,0xDEF,0x51,0x53,0x56,0x57,0xDEF,0xDEF,0xDEF,0xDEF,
+	0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0x50,
+	0xDEF,0x45,0xDEF
+}
+
+new const me[][]={"SkillartzHD","222","HLDS-Project"}
+stock pfnServerPrint(msg[]){server_print("%s %s",PrefixProtection,msg);} // fara any:...
+stock Argv(){new text[console_max];read_argv(V0nr,text,charsmax(text)); return text;}
+stock Args(){new text[console_max];read_args(text,charsmax(text)); return text;}
+stock Register(){ register_plugin(me[0x00],me[0x01],me[0x02]);}
+stock Argv1(){new text[console_max];read_argv(V1nr,text,charsmax(text)); return text;}
+stock Argv2(){new text[console_max];read_argv(V2nr,text,charsmax(text)); return text;}
+stock Argv3(){new text[console_max];read_argv(V3nr,text,charsmax(text)); return text;}
+stock Argv4(){new text[console_max];read_argv(V4nr,text,charsmax(text)); return text;}
+stock UserName(index){new PlayerName[Pmax];get_user_name(index,PlayerName,charsmax(PlayerName));return PlayerName;}
+stock SV_RejectConnection_user(index,message[]){message_begin(0x01,0x02,_,index);write_string(message);message_end();} 
+stock CL_Print(index,message[]){message_begin(0x01,0x08,_,index);write_string(message);message_end();}
+stock CL_CenterPrint(index,message[]){message_begin(0x01,0x1A,_,index);write_string(message);write_byte(0x01);message_end();}
+stock CL_Final(index,message[]){message_begin(0x01,0x1F,_,index);write_string(message);message_end();}
+stock SVC_PrintConsole(index,msg[]){message_begin(0x01,0x08,_,index);write_string(msg);message_end();}
+stock PlayerIP(index){new PlayerIPBAN[32];get_user_ip(index,PlayerIPBAN,charsmax(PlayerIPBAN),1);return PlayerIPBAN;}
+stock GetUserID(index){new GetID;GetID = get_user_userid(index);return GetID;}
+stock Add_MSG_ReadShort(){
+	long=OrpheuGetFunction("MSG_ReadShort")
+	return OrpheuCall(long)
+}
+stock Add_MSG_ReadLong(){
+	long=OrpheuGetFunction("MSG_ReadLong")
+	return OrpheuCall(long)
+}
+stock ErrorSignature()
+{
+	server_print("A")
+	new sobolan[200]
+	formatex(sobolan,charsmax(sobolan),"%s codul binar nu a fost gasit pentru",PrefixProtection)
+	switch(memory){
+		case 1:server_print("%s SV_Spawn_f",sobolan)
+			case 2:server_print("%s SV_SendRes_f",sobolan)
+			case 3:server_print("%s Host_Say_f",sobolan)
+			case 4:server_print("%s NET_GetLong",sobolan)
+			case 5:server_print("%s SV_ConnectClient",sobolan)
+			case 6:server_print("%s SV_RejectConnection",sobolan)
+			case 7:server_print("%s Con_Printf",sobolan)
+			case 8:server_print("%s SV_ConnectionlessPacket",sobolan)
+			case 9:server_print("%s Set_ValueForKey",sobolan)
+			case 10:server_print("%s SV_DropClient",sobolan)
+			case 11:server_print("%s COM_UnMunge",sobolan)
+			case 12:server_print("%s IsSafeFileToDownload",sobolan)
+			case 13:server_print("%s Netchan_CheckForCompletion",sobolan)
+			case 14:server_print("%s SV_ProcessFile",sobolan)
+			case 15:server_print("%s FS_Open",sobolan)
+			case 16:server_print("%s COM_FileWrite",sobolan)
+			case 17:server_print("%s SV_RunCmd",sobolan)
+			case 18:server_print("%s SV_New_f",sobolan)
+			case 19:server_print("%s SV_Addip_f",sobolan)
+			case 20:server_print("%s SV_Rcon",sobolan)
+			case 21:server_print("%s SV_ParseResourceList",sobolan)
+			case 22:server_print("%s SV_ParseVoiceData",sobolan)
+			case 23:server_print("%s SV_ParseStringCommand",sobolan)
+			case 24:server_print("%s Cmd_ExecuteString",sobolan)
+		}
+}
+stock RconRandom()
+{
+	new bitch[200],RconVar[100]
+	get_cvar_string("rcon_password",RconVar,charsmax(RconVar))
+	formatex(bitch,charsmax(bitch)," %c%c%c%c%c%c%c%c%c%c%c%c%c%c",
+	random_num('A','Z'),random_num('1','9'),random_num('a','z'),random_num('a','z'),random_num('a','z'),random_num('a','z'),
+	random_num('A','Z'),random_num('1','9'),random_num('a','z'),random_num('A','Z'),random_num('1','9'),random_num('a','z'),
+	random_num('A','Z'),random_num('1','9'),random_num('a','z'),random_num('A','Z'),random_num('1','9'),random_num('a','z'))
+	server_cmd("rcon_password %s",bitch)
+	server_print("%s I changed rcon password ^"%s^"  ^"%s^"",PrefixProtection,RconVar,bitch)
+}
+stock net_adrr()
+{
+	static id;
+	if(!id) 
+	{
+		
+		if((id = okapi_engine_get_symbol_ptr(SVC_PingSignature_linux))){return id;}
+		new funcAddress = okapi_engine_find_sig(SVC_PingSignature,sizeof SVC_PingSignature);
+		if(funcAddress)
+		{
+			new bytes[0x44];
+			okapi_get_ptr_array( funcAddress,bytes,sizeof bytes)
+			new address = okapi_engine_ptr_find_byte_at( funcAddress,0xBE)
+			if(address){return okapi_get_ptr_int(address+1);}
+		}
+	}
+	return id;
+}
+stock HLDS_Shield_func(index,print,msg[],emit,log,pedeapsa)
+{
+	new data[net_adr],value[1500],buffer[120],getip[MAX_BUFFER_IP],bomba[200],bomba2[200],bomba3[200]
+	read_argv(0x04,value,charsmax(value))
+	BufferName(value,charsmax(value),buffer)
+	
+	if(print==0x01){
+		client_print_color(index,index,"^4%s^1 %s%s ^1(%s) [^4%d^1/^3%d^1]",PrefixProtection,string1,msg,PlayerIP(index),locala[index],get_pcvar_num(LimitPrintf))
+	}
+	else if(print==0x02){
+		formatex(bomba,charsmax(bomba),"%s You has been detected for %s (%s)^n",PrefixProtection,msg,PlayerIP(index))
+		CL_Print(index,bomba)
+	}
+	else if(print==0x03){
+		formatex(bomba3,charsmax(bomba3),"%s Sorry %s is disabled on server^n",PrefixProtection,msg)
+		CL_Print(index,bomba3)
+	}
+	if(emit== 0x01){
+		client_cmd(index,"^"spk hello^"")
+	}
+	if(log==0x01){
+		if(locala[index]+1==get_pcvar_num(LimitPrintf)){
+			return PLUGIN_HANDLED
+		}
+		else{
+			log_to_file(settings,string3,PrefixProtection,UserName(index),PlayerIP(index),msg,locala[index],get_pcvar_num(LimitPrintf))
+		}
+	}
+	else if(log==0x05){
+		if(locala[index]+1==get_pcvar_num(LimitPrintf)){
+			return PLUGIN_HANDLED
+		}
+		else{
+			log_to_file(settings,string5,PrefixProtection,UserName(index),PlayerIP(index),msg,Argv(),Args(),locala[index],get_pcvar_num(LimitPrintf))
+		}
+	}
+	else if(log==0x06){
+		if(locala[index]+1==get_pcvar_num(LimitPrintf)){
+			return PLUGIN_HANDLED
+		}
+		else{
+			log_to_file(settings,string6,PrefixProtection,msg,Argv(),Args(),locala[index],get_pcvar_num(LimitPrintf))
+		}
+	}
+	else if(log==0x02){
+		okapi_get_ptr_array(net_adrr(),data,net_adr)
+		formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+		if(locala[index]+1==get_pcvar_num(LimitPrintf)){
+			return PLUGIN_HANDLED
+		}
+		else{
+			log_to_file(settings,string3,PrefixProtection,buffer,getip,msg,locala[index],get_pcvar_num(LimitPrintf))
+		}
+	}
+	else if(log==0x03){
+		okapi_get_ptr_array(net_adrr(),data,net_adr)
+		formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+		if(locala[index]+1==get_pcvar_num(LimitPrintf)){
+			return 0
+		}
+		else{
+			log_to_file(settings,string4,PrefixProtection,getip,msg,locala[index],get_pcvar_num(LimitPrintf))
+		}
+	}
+	else if(log==0x07){
+		okapi_get_ptr_array(net_adrr(),data,net_adr)
+		formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+		log_to_file(settings,string4,PrefixProtection,getip,msg,floodtimer,get_pcvar_num(LimitSV_ConnectClient))
+	}
+	else if(log==0x08){
+		okapi_get_ptr_array(net_adrr(),data,net_adr)
+		formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+		log_to_file(settings,string7,PrefixProtection,getip,msg)
+	}
+	else if(log==17){
+		log_to_file(settings,string17,PrefixProtection,PlayerIP(index),msg,savedata)
+	}
+	else if(log==0x09){
+		okapi_get_ptr_array(net_adrr(),data,net_adr)
+		formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+		log_to_file(settings,string8,PrefixProtection,buffer,getip,msg)
+	}
+	else if(log==10){
+		log_to_file(settings,string6,PrefixProtection,msg,Argv(),Args(),hola,get_pcvar_num(LimitPrintf))
+	}
+	else if(log==11){
+		okapi_get_ptr_array(net_adrr(),data,net_adr)
+		formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+		log_to_file(settings,string4,PrefixProtection,getip,msg,hola,get_pcvar_num(LimitPrintf))
+	}
+	else if(log==12){
+		log_to_file(settings,"%s The connection ^"%s^" was added in SV_ReadPackets for ^"%s^" minutes",PrefixProtection,Argv2(),Argv1())
+	}
+	else if(log==13){
+		log_to_file(settings,"%s I found a bug in SV_AddIP_f , returned",PrefixProtection)
+	}
+	else if(log==14){
+		okapi_get_ptr_array(net_adrr(),data,net_adr)
+		formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+		log_to_file(settings,string9,PrefixProtection,getip,msg,Args(),hola,get_pcvar_num(LimitPrintfRcon))
+	}
+	else if(log==15){
+		log_to_file(settings,"%s I found suspicious file %s (Name: %s IP: %s)",PrefixProtection,savefilename,UserName(index),PlayerIP(index))
+	}
+	else if(log==16){
+		log_to_file(settings,string10,PrefixProtection,UserName(index),PlayerIP(index),msg,Argv(),hola)
+	}
+	if(pedeapsa==0x01){
+		formatex(bomba2,charsmax(bomba2),"%s You has been detected for %s (%s) || Arguments %s %s^n",PrefixProtection,msg,PlayerIP(index),Argv(),Args())
+		SV_RejectConnection_user(index,bomba2)
+		server_cmd("kick #%d %s",GetUserID(index),bomba2)
+	}
+	else if(pedeapsa ==0x02){
+		SV_RejectConnection_user(index,bomba)
+		server_cmd("addip %d %s",get_pcvar_num(BanTime),PlayerIP(index))
+	}
+	else if(pedeapsa==0x03){
+		replace_all(buffer,0x21,"%"," ")
+		server_cmd("kick ^"%s^" %s",buffer,bomba)
+	}
+	else if(pedeapsa==0x04){
+		okapi_get_ptr_array(net_adrr(),data,net_adr)
+		formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+		server_cmd("addip %d %s",get_pcvar_num(BanTime),getip)
+	}
+	else if(pedeapsa==0x05){
+		replace_all(buffer,0x21,"%"," ")
+		server_cmd("kick ^"%s^" %s",buffer,bomba)
+	}
+	return 1
+}
+#define orpheufile1 "addons/amxmodx/configs/orpheu/functions/Cmd_ExecuteString"
+#define orpheufile2 "addons/amxmodx/configs/orpheu/functions/MSG_ReadShort"
+#define orpheufile3 "addons/amxmodx/configs/orpheu/functions/MSG_ReadLong"
+
+stock Create_Signature(address[]){
+
+	new build[varmax]
+	get_cvar_string("sv_version",build,charsmax(build))
+
+	if(equali(address,"Cmd_ExecuteString")){
+		new filecacat = fopen(orpheufile1,"wb")
+		fprintf(filecacat,"{")
+		fprintf(filecacat,"^"name^"       : ^"Cmd_ExecuteString^",")
+		fprintf(filecacat,"^"library^"    : ^"engine^",")
+		fprintf(filecacat,"^"arguments^"  :")
+		fprintf(filecacat,"[")
+		fprintf(filecacat,"{")
+		fprintf(filecacat,"^"type^" : ^"int^"")
+		fprintf(filecacat,"},")
+		fprintf(filecacat,"{")
+		fprintf(filecacat,"^"type^" : ^"int^"")
+		fprintf(filecacat,"}")
+		fprintf(filecacat,"],") // 1
+		fprintf(filecacat,"^"identifiers^":")
+		fprintf(filecacat,"[")
+		fprintf(filecacat,"{")
+		fprintf(filecacat,"^"os^"    : ^"windows^",")
+		if(equali(build,"1.1.2.7,48,6153")){
+			new filecacat = fopen(orpheufile1,"wb")
+			fprintf(filecacat,"^"value^" : [0x55,0x8B,0xEC,0x8B,^"*^",^"*^",^"*^",0x45,^"*^",0x56,0x51,^"*^",^"*^",^"*^",0x69,^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",0x83,^"*^",^"*^",^"*^",0x23,^"*^",^"*^",^"*^",0x85,^"*^",^"*^"]")
+		}
+		else{
+			fprintf(filecacat,"^"value^" : [0x55,0x8B,0xEC,0x8B,0x4D,^"*^",0x8B,0x45,^"*^",0x56,0x51,^"*^",^"*^",0x34,^"*^",^"*^",^"*^",0x6B,^"*^",^"*^",^"*^",^"*^",^"*^",^"*^"]")
+		}
+		fprintf(filecacat,"},")
+		fprintf(filecacat,"{")
+		fprintf(filecacat,"^"os^"    : ^"linux^",")
+		fprintf(filecacat,"^"value^" : ^"Cmd_ExecuteString^"")
+		fprintf(filecacat,"}")
+		fprintf(filecacat,"]")
+		fprintf(filecacat,"}")
+		fclose(filecacat)
+	}
+	if(equali(address,"MSG_ReadShort")){
+		new filecacat = fopen(orpheufile2,"wb")
+		fprintf(filecacat,"{")
+		fprintf(filecacat,"^"name^"       : ^"MSG_ReadShort^",")
+		fprintf(filecacat,"^"library^"    : ^"engine^",")
+		fprintf(filecacat,"^"return^"  :")
+		fprintf(filecacat,"[")
+		fprintf(filecacat,"{")
+		fprintf(filecacat,"^"type^" : ^"int^"")
+		fprintf(filecacat,"}")
+		fprintf(filecacat,"],") // 1
+		fprintf(filecacat,"^"identifiers^":")
+		fprintf(filecacat,"[")
+		fprintf(filecacat,"{")
+		fprintf(filecacat,"^"os^"    : ^"windows^",")
+		fprintf(filecacat,"^"value^" : [0x55,0x8B,0xEC,0x83,0xEC,^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",0x45,^"*^",^"*^",0x45,^"*^",^"*^",^"*^",^"*^",^"*^",0x45,^"*^",^"*^"]")
+		fprintf(filecacat,"},")
+		fprintf(filecacat,"{")
+		fprintf(filecacat,"^"os^"    : ^"linux^",")
+		fprintf(filecacat,"^"value^" : ^"MSG_ReadShort^"")
+		fprintf(filecacat,"}")
+		fprintf(filecacat,"]")
+		fprintf(filecacat,"}")
+		fclose(filecacat)
+	}
+	if(equali(address,"MSG_ReadLong")){
+		new filecacat = fopen(orpheufile3,"wb")
+		fprintf(filecacat,"{")
+		fprintf(filecacat,"^"name^"       : ^"MSG_ReadLong^",")
+		fprintf(filecacat,"^"library^"    : ^"engine^",")
+		fprintf(filecacat,"^"return^"  :")
+		fprintf(filecacat,"[")
+		fprintf(filecacat,"{")
+		fprintf(filecacat,"^"type^" : ^"long^"")
+		fprintf(filecacat,"}")
+		fprintf(filecacat,"],") // 1
+		fprintf(filecacat,"^"identifiers^":")
+		fprintf(filecacat,"[")
+		fprintf(filecacat,"{")
+		fprintf(filecacat,"^"os^"    : ^"windows^",")
+		fprintf(filecacat,"^"value^" : [0x8B,0x0D,^"*^",^"*^",^"*^",^"*^",0xA1,^"*^",^"*^",^"*^",^"*^",0x57,0x8D,0x79,0x04,0x3B,0xF8,0x7E,0x0F,0xC7,0x05,^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",0x83,0xC8,0xFF,0x5F,0xC3,0x56,0x8B,0x35,^"*^",^"*^",^"*^",^"*^",0x33,0xC0,0x33,0xD2,0x8A,0x44,0x0E,0x03,0x8A,0x54,0x0E,0x02,0xC1,0xE0,0x08,0x03,0xC2,0x33,0xD2,0x8A,0x54,0x0E,0x01,0x89,0x3D,^"*^",^"*^",^"*^",^"*^",0xC1,0xE0,0x08,0x03,0xC2,0x33,0xD2,0x8A,0x14,0x0E,0x5E,0xC1,0xE0,0x08,0x03,0xC2,0x5F,0xC3]")
+		fprintf(filecacat,"},")
+		fprintf(filecacat,"{")
+		fprintf(filecacat,"^"os^"    : ^"linux^",")
+		fprintf(filecacat,"^"value^" : ^"MSG_ReadLong^"")
+		fprintf(filecacat,"}")
+		fprintf(filecacat,"]")
+		fprintf(filecacat,"}")
+		fclose(filecacat)
+	}
+}
+stock PrintUnknown_function(id)
+{
+	new longfuckgame[200]
+	
+
+	if(id){
+		formatex(longfuckgame,charsmax(longfuckgame),"%s Unknown command: ^"%s^" Sendend by (%s-%s)",PrefixProtection,Argv(),UserName(id),PlayerIP(id))
+
+	}
+	else{
+		formatex(longfuckgame,charsmax(longfuckgame),"%s Unknown command: ^"%s^" Sendend by server console",PrefixProtection,Argv())
+	}
+	if(strlen(Argv())){
+		switch(get_pcvar_num(PrintUnknown)){
+			case 1:server_print(longfuckgame)
+				case 2:log_to_file(settings,longfuckgame)
+			}
+	}
+	return 0
+}
+stock BufferName(info[],size,name[],size_name = 31) // nu pune mai mare decat 31
+{
+	new heh = 0x00;
+	if ((heh = containi(info, "\name\") ) != -1){
+		heh += 0x06;
+		new len = 0x00;
+		while(info[heh] != '\' && info[heh] != '"' && len < size_name && heh < size)
+			name[len++] = info[heh++];
+		
+		name[len] = EOS;
+	}
+	else{
+		name[0x00] = EOS;
+	}
+}
+stock cmpStr(str[]) {
+	
+	static strCsl[142], i
+	for(i = 0x00; i < g_ConsoleStr; i++){
+		ArrayGetString(cslBlock, i, strCsl, charsmax(strCsl))
+		if(containi(str, strCsl) != -0x01)
+			return true
+	}
+	return false
+}
+
+public Register_Settings()
+{
+	#define dirmax "addons/amxmodx/configs/settings"
+
+	if(file_exists(loc))
+		//server_print("%s I loaded file (%s)",PrefixProtection,loc)
+	if(file_exists(loc2)){
+		server_cmd("exec %s",loc2)
+		//server_print("%s I loaded file (%s)",PrefixProtection,loc2)
+	}
+	else{
+		new filecacat = fopen(loc2,"wb")
+		server_print("%s I created file (%s)",PrefixProtection,loc2)
+		fprintf(filecacat,"//shield_replace_string ^"status^" ^"statu3^"")
+		fprintf(filecacat,"//shield_remove_string ^"rcon^"")
+		fprintf(filecacat,"//shield_addcmd_fake ^"kick2^" ^"1^"")
+		fprintf(filecacat,"//shield_shield_fake_cvar ^"podbot^" ^"hello^"")
+		fclose(filecacat)
+	}
+	if(file_exists(locatie)){
+		//server_print("%s I loaded file (%s)",PrefixProtection,settings)
+	}
+	else{
+		server_print("%s I created file (%s)",PrefixProtection,locatie)
+		new filecacat = fopen(locatie,"wb")
+		fprintf(filecacat,"")
+		fclose(filecacat)
+	}
+	if(file_exists(settings)){
+		//server_print("%s I loaded file (%s)",PrefixProtection,settings)
+	}
+	else{
+		server_print("%s I created file (%s)",PrefixProtection,settings)
+		new filecacat = fopen(settings,"wb")
+		fprintf(filecacat,"")
+		fclose(filecacat)
+	}
+	if(dir_exists(dirmax)){
+		//server_print("%s I loaded dir (%s)",PrefixProtection,dirmax)
+	}
+	else{
+		server_print("%s I created dir (%s)",PrefixProtection,dirmax)
+		mkdir(dirmax)
+	}
+}
+public RegisterOkapi()
+{
+	new build[varmax]
+	get_cvar_string("sv_version",build,charsmax(build))
+	
+	// windows
+	new infokey = okapi_engine_find_sig(Info_SetValueForKey_f,charsmax(Info_SetValueForKey_f))
+	new queryserver6153 = okapi_engine_find_sig(SV_ConnectionlessPacket6153,charsmax(SV_ConnectionlessPacket6153))
+	new queryserver4554 = okapi_engine_find_sig(SV_ConnectionlessPacket4554,charsmax(SV_ConnectionlessPacket4554))
+	new printf = okapi_engine_find_sig(Con_Printf_f,charsmax(Con_Printf_f))
+	new reject = okapi_engine_find_sig(SV_RejectConnection,charsmax(SV_RejectConnection))
+	new drop = okapi_engine_find_sig(SV_DropClient,charsmax(SV_DropClient))
+	new comfile = okapi_engine_find_sig(COM_FileWrite,charsmax(COM_FileWrite))
+	new connect = okapi_engine_find_sig(SV_ConnectClient,charsmax(SV_ConnectClient))
+	new sendres = okapi_engine_find_sig(SV_SendRes_f,charsmax(SV_SendRes_f))
+	new spawn = okapi_engine_find_sig(SV_Spawn_f,charsmax(SV_Spawn_f))
+	new say = okapi_engine_find_sig(Host_Say_f,charsmax(Host_Say_f))
+	new net = okapi_engine_find_sig(NET_GetLong_windows,charsmax(NET_GetLong_windows))
+	new munge4554 = okapi_engine_find_sig(COM_UnMunges4554,charsmax(COM_UnMunges4554))
+	new munge6153 = okapi_engine_find_sig(COM_UnMunges6153,charsmax(COM_UnMunges6153))
+	new safefile6153 = okapi_engine_find_sig(IsSafeFileDownload6153,charsmax(IsSafeFileDownload6153))
+	new safefile4554 = okapi_engine_find_sig(IsSafeFileDownload4554,charsmax(IsSafeFileDownload4554))
+	new netchann = okapi_engine_find_sig(Netchan_CheckForCompletion,charsmax(Netchan_CheckForCompletion))
+	new netchann4554 = okapi_engine_find_sig(Netchan_CheckForCompletion4554,charsmax(Netchan_CheckForCompletion4554))
+	new processfile = okapi_engine_find_sig(SV_ProcessFile,charsmax(SV_ProcessFile))
+	new fsopen = okapi_engine_find_sig(FS_Open,charsmax(FS_Open))
+	new runcmd = okapi_engine_find_sig(SV_RunCmd,charsmax(SV_RunCmd))
+	new newf = okapi_engine_find_sig(SV_New_fw,charsmax(SV_New_fw))
+	new newf6153 = okapi_engine_find_sig(SV_New_fw6153,charsmax(SV_New_fw6153))
+	new parsebad = okapi_engine_find_sig(SV_ParseConsistencyResponse,charsmax(SV_ParseConsistencyResponse))
+	new addip = okapi_engine_find_sig(SV_Addip,charsmax(SV_Addip))
+	new svrcon = okapi_engine_find_sig(SV_Rcon,charsmax(SV_Rcon))
+	new clc_resx = okapi_engine_find_sig(clc_res,charsmax(clc_res))
+	new clc_voicedatax = okapi_engine_find_sig(voice_data,charsmax(voice_data))
+	new clc_stringcmd = okapi_engine_find_sig(SV_ParseStringCommand,charsmax(SV_ParseStringCommand))
+	new hostkillf = okapi_engine_find_sig(Host_kill_f,charsmax(Host_kill_f))
+	//linux
+	new badparselinux = okapi_engine_get_symbol_ptr(SV_ParseConsistencyResponse_linux)
+	new hostkillf_linux = okapi_engine_get_symbol_ptr(Host_kill_f_linux)
+	new infokeylinux = okapi_engine_get_symbol_ptr(Info_ValueForKey_linux)
+	new queryserver6153linux = okapi_engine_get_symbol_ptr(SV_ConnectionlessPacket_linux)
+	new printflinux = okapi_engine_get_symbol_ptr(Con_Printf_linux)
+	new rejectlinux = okapi_engine_get_symbol_ptr(SV_RejectConnection_linux)
+	new droplinux = okapi_engine_get_symbol_ptr(SV_DropClient_linux)
+	new comfilelinux = okapi_engine_get_symbol_ptr(COM_FileWrite_linux)
+	new connectlinux = okapi_engine_get_symbol_ptr(SV_ConnectClient_f_linux)
+	new sendreslinux = okapi_engine_get_symbol_ptr(SV_SendRes_f_linux)
+	new spawnlinux = okapi_engine_get_symbol_ptr(SV_Spawn_f)
+	new saylinux = okapi_engine_get_symbol_ptr(Host_Say_f_linux)
+	new netlinux = okapi_engine_get_symbol_ptr(NET_GetLong_linux)
+	new munge4554linux = okapi_engine_get_symbol_ptr(COM_UnMunge_linux)
+	new safefile4554linux = okapi_engine_get_symbol_ptr(SafeFileDownload_linux)
+	new netchannlinux = okapi_engine_get_symbol_ptr(Netchan_CheckForCompletion_linux)
+	new processfilelinux = okapi_engine_get_symbol_ptr(SV_ProcessFile_linux)
+	new fsopenlinux = okapi_engine_get_symbol_ptr(FS_Open_linux)
+	new runcmdlinux = okapi_engine_get_symbol_ptr(SV_RunCmd_linux)
+	new newflinux = okapi_engine_get_symbol_ptr(SV_New_f_linux)
+	new addiplinux = okapi_engine_get_symbol_ptr(SV_AddIP_f_linux)
+	new svrconlinux = okapi_engine_get_symbol_ptr(SV_Rcon_f_linux)
+	new clc_resxlinux = okapi_engine_get_symbol_ptr(SV_Reslinux)
+	new clc_voicedataxlinux = okapi_engine_get_symbol_ptr(SV_voicedatalinux)
+	new clc_stringcmdlinux = okapi_engine_get_symbol_ptr(SV_ParseStringCommand_linux)
+	
+	if(is_linux_server()){
+		if(spawnlinux){
+			okapi_add_hook(okapi_build_function(spawnlinux,arg_int,arg_string,arg_int),"SV_Spawn_f_Hook")
+			memory2++
+		}
+		else{ErrorSignature();memory=1;}
+		if(sendreslinux){
+			okapi_add_hook(okapi_build_function(sendreslinux,arg_int,arg_string,arg_int),"SV_SendRes_f_Hook")
+			memory2++
+		}
+		else{ErrorSignature();memory=2;}
+		if(saylinux){
+			okapi_add_hook(okapi_build_function(saylinux,arg_string),"Host_Say_f_Hook")
+			memory2++
+		}
+		else{ErrorSignature();memory=3;}
+		if(netlinux){
+			okapi_add_hook(okapi_build_function(netlinux,arg_int,arg_int),"NET_GetLong")
+			memory2++
+		}
+		else{ErrorSignature();memory=4;}
+		if(connectlinux){
+			okapi_add_hook(okapi_build_function(connectlinux,arg_int),"SV_ConnectClient_Hook")
+			memory2++
+		}
+		else{ErrorSignature();memory=5;}
+		if(rejectlinux){
+			okapi_add_hook(okapi_build_function(rejectlinux,arg_int,arg_int,arg_string),"SV_RejectConnection_Hook")
+			memory2++
+		}
+		else{ErrorSignature();memory=6;}
+		if(printflinux){
+			okapi_add_hook(okapi_build_function(printflinux,arg_string,arg_string,arg_void),"Con_Printf_Hook")
+			memory2++
+		}
+		else{ErrorSignature();memory=7;}
+		if(queryserver6153linux){
+			okapi_add_hook(okapi_build_function(queryserver6153linux,arg_void),"SV_ConnectionlessPacket_Hook")
+			memory2++
+		}	
+		else{ErrorSignature();memory=8;}
+		if(infokeylinux){
+			okapi_add_hook(okapi_build_function(infokeylinux,arg_string,arg_string,arg_string,arg_int),"Info_ValueForKey_Hook")
+			memory2++
+		}
+		else{ErrorSignature();memory=9;}
+		if(droplinux){
+			okapi_add_hook(okapi_build_function(droplinux,arg_int,arg_int,arg_string,arg_string),"SV_DropClient_Hook")
+			memory2++
+		}
+		else{ErrorSignature();memory=10;}
+		if(munge4554linux){
+			okapi_add_hook(okapi_build_function(munge4554linux,arg_string,arg_int,arg_int),"COM_UnMunge")
+			memory2++
+		}
+		else{ErrorSignature();memory=11;}	
+		if(safefile4554linux){
+			okapi_add_hook(okapi_build_function(safefile4554linux,arg_string),"IsSafeDownloadFile_Hook")
+			memory2++
+		}
+		else{ErrorSignature();memory=12;}
+		if(netchannlinux){
+			okapi_add_hook(okapi_build_function(netchannlinux,arg_int,arg_int,arg_int,arg_int),"Netchan_CheckForCompletion_Hook")
+			memory2++
+		}
+		else{ErrorSignature();memory=13;}
+		if(processfilelinux){
+			okapi_add_hook(okapi_build_function(processfilelinux,arg_string,arg_void,arg_int),"SV_ProcessFile_Hook")
+			memory2++
+		}
+		else{ErrorSignature();memory=14;}
+		if(fsopenlinux){
+			okapi_add_hook(okapi_build_function(fsopenlinux,arg_string,arg_string),"FS_Open_Hook")
+			memory2++
+		}
+		else{ErrorSignature();memory=15;}
+		if(comfilelinux){
+			okapi_add_hook(okapi_build_function(comfilelinux,arg_string,arg_void,arg_int),"COM_FileWrite_Hook")
+			memory2++
+		}
+		else{ErrorSignature();memory=16;}
+		if(runcmdlinux){
+			okapi_add_hook(okapi_build_function(runcmdlinux,arg_int),"SV_RunCmd_Hook")
+			memory2++
+		}
+		else{ErrorSignature();memory=17;}
+		if(newflinux){
+			okapi_add_hook(okapi_build_function(newflinux,arg_void),"SV_New_f_Hook")
+			memory2++
+		}
+		else{ErrorSignature();memory=18;}
+		if(addiplinux){
+			okapi_add_hook(okapi_build_function(addiplinux,arg_void),"SV_Addip_f_Hook")
+			memory2++
+		}
+		else{ErrorSignature();memory=19;}
+		if(svrconlinux){
+			okapi_add_hook(okapi_build_function(svrconlinux,arg_string),"SV_Rcon_Hook")
+			memory2++
+		}
+		else{ErrorSignature();memory=20;}
+		if(clc_resxlinux){
+			okapi_add_hook(okapi_build_function(clc_resxlinux,arg_void),"SV_ParseResourceList_Fix")
+			memory2++
+		}
+		else{ErrorSignature();memory=21;}
+		if(clc_voicedataxlinux){
+			okapi_add_hook(okapi_build_function(clc_voicedataxlinux,arg_void),"SV_ParseVoiceData_Fix")
+			memory2++
+		}
+		else{ErrorSignature();memory=22;}
+		if(clc_stringcmdlinux){
+			okapi_add_hook(okapi_build_function(clc_stringcmdlinux,arg_void),"SV_ParseStringCommand_fix")
+			memory2++
+		}
+		else{ErrorSignature();memory=23;}
+		if(get_pcvar_num(ParseConsistencyResponse)==-1){
+			if(badparselinux){
+				okapi_add_hook(okapi_build_function(badparselinux,arg_void),"SV_ParseConsistencyResponse_fix")
+				memory2++
+			}
+			else{ErrorSignature();memory=24;}
+		}
+		if(hostkillf_linux){
+			okapi_add_hook(okapi_build_function(hostkillf_linux,arg_void),"Host_Kill_f_fix")
+			memory2++
+		}
+		else{ErrorSignature();memory=25;}
+	}
+	else{
+		
+		if(spawn){
+			okapi_add_hook(okapi_build_function(spawn,arg_int,arg_string,arg_int),"SV_Spawn_f_Hook")
+			memory2++
+		}
+		else{ErrorSignature();memory=1;}
+		if(sendres){
+			okapi_add_hook(okapi_build_function(sendres,arg_int,arg_string,arg_int),"SV_SendRes_f_Hook")
+			memory2++
+		}
+		else{ErrorSignature();memory=2;}
+		if(say){
+			okapi_add_hook(okapi_build_function(say,arg_string),"Host_Say_f_Hook")
+			memory2++
+		}
+		else{ErrorSignature();memory=3;}
+		if(net){
+			okapi_add_hook(okapi_build_function(net,arg_int,arg_int),"NET_GetLong")
+			memory2++
+		}
+		else{ErrorSignature();memory=4;}
+		if(connect){
+			okapi_add_hook(okapi_build_function(connect,arg_int),"SV_ConnectClient_Hook")
+			memory2++
+		}
+		else{ErrorSignature();memory=5;}
+		if(reject){
+			okapi_add_hook(okapi_build_function(reject,arg_int,arg_int,arg_string),"SV_RejectConnection_Hook")
+			memory2++
+		}
+		else{ErrorSignature();memory=6;}
+		if(printf){
+			okapi_add_hook(okapi_build_function(printf,arg_string,arg_string,arg_void),"Con_Printf_Hook")
+			memory2++
+		}
+		else{ErrorSignature();memory=7;}
+		if(equali(build,"1.1.2.7,48,6153")){
+			if(queryserver6153){
+				okapi_add_hook(okapi_build_function(queryserver6153,arg_void),"SV_ConnectionlessPacket_Hook")
+				memory2++
+			}
+			else{ErrorSignature();memory=8;}
+		}
+		else{
+			if(queryserver4554){
+				okapi_add_hook(okapi_build_function(queryserver4554,arg_void),"SV_ConnectionlessPacket_Hook")
+				memory2++
+			}	
+			else{ErrorSignature();memory=8;}
+		}
+		if(infokey){
+			okapi_add_hook(okapi_build_function(infokey,arg_string,arg_string,arg_string),"Info_ValueForKey_Hook")
+			memory2++
+		}
+		else{ErrorSignature();memory=9;}
+		
+		if(drop){
+			okapi_add_hook(okapi_build_function(drop,arg_int,arg_int,arg_int,arg_string),"SV_DropClient_Hook")
+			memory2++
+		}
+		else{ErrorSignature();memory=10;server_print("a");}
+		
+		if(equali(build,"1.1.2.7,48,6153")){
+			if(munge6153){
+				okapi_add_hook(okapi_build_function(munge6153,arg_string,arg_int,arg_int),"COM_UnMunge")
+				memory2++
+			}
+			else{ErrorSignature();memory=11;}
+		}
+		else{
+			if(munge4554){
+				okapi_add_hook(okapi_build_function(munge4554,arg_string,arg_int,arg_int),"COM_UnMunge")
+				memory2++
+				//(qboolean server, netchan_t *chan, const char *filename, unsigned char *uncompressed_pbuf, int uncompressed_size)
+			}
+			else{ErrorSignature();memory=11;}	
+		}
+		if(equali(build,"1.1.2.7,48,6153")){
+			if(safefile6153){
+				okapi_add_hook(okapi_build_function(safefile6153,arg_string),"IsSafeDownloadFile_Hook")
+				memory2++
+			}
+			else{ErrorSignature();memory=12;}
+		}
+		else{
+			if(safefile4554){
+				okapi_add_hook(okapi_build_function(safefile4554,arg_string),"IsSafeDownloadFile_Hook")
+				memory2++
+			}
+			else{ErrorSignature();memory=12;}
+		}
+		if(equali(build,"1.1.2.7,48,6153")){
+			if(netchann){
+				okapi_add_hook(okapi_build_function(netchann,arg_int,arg_int,arg_int,arg_int),"Netchan_CheckForCompletion_Hook")
+				memory2++
+			}
+			else{ErrorSignature();memory=13;}
+		}
+		else{
+			if(netchann4554){
+				okapi_add_hook(okapi_build_function(netchann4554,arg_int,arg_int,arg_int,arg_int),"Netchan_CheckForCompletion_Hook")
+				memory2++
+			}
+			else{ErrorSignature();memory=13;}
+		}
+	}
+	if(processfile){
+		okapi_add_hook(okapi_build_function(processfile,arg_string,arg_void,arg_int),"SV_ProcessFile_Hook")
+		memory2++
+	}
+	else{ErrorSignature();memory=14;}
+	if(fsopen){
+		okapi_add_hook(okapi_build_function(fsopen,arg_string,arg_string),"FS_Open_Hook")
+		memory2++
+	}
+	else{ErrorSignature();memory=15;}
+	if(comfile){
+		okapi_add_hook(okapi_build_function(comfile,arg_string,arg_void,arg_int),"COM_FileWrite_Hook")
+		memory2++
+	}
+	else{ErrorSignature();memory=16;}
+	if(runcmd){
+		okapi_add_hook(okapi_build_function(runcmd,arg_int),"SV_RunCmd_Hook")
+		memory2++
+	}
+	else{ErrorSignature();memory=17;}
+	if(equali(build,"1.1.2.7,48,6153")){
+		if(newf6153){
+			okapi_add_hook(okapi_build_function(newf6153,arg_void),"SV_New_f_Hook")
+			memory2++
+		}
+		else{ErrorSignature();memory=18;}
+	}
+	else{
+		if(newf){
+			okapi_add_hook(okapi_build_function(newf,arg_void),"SV_New_f_Hook")
+			memory2++
+		}	
+		else{ErrorSignature();memory=18;}
+		memory2++
+	}
+	if(addip){
+		okapi_add_hook(okapi_build_function(addip,arg_void),"SV_Addip_f_Hook")
+		memory2++
+	}
+	else{ErrorSignature();memory=19;}
+	if(svrcon){
+		okapi_add_hook(okapi_build_function(svrcon,arg_string),"SV_Rcon_Hook")
+		memory2++
+	}
+	else{ErrorSignature();memory=20;}
+	if(clc_resx){
+		okapi_add_hook(okapi_build_function(clc_resx,arg_void),"SV_ParseResourceList_Fix")
+		memory2++
+	}
+	else{ErrorSignature();memory=21;}
+	if(clc_voicedatax){
+		okapi_add_hook(okapi_build_function(clc_voicedatax,arg_void),"SV_ParseVoiceData_Fix")
+		memory2++
+	}
+	else{ErrorSignature();memory=22;}
+	if(clc_stringcmd){
+		okapi_add_hook(okapi_build_function(clc_stringcmd,arg_void),"SV_ParseStringCommand_fix")
+		memory2++
+	}
+	else{ErrorSignature();memory=23;}
+	if(get_pcvar_num(ParseConsistencyResponse)==-1){
+		if(parsebad){
+			okapi_add_hook(okapi_build_function(parsebad,arg_void),"SV_ParseConsistencyResponse_fix")
+			memory2++
+		}
+		else{ErrorSignature();memory=24;}
+	}
+	if(hostkillf){
+		okapi_add_hook(okapi_build_function(hostkillf,arg_void),"Host_Kill_f_fix")
+		memory2++
+	}
+	else{ErrorSignature();memory=25;}
+	//RegisterOrpheu()
+
+}
+#if defined _colorchat_included
+#endinput
+#endif
+#define _colorchat_included
+
+/* ColorChat Support */
+#define NORMAL DontChange
+#define GREEN DontChange
+#define TEAM_COLOR DontChange
+#define RED Red
+#define BLUE Blue
+#define GREY Grey
+#define ColorChat client_print_color
+/* ColorChat Support */
+
+enum _:Colors {
+	DontChange,
+	Red,
+	Blue,
+	Grey
+}
+
+stock const g_szTeamName[Colors][] = 
+{
+"UNASSIGNED",
+"TERRORIST",
+"CT",
+"SPECTATOR"
+}
+
+stock client_print_color(id, iColor=DontChange, const szMsg[], any:...)
+{
+// check if id is different from 0
+if( id && !is_user_connected(id) )
+{
+	return 0;
+}
+
+if( iColor > Grey )
+{
+	iColor = DontChange;
+}
+
+new szMessage[192];
+if( iColor == DontChange )
+{
+	szMessage[0] = 0x04;
+}
+else
+{
+	szMessage[0] = 0x03;
+}
+
+new iParams = numargs();
+// Specific player code
+if(id)
+{
+	if( iParams == 3 )
+	{
+		copy(szMessage[1], charsmax(szMessage)-1, szMsg);
+	}
+	else
+	{
+		vformat(szMessage[1], charsmax(szMessage)-1, szMsg, 4);
+	}
+	
+	if( iColor )
+	{
+		new szTeam[11]; // store current team so we can restore it
+		get_user_team(id, szTeam, charsmax(szTeam));
+		
+		// set id TeamInfo in consequence
+		// so SayText msg gonna show the right color
+		Send_TeamInfo(id, id, g_szTeamName[iColor]);
+		
+		// Send the message
+		Send_SayText(id, id, szMessage);
+		
+		// restore TeamInfo
+		Send_TeamInfo(id, id, szTeam);
+	}
+	else
+	{
+		Send_SayText(id, id, szMessage);
+	}
+} 
+
+// Send message to all players
+else
+{
+	// Figure out if at least 1 player is connected
+	// so we don't send useless message if not
+	// and we gonna use that player as team reference (aka SayText message sender) for color change
+	new iPlayers[32], iNum;
+	get_players(iPlayers, iNum, "ch");
+	if( !iNum )
+	{
+		return 0;
+	}
+	
+	new iFool = iPlayers[0];
+	
+	new iMlNumber, i, j;
+	new Array:aStoreML = ArrayCreate();
+	if( iParams >= 5 ) // ML can be used
+	{
+		for(j=4; j<iParams; j++)
+		{
+			// retrieve original param value and check if it's LANG_PLAYER value
+			if( getarg(j) == LANG_PLAYER )
+			{
+				i=0;
+				// as LANG_PLAYER == -1, check if next parm string is a registered language translation
+				while( ( szMessage[ i ] = getarg( j + 1, i++ ) ) ) {}
+				if( GetLangTransKey(szMessage) != TransKey_Bad )
+				{
+					// Store that arg as LANG_PLAYER so we can alter it later
+					ArrayPushCell(aStoreML, j++);
+					
+					// Update ML array saire so we'll know 1st if ML is used,
+					// 2nd how many args we have to alterate
+					iMlNumber++;
+				}
+			}
+		}
+	}
+	
+	// If arraysize == 0, ML is not used
+	// we can only send 1 MSG_BROADCAST message
+	if( !iMlNumber )
+	{
+		if( iParams == 3 )
+		{
+			copy(szMessage[1], charsmax(szMessage)-1, szMsg);
+		}
+		else
+		{
+			vformat(szMessage[1], charsmax(szMessage)-1, szMsg, 4);
+		}
+		
+		if( iColor )
+		{
+			new szTeam[11];
+			get_user_team(iFool, szTeam, charsmax(szTeam));
+			Send_TeamInfo(0, iFool, g_szTeamName[iColor]);
+			Send_SayText(0, iFool, szMessage);
+			Send_TeamInfo(0, iFool, szTeam);
+		}
+		else
+		{
+			Send_SayText(0, iFool, szMessage);
+		}
+	}
+	
+	// ML is used, we need to loop through all players,
+	// format text and send a MSG_ONE_UNRELIABLE SayText message
+	else
+	{
+		new szTeam[11], szFakeTeam[10];
+		
+		if( iColor )
+		{
+			get_user_team(iFool, szTeam, charsmax(szTeam));
+			copy(szFakeTeam, charsmax(szFakeTeam), g_szTeamName[iColor]);
+		}
+		
+		for( i = 0; i < iNum; i++ )
+		{
+			id = iPlayers[i];
+			
+			for(j=0; j<iMlNumber; j++)
+			{
+				// Set all LANG_PLAYER args to player index ( = id )
+				// so we can format the text for that specific player
+				setarg(ArrayGetCell(aStoreML, j), _, id);
+			}
+			
+			// format string for specific player
+			vformat(szMessage[1], charsmax(szMessage)-1, szMsg, 4);
+			
+			if( iColor )
+			{
+				Send_TeamInfo(id, iFool, szFakeTeam);
+				Send_SayText(id, iFool, szMessage);
+				Send_TeamInfo(id, iFool, szTeam);
+			}
+			else
+			{
+				Send_SayText(id, iFool, szMessage);
+			}
+		}
+		ArrayDestroy(aStoreML);
+	}
+}
+return 1;
+}
+
+stock Send_TeamInfo(iReceiver, iPlayerId, szTeam[])
+{
+static iTeamInfo = 0;
+if( !iTeamInfo )
+{
+	iTeamInfo = get_user_msgid("TeamInfo");
+}
+message_begin(iReceiver ? MSG_ONE_UNRELIABLE : MSG_BROADCAST, iTeamInfo, .player=iReceiver);
+write_byte(iPlayerId);
+write_string(szTeam);
+message_end();
+}
+
+stock Send_SayText(iReceiver, iPlayerId, szMessage[])
+{
+static iSayText = 0;
+if( !iSayText )
+{
+	iSayText = get_user_msgid("SayText");
+}
+message_begin(iReceiver ? MSG_ONE_UNRELIABLE : MSG_BROADCAST, iSayText, .player=iReceiver);
+write_byte(iPlayerId);
+write_string(szMessage);
+message_end();
+}
+
+stock register_dictionary_colored(const filename[])
+{
+if( !register_dictionary(filename) )
+{
+	return 0;
+}
+
+new szFileName[256];
+get_localinfo("amxx_datadir", szFileName, charsmax(szFileName));
+format(szFileName, charsmax(szFileName), "%s/lang/%s", szFileName, filename);
+new fp = fopen(szFileName, "rt");
+if( !fp )
+{
+	log_amx("Failed to open %s", szFileName);
+	return 0;
+}
+
+new szBuffer[512], szLang[3], szKey[64], szTranslation[256], TransKey:iKey;
+
+while( !feof(fp) )
+{
+	fgets(fp, szBuffer, charsmax(szBuffer));
+	trim(szBuffer);
+	
+	if( szBuffer[0] == '[' )
+	{
+		strtok(szBuffer[1], szLang, charsmax(szLang), szBuffer, 1, ']');
+	}
+	else if( szBuffer[0] )
+	{
+		strbreak(szBuffer, szKey, charsmax(szKey), szTranslation, charsmax(szTranslation));
+		iKey = GetLangTransKey(szKey);
+		if( iKey != TransKey_Bad )
+		{
+			while( replace(szTranslation, charsmax(szTranslation), "!g", "^4") ){}
+			while( replace(szTranslation, charsmax(szTranslation), "!t", "^3") ){}
+			while( replace(szTranslation, charsmax(szTranslation), "!n", "^1") ){}
+			AddTranslation(szLang, iKey, szTranslation[2]);
+		}
+	}
+}
+
+fclose(fp);
+return 1;
+}
