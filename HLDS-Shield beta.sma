@@ -141,7 +141,6 @@ public RegisterOrpheu(){
 }
 public Cmd_ExecuteString_Fix()
 {
-	/*
 	new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
 	if(id){
 		if(get_pcvar_num(ParseConsistencyResponse)==0){
@@ -174,7 +173,6 @@ public Cmd_ExecuteString_Fix()
 		}
 	}
 	return okapi_ret_ignore
-	*/
 }
 
 public plugin_cfg() 
