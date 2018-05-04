@@ -902,9 +902,9 @@ public SV_ConnectClient_Hook()
 		return okapi_ret_supercede
 	}
 	if((containi(value,"_ip") != -0x01)){
-		//SV_RejectConnection_Hook(1,"Hello")
-		HLDS_Shield_func(0,0,hlproxy,0,8,4)
-		return okapi_ret_supercede
+		SV_RejectConnection_Hook(1,"Hello") // merge doar ca fara dproto
+		//HLDS_Shield_func(0,0,hlproxy,0,8,4)
+		//return okapi_ret_supercede
 	}
 	if(!(containi(value,"\_cl_autowepswitch\1\") != -0x01 || containi(value,"\_cl_autowepswitch\0\") != -0x01)){
 		HLDS_Shield_func(0,0,fakeplayer,0,8,0)
