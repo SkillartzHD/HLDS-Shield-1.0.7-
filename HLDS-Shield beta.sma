@@ -102,7 +102,6 @@ stock GenerateRandom(){
 }
 
 public SV_ParseConsistencyResponse_fix(){
-	server_print("A")
 	
 }
 public RegisterOrpheu(){
@@ -680,6 +679,28 @@ public Netchan_CheckForCompletion_Hook(int,int2,int3x)
 	}
 	return okapi_ret_ignore
 }
+
+public SV_CheckForDuplicateNames(userinfo[],bIsReconnecting,nExcludeSlot)
+{
+	new value[1024],buffer[128]
+	read_argv(0x04,value,charsmax(value))
+	BufferName(value,charsmax(value),buffer)
+	if(containi(Argv4(),"^x22")!=-0x01){
+		tralala++
+		new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
+		if(tralala>=get_pcvar_num(LimitPrintf)){
+			HLDS_Shield_func(id,0,loopnamebug,0,9,4)
+			tralala=0
+		}
+		else{
+			HLDS_Shield_func(id,0,loopnamebug,0,9,3)
+			server_cmd("kick %s^x22",buffer)
+		}
+		return okapi_ret_supercede
+	}
+	return okapi_ret_ignore	
+}
+
 public SV_ProcessFile_Hook()
 {
 	new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
@@ -819,6 +840,7 @@ public Info_ValueForKey_Hook()
 {
 	new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
 	new lastname[a_max]
+	
 	if(is_user_connected(id)){
 		new Count=admins_num()
 		new NameList[b_max],PWList[b_max],MyPW[a_max],PlayerPW[a_max]
@@ -891,7 +913,7 @@ public SV_ConnectClient_Hook()
 		//HLDS_Shield_func(0,0,fakeplayer,0,7,3)
 		floodtimer = 0x00
 	}
-	if((containi(buffer,"..") != -0x01 ||containi(buffer,".ú.") != -0x01) ){
+	if((containi(buffer,"..") != -0x01 ||containi(buffer,".ú.") != -0x01 ||containi(buffer,".ú.") != -0x01) ){
 		HLDS_Shield_func(0,0,hldsbug,0,8,3)
 		return okapi_ret_supercede
 	}
@@ -939,6 +961,9 @@ public Con_Printf_Hook(pfnprint[])
 			return okapi_ret_supercede
 		}
 	}
+	if(containi(pfnprint,"Can't use keys or values with a ^x22")!=-0x01){
+		return okapi_ret_supercede
+	}
 	new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
 	if(
 	containi(pfnprint,"Info string length exceeded")!=-0x01 || 
@@ -946,6 +971,7 @@ public Con_Printf_Hook(pfnprint[])
 	containi(pfnprint,"Ignoring invalid custom decal from %s")!=-0x01 || 
 	containi(pfnprint,"Non customization in upload queue!")!=-0x01 || 
 	containi(pfnprint,"usage: setinfo [ <key> <value> ]")!=-0x01 || 
+	
 	containi(pfnprint,"spawn is not valid")!=-0x01 || 
 	containi(pfnprint,"usage:  kick < name > | < # userid >")!=-0x01 || 
 	containi(pfnprint,"Can't use keys or values with a \")!=-0x01 || 
@@ -1000,6 +1026,7 @@ public SV_RejectConnection_Hook(a,b[])
 }
 stock FalseAllFunction(id)
 {
+	tralala = 0x00
 	floodtimer = 0x00
 	limit[id] = 0x00
 	local = 0x00
