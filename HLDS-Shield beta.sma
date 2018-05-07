@@ -158,9 +158,11 @@ public Cmd_ExecuteString_Fix()
 				return okapi_ret_ignore
 			}
 			else{
-				HLDS_Shield_func(id,1,suspicious,1,16,1)
-				if(get_pcvar_num(SendBadDropClient)==1){
-					SV_DropClient_Hook(1337,0,"drop",id)
+				if(is_user_connected(id)){
+					HLDS_Shield_func(id,1,suspicious,1,16,1)
+					if(get_pcvar_num(SendBadDropClient)==1){
+						SV_DropClient_Hook(1337,0,"drop",id)
+					}
 				}
 				return okapi_ret_supercede
 			}
@@ -218,7 +220,7 @@ public destroy_fuck(){fuck=0x00;}
 public destroy_memhack(){memhack=0x00;}
 public debug_orpheu(){server_cmd("reload");}
 public Destroy_Memory(){hola = 0x00;}
-public Shield_ProtectionSpam(id){limit[id] = 0x00;}
+public Shield_ProtectionSpam(id){limita[id] = 0x00;}
 public LevFunction(id){mungelimit[id]=0x00;local=0x00;}
 
 public Host_Kill_f_fix()
@@ -240,11 +242,8 @@ public Host_Kill_f_fix()
 public IsSafeDownloadFile_Hook()
 {
 	new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
-	FalseAllFunction(id)
 	limita[id]++
-	if(task_exists(0x01)){	
-	}
-	else{
+	if(!task_exists(0x01)){
 		set_task(0.1,"Shield_ProtectionSpam",id)
 	}
 	
@@ -252,6 +251,7 @@ public IsSafeDownloadFile_Hook()
 		if(containi(Args(),SafeDownload[i]) != -0x01){
 			locala[id]++
 			if(locala[id] >=get_pcvar_num(LimitExploit)){
+				server_cmd("addip %d %s",get_pcvar_num(PauseDlfile),PlayerIP(id)) // mini pause
 				return okapi_ret_supercede
 			}
 			else{
@@ -265,25 +265,23 @@ public IsSafeDownloadFile_Hook()
 			return okapi_ret_supercede
 		}
 	}
-	if(limita[id] >= get_pcvar_num(LimitPrintf)){
-		if(is_user_connected(id)){
-			locala[id]++
-			if(locala[id] >=get_pcvar_num(LimitExploit)){
-				return okapi_ret_supercede
-			}
-			else{
-				if(get_pcvar_num(SendBadDropClient)==1){
-					SV_DropClient_Hook(1337,0,"drop",id)
-				}
-				HLDS_Shield_func(id,2,safefile,1,5,1)
-			}
+	if(is_user_connected(id)){
+		locala[id]++
+		if(locala[id] >=get_pcvar_num(LimitExploit)){
+			server_cmd("addip %d %s",get_pcvar_num(PauseDlfile),PlayerIP(id)) // mini pause
+			return okapi_ret_supercede;
 		}
-		server_cmd("addip %d %s",get_pcvar_num(PauseDlfile),PlayerIP(id)) // mini pause
-		return okapi_ret_supercede;
+		else{
+			if(get_pcvar_num(SendBadDropClient)==1){
+				SV_DropClient_Hook(1337,0,"drop",id)
+			}
+			HLDS_Shield_func(id,2,safefile,1,5,1)
+		}
 	}
 	if(cmpStr(Args())){
 		locala[id]++
 		if(locala[id] >=get_pcvar_num(LimitExploit)){
+			server_cmd("addip %d %s",get_pcvar_num(PauseDlfile),PlayerIP(id)) // mini pause
 			return okapi_ret_supercede
 		}
 		else{
@@ -685,7 +683,8 @@ public SV_CheckForDuplicateNames(userinfo[],bIsReconnecting,nExcludeSlot)
 	new value[1024],buffer[128]
 	read_argv(0x04,value,charsmax(value))
 	BufferName(value,charsmax(value),buffer)
-	if(containi(Argv4(),"^x22")!=-0x01){
+	
+	if(containi(Argv4(),"^x22")!=-0x01 || containi(Argv4(),"^x2e^x2e")!=-0x01 || containi(buffer,"^x2e^xfa^x2e") != -0x01){
 		tralala++
 		new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
 		if(tralala>=get_pcvar_num(LimitPrintf)){
@@ -913,7 +912,7 @@ public SV_ConnectClient_Hook()
 		//HLDS_Shield_func(0,0,fakeplayer,0,7,3)
 		floodtimer = 0x00
 	}
-	if((containi(buffer,"..") != -0x01 ||containi(buffer,".ú.") != -0x01 ||containi(buffer,".ú.") != -0x01) ){
+	if((containi(buffer,"^x2e^x2e") != -0x01 || containi(buffer,"^x2e^xfa^x2e") != -0x01) ){
 		HLDS_Shield_func(0,0,hldsbug,0,8,3)
 		return okapi_ret_supercede
 	}
