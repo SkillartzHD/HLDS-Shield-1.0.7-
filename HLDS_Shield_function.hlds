@@ -6,6 +6,9 @@
 #include <okapi>
 // linux singature
 
+new limitba[33]
+new localas[33]
+
 #define fakeplayer "CSTRIKE_FAKEPLAYERS"
 #define suspicious "CSTRIKE_SUSPICIOUS"
 #define ilegalcommand "CSTRIKE_ILEGALCMD"
@@ -536,9 +539,20 @@ stock HLDS_Shield_func(index,print,msg[],emit,log,pedeapsa)
 			return PLUGIN_HANDLED
 		}
 		else{
-			log_to_file(settings,string5,PrefixProtection,UserName(index),PlayerIP(index),msg,Argv(),Args(),locala[index],get_pcvar_num
-			
-			(LimitPrintf))
+			if(localas[index]){
+				if(localas[index] >=get_pcvar_num(LimitPrintf)){
+					localas[index]=0x00
+					return okapi_ret_supercede
+				}
+				log_to_file(settings,string5,PrefixProtection,UserName(index),PlayerIP(index),msg,Argv(),Args(),localas[index],get_pcvar_num(LimitPrintf))
+			}
+			else{
+				if(locala[index] >=get_pcvar_num(LimitPrintf)){
+					locala[index]=0x00
+					return okapi_ret_supercede
+				}
+				log_to_file(settings,string5,PrefixProtection,UserName(index),PlayerIP(index),msg,Argv(),Args(),locala[index],get_pcvar_num(LimitPrintf))
+			}
 		}
 	}
 	else if(log==0x06){
