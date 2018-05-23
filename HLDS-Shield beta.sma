@@ -1,4 +1,3 @@
-
 #if defined PrefixProtection
 #else
 #define PrefixProtection "[HLDS-Shield]"
@@ -299,27 +298,45 @@ public COM_UnMunge()
 	}
 	return okapi_ret_ignore
 }
+
+
 public SV_New_f_Hook()
 {
 	new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
-	limitb[id]++
-	if(limitb[id] >= get_pcvar_num(LimitExploit))
+	limitba[id]++
+	if(limitba[id] >= get_pcvar_num(LimitExploit))
 	{
-		locala[id]++
-		if(locala[id] >=get_pcvar_num(LimitPrintf)){
+		localas[id]++
+		if(localas[id] >=get_pcvar_num(LimitPrintf)){
 			return okapi_ret_supercede
 		}
 		else{
+			limitba[id]=0x00
 			if(!strlen(UserName(id))){
 				HLDS_Shield_func(id,1,newbug,1,3,1)
+				if(get_pcvar_num(SendBadDropClient)==1){
+					SV_DropClient_Hook(1337,0,"drop",id)
+				}
 			}
 			else{
 				HLDS_Shield_func(id,2,newbug,1,5,1)
+				if(get_pcvar_num(SendBadDropClient)==1){
+					SV_DropClient_Hook(1337,0,"drop",id)
+				}
 			}
 		}
 		return okapi_ret_supercede
 	}
+	else{
+		set_task(0.5,"sv_new_f_debug",id)
+	}
 	return okapi_ret_ignore	
+}
+
+public sv_new_f_debug(id){
+	if(limitba[id] <= 1/2){
+		limitba[id]=0x00	
+	}
 }
 
 public pfnSys_Error(arg[]){
@@ -1027,6 +1044,7 @@ stock FalseAllFunction(id)
 {
 	tralala = 0x00
 	floodtimer = 0x00
+	//limitba[id] = 0x00
 	limit[id] = 0x00
 	local = 0x00
 	locala[id] = 0x00
