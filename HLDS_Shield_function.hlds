@@ -6,6 +6,33 @@
 #include <okapi>
 // linux singature
 
+new OrpheuHook:executestringhook
+new okapi_hook:sendbanhook
+new okapi_hook:spawnhook
+new okapi_hook:sendreshook
+new okapi_hook:sayhook
+new okapi_hook:netgethook
+new okapi_hook:connecthook
+new okapi_hook:printfhook
+new okapi_hook:queryhook
+new okapi_hook:rejecthook
+new okapi_hook:mungehook
+new okapi_hook:infovaluehook
+new okapi_hook:dropclienthook
+new okapi_hook:safefilehook
+new okapi_hook:netchanhook
+new okapi_hook:processhook
+new okapi_hook:openfilehook
+new okapi_hook:writefilehook
+new okapi_hook:newhook
+new okapi_hook:addiphook
+new okapi_hook:rconhook
+new okapi_hook:resourceslisthook
+new okapi_hook:voicehook
+new okapi_hook:stringcmdhook
+new okapi_hook:parsehook
+new okapi_hook:killhook
+new okapi_hook:duplicatehook
 new limitba[33]
 new localas[33]
 
@@ -939,6 +966,7 @@ public Register_Settings()
 		mkdir(dirmax)
 	}
 }
+
 public RegisterOkapi()
 {
 	new build[varmax]
@@ -1007,27 +1035,27 @@ public RegisterOkapi()
 	
 	if(is_linux_server()){
 		if(spawnlinux){
-			okapi_add_hook(okapi_build_function(spawnlinux,arg_int,arg_string,arg_int),"SV_Spawn_f_Hook")
+			spawnhook = okapi_add_hook(okapi_build_function(spawnlinux,arg_int,arg_string,arg_int),"SV_Spawn_f_Hook")
 			memory2++
 		}
 		else{ErrorSignature();memory=1;}
 		if(sendreslinux){
-			okapi_add_hook(okapi_build_function(sendreslinux,arg_int,arg_string,arg_int),"SV_SendRes_f_Hook")
+			sendreshook = okapi_add_hook(okapi_build_function(sendreslinux,arg_int,arg_string,arg_int),"SV_SendRes_f_Hook")
 			memory2++
 		}
 		else{ErrorSignature();memory=2;}
 		if(saylinux){
-			okapi_add_hook(okapi_build_function(saylinux,arg_string),"Host_Say_f_Hook")
+			sayhook = okapi_add_hook(okapi_build_function(saylinux,arg_string),"Host_Say_f_Hook")
 			memory2++
 		}
 		else{ErrorSignature();memory=3;}
 		if(netlinux){
-			okapi_add_hook(okapi_build_function(netlinux,arg_int,arg_int),"NET_GetLong")
+			netgethook = okapi_add_hook(okapi_build_function(netlinux,arg_int,arg_int),"NET_GetLong")
 			memory2++
 		}
 		else{ErrorSignature();memory=4;}
 		if(connectlinux){
-			okapi_add_hook(okapi_build_function(connectlinux,arg_int),"SV_ConnectClient_Hook")
+			connecthook = okapi_add_hook(okapi_build_function(connectlinux,arg_int),"SV_ConnectClient_Hook")
 			memory2++
 		}
 		else{ErrorSignature();memory=5;}
@@ -1037,108 +1065,106 @@ public RegisterOkapi()
 		}
 		else{ErrorSignature();memory=6;}
 		if(printflinux){
-			okapi_add_hook(okapi_build_function(printflinux,arg_string,arg_string,arg_void),"Con_Printf_Hook")
+			printfhook = okapi_add_hook(okapi_build_function(printflinux,arg_string,arg_string,arg_void),"Con_Printf_Hook")
 			memory2++
 		}
 		else{ErrorSignature();memory=7;}
 		if(queryserver6153linux){
-			okapi_add_hook(okapi_build_function(queryserver6153linux,arg_void),"SV_ConnectionlessPacket_Hook")
+			queryhook = okapi_add_hook(okapi_build_function(queryserver6153linux,arg_void),"SV_ConnectionlessPacket_Hook")
 			memory2++
 		}	
 		else{ErrorSignature();memory=8;}
 		if(infokeylinux){
-			okapi_add_hook(okapi_build_function(infokeylinux,arg_string,arg_string,arg_string,arg_int),"Info_ValueForKey_Hook")
+			infovaluehook = okapi_add_hook(okapi_build_function(infokeylinux,arg_string,arg_string,arg_string,arg_int),"Info_ValueForKey_Hook")
 			memory2++
 		}
 		else{ErrorSignature();memory=9;}
 		if(droplinux){
-			okapi_add_hook(okapi_build_function(droplinux,arg_int,arg_int,arg_string,arg_string),"SV_DropClient_Hook")
+			dropclienthook = okapi_add_hook(okapi_build_function(droplinux,arg_int,arg_int,arg_string,arg_string),"SV_DropClient_Hook")
 			memory2++
 		}
 		else{ErrorSignature();memory=10;}
 		if(munge4554linux){
-			okapi_add_hook(okapi_build_function(munge4554linux,arg_string,arg_int,arg_int),"COM_UnMunge")
+			safefilehook = okapi_add_hook(okapi_build_function(munge4554linux,arg_string,arg_int,arg_int),"COM_UnMunge")
 			memory2++
 		}
 		else{ErrorSignature();memory=11;}	
 		if(safefile4554linux){
-			okapi_add_hook(okapi_build_function(safefile4554linux,arg_string),"IsSafeDownloadFile_Hook")
+			safefilehook = okapi_add_hook(okapi_build_function(safefile4554linux,arg_string),"IsSafeDownloadFile_Hook")
 			memory2++
 		}
 		else{ErrorSignature();memory=12;}
 		if(netchannlinux){
-			okapi_add_hook(okapi_build_function(netchannlinux,arg_int,arg_int,arg_int,arg_int),"Netchan_CheckForCompletion_Hook")
+			netchanhook = okapi_add_hook(okapi_build_function(netchannlinux,arg_int,arg_int,arg_int,arg_int),"Netchan_CheckForCompletion_Hook")
 			memory2++
 		}
 		else{ErrorSignature();memory=13;}
 		if(processfilelinux){
-			okapi_add_hook(okapi_build_function(processfilelinux,arg_string,arg_int,arg_int),"SV_ProcessFile_Hook")
+			processhook = okapi_add_hook(okapi_build_function(processfilelinux,arg_string,arg_int,arg_int),"SV_ProcessFile_Hook")
 			memory2++
 		}
 		else{ErrorSignature();memory=14;}
 		if(fsopenlinux){
-			okapi_add_hook(okapi_build_function(fsopenlinux,arg_string,arg_string),"FS_Open_Hook")
+			openfilehook = okapi_add_hook(okapi_build_function(fsopenlinux,arg_string,arg_string),"FS_Open_Hook")
 			memory2++
 		}
 		else{ErrorSignature();memory=15;}
 		if(comfilelinux){
-			okapi_add_hook(okapi_build_function(comfilelinux,arg_string,arg_void,arg_int),"COM_FileWrite_Hook")
+			writefilehook = okapi_add_hook(okapi_build_function(comfilelinux,arg_string,arg_void,arg_int),"COM_FileWrite_Hook")
 			memory2++
 		}
 		else{ErrorSignature();memory=16;}
 		if(runcmdlinux){
-			okapi_add_hook(okapi_build_function(runcmdlinux,arg_int),"SV_RunCmd_Hook")
+			//okapi_add_hook(okapi_build_function(runcmdlinux,arg_int),"SV_RunCmd_Hook")
 			memory2++
 		}
 		else{ErrorSignature();memory=17;}
 		if(newflinux){
-			okapi_add_hook(okapi_build_function(newflinux,arg_void),"SV_New_f_Hook")
+			newhook = okapi_add_hook(okapi_build_function(newflinux,arg_void),"SV_New_f_Hook")
 			memory2++
 		}
 		else{ErrorSignature();memory=18;}
 		if(addiplinux){
-			okapi_add_hook(okapi_build_function(addiplinux,arg_void),"SV_Addip_f_Hook")
+			addiphook = okapi_add_hook(okapi_build_function(addiplinux,arg_void),"SV_Addip_f_Hook")
 			memory2++
 		}
 		else{ErrorSignature();memory=19;}
 		if(svrconlinux){
-			okapi_add_hook(okapi_build_function(svrconlinux,arg_string),"SV_Rcon_Hook")
+			rconhook = okapi_add_hook(okapi_build_function(svrconlinux,arg_string),"SV_Rcon_Hook")
 			memory2++
 		}
 		else{ErrorSignature();memory=20;}
 		if(clc_resxlinux){
-			okapi_add_hook(okapi_build_function(clc_resxlinux,arg_void),"SV_ParseResourceList_Fix")
+			resourceslisthook = okapi_add_hook(okapi_build_function(clc_resxlinux,arg_void),"SV_ParseResourceList_Fix")
 			memory2++
 		}
 		else{ErrorSignature();memory=21;}
 		if(!equali(build,"1.1.2.7,48,6153")){
 			if(clc_voicedataxlinux){
-				okapi_add_hook(okapi_build_function(clc_voicedataxlinux,arg_void),"SV_ParseVoiceData_Fix")
+				voicehook = okapi_add_hook(okapi_build_function(clc_voicedataxlinux,arg_void),"SV_ParseVoiceData_Fix")
 				memory2++
 			}
 			else{
 				ErrorSignature();memory=22;
 			}
 			if(clc_stringcmdlinux){
-				okapi_add_hook(okapi_build_function(clc_stringcmdlinux,arg_void),"SV_ParseStringCommand_fix")
+				stringcmdhook = okapi_add_hook(okapi_build_function(clc_stringcmdlinux,arg_void),"SV_ParseStringCommand_fix")
 				memory2++
 			}
 		}
 		else{ErrorSignature();memory=23;}
-		if(get_pcvar_num(ParseConsistencyResponse)==-1){
-			if(badparselinux){
-				okapi_add_hook(okapi_build_function(badparselinux,arg_void),"SV_ParseConsistencyResponse_fix")
-				memory2++
-			}
-			else{ErrorSignature();memory=24;}
+		if(badparselinux){
+			parsehook = okapi_add_hook(okapi_build_function(badparselinux,arg_void),"SV_ParseConsistencyResponse_fix")
+			memory2++
 		}
+		else{ErrorSignature();memory=24;}
 		if(hostkillf_linux){
-			okapi_add_hook(okapi_build_function(hostkillf_linux,arg_void),"Host_Kill_f_fix")
+			killhook = okapi_add_hook(okapi_build_function(hostkillf_linux,arg_void),"Host_Kill_f_fix")
 			memory2++
 		}
 		else{ErrorSignature();memory=25;}
 		if(nameslinux){
-			okapi_add_hook(okapi_build_function(nameslinux,arg_string,arg_int,arg_int),"SV_CheckForDuplicateNames")
+			duplicatehook = okapi_add_hook(okapi_build_function(nameslinux,arg_string,arg_int,arg_int),"SV_CheckForDuplicateNames")
 			memory2++
 		}
 		else{ErrorSignature();memory=26;}
@@ -1146,37 +1172,37 @@ public RegisterOkapi()
 	else{
 		
 		if(spawn){
-			okapi_add_hook(okapi_build_function(spawn,arg_int,arg_string,arg_int),"SV_Spawn_f_Hook")
+			spawnhook = okapi_add_hook(okapi_build_function(spawn,arg_int,arg_string,arg_int),"SV_Spawn_f_Hook")
 			memory2++
 		}
 		else{ErrorSignature();memory=1;}
 		if(sendres){
-			okapi_add_hook(okapi_build_function(sendres,arg_int,arg_string,arg_int),"SV_SendRes_f_Hook")
+			sendreshook = okapi_add_hook(okapi_build_function(sendres,arg_int,arg_string,arg_int),"SV_SendRes_f_Hook")
 			memory2++
 		}
 		else{ErrorSignature();memory=2;}
 		if(say){
-			okapi_add_hook(okapi_build_function(say,arg_string),"Host_Say_f_Hook")
+			sayhook = okapi_add_hook(okapi_build_function(say,arg_string),"Host_Say_f_Hook")
 			memory2++
 		}
 		else{ErrorSignature();memory=3;}
 		if(net){
-			okapi_add_hook(okapi_build_function(net,arg_int,arg_int),"NET_GetLong")
+			netgethook = okapi_add_hook(okapi_build_function(net,arg_int,arg_int),"NET_GetLong")
 			memory2++
 		}
 		else{ErrorSignature();memory=4;}
 		if(connect){
-			okapi_add_hook(okapi_build_function(connect,arg_int),"SV_ConnectClient_Hook")
+			connecthook = okapi_add_hook(okapi_build_function(connect,arg_int),"SV_ConnectClient_Hook")
 			memory2++
 		}
 		else{ErrorSignature();memory=5;}
 		if(reject){
-			okapi_add_hook(okapi_build_function(reject,arg_int,arg_int,arg_string),"SV_RejectConnection_Hook")
+			rejecthook = okapi_add_hook(okapi_build_function(reject,arg_int,arg_int,arg_string),"SV_RejectConnection_Hook")
 			memory2++
 		}
 		else{ErrorSignature();memory=6;}
 		if(printf){
-			okapi_add_hook(okapi_build_function(printf,arg_string,arg_string,arg_void),"Con_Printf_Hook")
+			printfhook = okapi_add_hook(okapi_build_function(printf,arg_string,arg_string,arg_void),"Con_Printf_Hook")
 			memory2++
 		}
 		else{ErrorSignature();memory=7;}
@@ -1189,33 +1215,33 @@ public RegisterOkapi()
 		}
 		else{
 			if(queryserver4554){
-				okapi_add_hook(okapi_build_function(queryserver4554,arg_void),"SV_ConnectionlessPacket_Hook")
+				queryhook = okapi_add_hook(okapi_build_function(queryserver4554,arg_void),"SV_ConnectionlessPacket_Hook")
 				memory2++
 			}	
 			else{ErrorSignature();memory=8;}
 		}
 		if(infokey){
-			okapi_add_hook(okapi_build_function(infokey,arg_string,arg_string,arg_string),"Info_ValueForKey_Hook")
+			infovaluehook = okapi_add_hook(okapi_build_function(infokey,arg_string,arg_string,arg_string),"Info_ValueForKey_Hook")
 			memory2++
 		}
 		else{ErrorSignature();memory=9;}
 		
 		if(drop){
-			okapi_add_hook(okapi_build_function(drop,arg_int,arg_int,arg_int,arg_string),"SV_DropClient_Hook")
+			dropclienthook = okapi_add_hook(okapi_build_function(drop,arg_int,arg_int,arg_int,arg_string),"SV_DropClient_Hook")
 			memory2++
 		}
 		else{ErrorSignature();memory=10;server_print("b");}
 		
 		if(equali(build,"1.1.2.7,48,6153")){
 			if(munge6153){
-				okapi_add_hook(okapi_build_function(munge6153,arg_string,arg_int,arg_int),"COM_UnMunge")
+				mungehook = okapi_add_hook(okapi_build_function(munge6153,arg_string,arg_int,arg_int),"COM_UnMunge")
 				memory2++
 			}
 			else{ErrorSignature();memory=11;}
 		}
 		else{
 			if(munge4554){
-				okapi_add_hook(okapi_build_function(munge4554,arg_string,arg_int,arg_int),"COM_UnMunge")
+				mungehook = okapi_add_hook(okapi_build_function(munge4554,arg_string,arg_int,arg_int),"COM_UnMunge")
 				memory2++
 				//(qboolean server, netchan_t *chan, const char *filename, unsigned char *uncompressed_pbuf, int uncompressed_size)
 			}
@@ -1223,46 +1249,46 @@ public RegisterOkapi()
 		}
 		if(equali(build,"1.1.2.7,48,6153")){
 			if(safefile6153){
-				okapi_add_hook(okapi_build_function(safefile6153,arg_string),"IsSafeDownloadFile_Hook")
+				safefilehook = okapi_add_hook(okapi_build_function(safefile6153,arg_string),"IsSafeDownloadFile_Hook")
 				memory2++
 			}
 			else{ErrorSignature();memory=12;}
 		}
 		else{
 			if(safefile4554){
-				okapi_add_hook(okapi_build_function(safefile4554,arg_string),"IsSafeDownloadFile_Hook")
+				safefilehook = okapi_add_hook(okapi_build_function(safefile4554,arg_string),"IsSafeDownloadFile_Hook")
 				memory2++
 			}
 			else{ErrorSignature();memory=12;}
 		}
 		if(equali(build,"1.1.2.7,48,6153")){
 			if(netchann){
-				okapi_add_hook(okapi_build_function(netchann,arg_int,arg_int,arg_int,arg_int),"Netchan_CheckForCompletion_Hook")
+				netchanhook = okapi_add_hook(okapi_build_function(netchann,arg_int,arg_int,arg_int,arg_int),"Netchan_CheckForCompletion_Hook")
 				memory2++
 			}
 			else{ErrorSignature();memory=13;}
 		}
 		else{
 			if(netchann4554){
-				okapi_add_hook(okapi_build_function(netchann4554,arg_int,arg_int,arg_int,arg_int),"Netchan_CheckForCompletion_Hook")
+				netchanhook = okapi_add_hook(okapi_build_function(netchann4554,arg_int,arg_int,arg_int,arg_int),"Netchan_CheckForCompletion_Hook")
 				memory2++
 			}
 			else{ErrorSignature();memory=13;}
 		}
 	}
 	if(processfile){
-		okapi_add_hook(okapi_build_function(processfile,arg_string,arg_void,arg_int),"SV_ProcessFile_Hook")
+		processhook = okapi_add_hook(okapi_build_function(processfile,arg_string,arg_void,arg_int),"SV_ProcessFile_Hook")
 		//okapi_add_hook(okapi_build_function(processfile,arg_string,arg_void,arg_int),"SV_ProcessFile_Hook")
 		memory2++
 	}
 	else{ErrorSignature();memory=14;}
 	if(fsopen){
-		okapi_add_hook(okapi_build_function(fsopen,arg_string,arg_string),"FS_Open_Hook")
+		openfilehook = okapi_add_hook(okapi_build_function(fsopen,arg_string,arg_string),"FS_Open_Hook")
 		memory2++
 	}
 	else{ErrorSignature();memory=15;}
 	if(comfile){
-		okapi_add_hook(okapi_build_function(comfile,arg_string,arg_void,arg_int),"COM_FileWrite_Hook")
+		writefilehook = okapi_add_hook(okapi_build_function(comfile,arg_string,arg_void,arg_int),"COM_FileWrite_Hook")
 		memory2++
 	}
 	else{ErrorSignature();memory=16;}
@@ -1273,70 +1299,70 @@ public RegisterOkapi()
 	else{ErrorSignature();memory=17;}
 	if(equali(build,"1.1.2.7,48,6153")){
 		if(newf6153){
-			okapi_add_hook(okapi_build_function(newf6153,arg_void),"SV_New_f_Hook")
+			newhook = okapi_add_hook(okapi_build_function(newf6153,arg_void),"SV_New_f_Hook")
 			memory2++
 		}
 		else{ErrorSignature();memory=18;}
 	}
 	else{
 		if(newf){
-			okapi_add_hook(okapi_build_function(newf,arg_void),"SV_New_f_Hook")
+			newhook = okapi_add_hook(okapi_build_function(newf,arg_void),"SV_New_f_Hook")
 			memory2++
 		}	
 		else{ErrorSignature();memory=18;}
 		memory2++
 	}
 	if(addip){
-		okapi_add_hook(okapi_build_function(addip,arg_void),"SV_Addip_f_Hook")
+		addiphook =okapi_add_hook(okapi_build_function(addip,arg_void),"SV_Addip_f_Hook")
 		memory2++
 	}
 	else{ErrorSignature();memory=19;}
 	if(svrcon){
-		okapi_add_hook(okapi_build_function(svrcon,arg_string),"SV_Rcon_Hook")
+		rconhook = okapi_add_hook(okapi_build_function(svrcon,arg_string),"SV_Rcon_Hook")
 		memory2++
 	}
 	else{ErrorSignature();memory=20;}
 	if(clc_resx){
-		okapi_add_hook(okapi_build_function(clc_resx,arg_void),"SV_ParseResourceList_Fix")
+		resourceslisthook = okapi_add_hook(okapi_build_function(clc_resx,arg_void),"SV_ParseResourceList_Fix")
 		memory2++
 	}
 	else{ErrorSignature();memory=21;}
 	if(!equali(build,"1.1.2.7,48,6153")){
 		if(clc_voicedatax){
 			memory2++
-			okapi_add_hook(okapi_build_function(clc_voicedatax,arg_void),"SV_ParseVoiceData_Fix")
+			voicehook = okapi_add_hook(okapi_build_function(clc_voicedatax,arg_void),"SV_ParseVoiceData_Fix")
 		}
 		else{
 		ErrorSignature();memory=22;}
 	}
 	if(clc_stringcmd){
-		okapi_add_hook(okapi_build_function(clc_stringcmd,arg_void),"SV_ParseStringCommand_fix")
+		stringcmdhook = okapi_add_hook(okapi_build_function(clc_stringcmd,arg_void),"SV_ParseStringCommand_fix")
 		memory2++
 	}
 	else{ErrorSignature();memory=23;}
 	if(get_pcvar_num(ParseConsistencyResponse)==-1){
 		if(parsebad){
-			okapi_add_hook(okapi_build_function(parsebad,arg_void),"SV_ParseConsistencyResponse_fix")
+			parsehook =	okapi_add_hook(okapi_build_function(parsebad,arg_void),"SV_ParseConsistencyResponse_fix")
 			memory2++
 		}
 		else{ErrorSignature();memory=24;}
 	}
 	if(equali(build,"1.1.2.7,48,6153")){
 		if(hostkillf6153){
-			okapi_add_hook(okapi_build_function(hostkillf6153,arg_void),"Host_Kill_f_fix")
+			killhook = okapi_add_hook(okapi_build_function(hostkillf6153,arg_void),"Host_Kill_f_fix")
 			memory2++
 		}
 		else{register_forward(FM_ClientKill,"Host_Kill_f_fix");memory=25,memory2++;}
 	}
 	else{
 		if(hostkillf){
-			okapi_add_hook(okapi_build_function(hostkillf,arg_void),"Host_Kill_f_fix")
+			killhook = okapi_add_hook(okapi_build_function(hostkillf,arg_void),"Host_Kill_f_fix")
 			memory2++
 		}
 		else{register_forward(FM_ClientKill,"Host_Kill_f_fix");memory=25,memory2++;}
 	}
 	if(nameswin){
-		okapi_add_hook(okapi_build_function(nameswin,arg_string,arg_int,arg_int),"SV_CheckForDuplicateNames")
+		duplicatehook = okapi_add_hook(okapi_build_function(nameswin,arg_string,arg_int,arg_int),"SV_CheckForDuplicateNames")
 		memory2++
 	}
 	else{ErrorSignature();memory=26;}
