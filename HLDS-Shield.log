@@ -1,0 +1,8 @@
+L 07/09/2018 - 22:00:53: Log file started (file "cstrike\addons\amxmodx\configs\settings\HLDS-Shield.log") (game "cstrike") (amx "1.8.1.3746")
+L 07/09/2018 - 22:00:53: [HLDS-Shield] User "3T5jFxUV7F" with IP (192.168.0.52) has been detected for CSTRIKE_SENDRES ||| Argument : sendres  [1/5]
+L 07/09/2018 - 22:00:53: [HLDS-Shield] User "3T5jFxUV7F" with IP (192.168.0.52) has been detected for CSTRIKE_SENDRES ||| Argument : sendres  [2/5]
+L 07/09/2018 - 22:00:53: [HLDS-Shield] User "3T5jFxUV7F" with IP (192.168.0.52) has been detected for CSTRIKE_SENDRES ||| Argument : sendres  [3/5]
+L 07/09/2018 - 22:00:53: [HLDS-Shield] User "3T5jFxUV7F" with IP (192.168.0.52) has been detected for CSTRIKE_SENDRES ||| Argument : sendres  [4/5]
+L 07/09/2018 - 22:00:53: [HLDS-Shield] User "3T5jFxUV7F" with IP (192.168.0.52) has been detected for CSTRIKE_SUSPICIOUS [1/5]
+L 07/09/2018 - 22:00:53: [HLDS-Shield] User "3T5jFxUV7F" with IP (192.168.0.52) has been detected for CSTRIKE_SUSPICIOUS [2/5]
+L 07/09/2018 - 22:00:54: [HLDS-Shield] User "3T5jFxUV7F" with IP (192.168.0.52) has been detected for CSTRIKE_CONNECTIONSPAM ||| Argument : new  [1/5]
