@@ -44,7 +44,6 @@ public plugin_precache()
 	LimitPrintf=register_cvar("shield_printf_limit","5")
 	LimitQuery=register_cvar("shield_query_limit","40")
 	LimitMunge=register_cvar("shield_munge_comamnd_limit","15")
-	LimitSV_ConnectClient=register_cvar("shield_sv_connectclient_limit","3")
 	LimitExploit=register_cvar("shield_exploit_cmd_limit","5")
 	LimitImpulse=register_cvar("shield_sv_runcmd_limit","60")
 	LimitResources=register_cvar("shield_sv_parseresource_limit","1")
@@ -74,6 +73,8 @@ public plugin_precache()
 	SecureServerOkapi_new();
 	RegisterOkapi();
 	RegisterOrpheu();
+	
+	server_cmd("exec %s",loc2)
 	
 }
 
@@ -1371,8 +1372,6 @@ public FalseAllFunction(id)
 	locala[id] = 0x00
 	tralala = 0x00
 	overflowed[id] = 0x00
-	floodtimer = 0x00
-	//limitba[id] = 0x00
 	limit[id] = 0x00
 	local = 0x00
 	limitb[id] = 0x00
