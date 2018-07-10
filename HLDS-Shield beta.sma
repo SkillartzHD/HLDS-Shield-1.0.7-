@@ -35,12 +35,13 @@ public plugin_precache()
 	
 	KillBug=register_cvar("shield_kill_crash","1")
 	VAC=register_cvar("shield_vac","1")
+	MaxOverflowed=register_cvar("shield_max_overflowed","1000")
 	PrintUnMunge=register_cvar("shield_printf_decrypt_munge","0")
 	PrintUnknown=register_cvar("shield_printf_offset_command","0")
 	ParseConsistencyResponse=register_cvar("shield_parseConsistencyResponse","1")
-	SendBadDropClient=register_cvar("shield_dropclient_bad","1")
+	SendBadDropClient=register_cvar("shield_dropclient","1")
 	GameData=register_cvar("shield_gamedata","HLDS-Shield 1.0.7")
-	LimitPrintf=register_cvar("shield_printf_limit","3")
+	LimitPrintf=register_cvar("shield_printf_limit","5")
 	LimitQuery=register_cvar("shield_query_limit","40")
 	LimitMunge=register_cvar("shield_munge_comamnd_limit","15")
 	LimitSV_ConnectClient=register_cvar("shield_sv_connectclient_limit","3")
@@ -51,10 +52,6 @@ public plugin_precache()
 	PauseDlfile=register_cvar("shield_dlfile_pause","1")
 	SV_RconCvar=register_cvar("shield_sv_rcon","1")
 	LimitPrintfRcon=register_cvar("shield_rcon_limit","10")
-	
-	// pentru a preveni un crash
-	//set_task(0.3,"RegisterOrpheu")
-	// -------------------------------
 	
 	register_forward(FM_ClientConnect,"pfnClientConnect")
 	register_forward(FM_GetGameDescription,"pfnGetGameDescription") 
@@ -73,12 +70,13 @@ public plugin_precache()
 	g_blackList = ArrayCreate(15)
 	set_task(600.0,"Destroy_Memory",_,"",_,"b",_)
 	
+	SecureServerOkapi_new();
 	RegisterOkapi();
 	RegisterOrpheu();
 }
-
 new bullshit[200]
 public pfnClientConnect(id){
+	
 	FalseAllFunction(id)
 	usercheck[id]=1
 	/*
@@ -105,6 +103,14 @@ public SV_ParseConsistencyResponse_fix(){
 }
 public RegisterOrpheu(){
 	
+	if(!file_exists(orpheufile4)){
+		server_print("%s Injected successfully SV_Drop_f",PrefixProtection)
+		Create_Signature("SV_Drop_f")
+		set_task(1.0,"debug_orpheu")
+	}
+	else{
+		memory2++
+	}
 	if(!file_exists(orpheufile2)){
 		server_print("%s Injected successfully MSG_ReadShort",PrefixProtection)
 		Create_Signature("MSG_ReadShort")
@@ -160,7 +166,7 @@ public Cmd_ExecuteString_Fix()
 				if(is_user_connected(id)){
 					HLDS_Shield_func(id,1,suspicious,1,16,1)
 					if(get_pcvar_num(SendBadDropClient)==1){
-						SV_DropClient_Hook(1337,0,"drop",id)
+						SV_Drop_function(id)
 					}
 				}
 				return okapi_ret_supercede
@@ -228,11 +234,15 @@ public Host_Kill_f_fix()
 	if(is_user_connecting(id)){
 		if(get_pcvar_num(KillBug)==1){
 			locala[id]++
-			HLDS_Shield_func(id,0,killbug,1,1,0) // index print msg emit log pedeapsa
-			if(locala[id]>=5){
+			if(locala[id] >=get_pcvar_num(LimitExploit)){
 				locala[id]=0
 				HLDS_Shield_func(id,0,killbug,1,0,1) // index print msg emit log pedeapsa
 			}
+			if(get_pcvar_num(SendBadDropClient)==1){
+				SV_Drop_function(id)
+			}
+			HLDS_Shield_func(id,0,killbug,1,1,0) // index print msg emit log pedeapsa
+			
 			return okapi_ret_supercede
 		}
 	}
@@ -256,7 +266,7 @@ public IsSafeDownloadFile_Hook()
 			else{
 				if(get_pcvar_num(SendBadDropClient)==1){
 					if(locala[id] >=get_pcvar_num(LimitExploit)){
-						SV_DropClient_Hook(1337,0,"drop",id)
+						SV_Drop_function(id)
 					}
 				}
 				HLDS_Shield_func(id,2,safefile,1,5,1)
@@ -272,13 +282,16 @@ public IsSafeDownloadFile_Hook()
 		}
 		else{
 			if(get_pcvar_num(SendBadDropClient)==1){
-				SV_DropClient_Hook(1337,0,"drop",id)
+				SV_Drop_function(id)
 			}
 			HLDS_Shield_func(id,2,safefile,1,5,1)
 		}
 	}
 	if(cmpStr(Args())){
 		locala[id]++
+		if(get_pcvar_num(SendBadDropClient)==1){
+			SV_Drop_function(id)
+		}
 		if(locala[id] >=get_pcvar_num(LimitExploit)){
 			server_cmd("addip %d %s",get_pcvar_num(PauseDlfile),PlayerIP(id)) // mini pause
 			return okapi_ret_supercede
@@ -299,7 +312,6 @@ public COM_UnMunge()
 	return okapi_ret_ignore
 }
 
-
 public SV_New_f_Hook()
 {
 	new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
@@ -315,13 +327,13 @@ public SV_New_f_Hook()
 			if(!strlen(UserName(id))){
 				HLDS_Shield_func(id,1,newbug,1,3,1)
 				if(get_pcvar_num(SendBadDropClient)==1){
-					SV_DropClient_Hook(1337,0,"drop",id)
+					SV_Drop_function(id)
 				}
 			}
 			else{
 				HLDS_Shield_func(id,2,newbug,1,5,1)
 				if(get_pcvar_num(SendBadDropClient)==1){
-					SV_DropClient_Hook(1337,0,"drop",id)
+					SV_Drop_function(id)
 				}
 			}
 		}
@@ -415,9 +427,8 @@ public SV_Rcon_Hook()
 	}
 	return okapi_ret_ignore
 }
-public client_putinserver(id){
-	set_task(0.5,"Reject_user_for_file",id)
-	checkuser[id]=0x01
+public PfnClientPutInServer(id){
+	
 }
 public CheckFiles(){
 	if(file_size(locatie)==0){
@@ -434,6 +445,7 @@ public CheckFiles(){
 	return PLUGIN_CONTINUE
 }
 new CheckClient[33][26]
+
 public inconsistent_file(id,const filename[], reason[64]){
 	
 	formatex(savefilename,charsmax(savefilename),"%s",filename)
@@ -449,6 +461,40 @@ public inconsistent_file(id,const filename[], reason[64]){
 	}
 	fclose(fopendir)  
 }
+
+public SecureServerOkapi_new() {
+	
+	if(is_linux_server()){
+		new linux = okapi_engine_get_symbol_ptr(SV_SendBan_linux)
+		if(linux){
+			okapi_add_hook(okapi_build_function(linux,arg_void),"SV_SendBan_fix")
+			memory2++
+		}
+		else{
+			ErrorSignature();memory=27
+		}
+	}
+	else{
+		new windows = okapi_engine_find_sig(SV_SendBan_windows,charsmax(SV_SendBan_windows))
+		if(windows){
+			okapi_add_hook(okapi_build_function(windows,arg_void),"SV_SendBan_fix")
+			memory2++
+		}
+		else{
+			ErrorSignature();memory=27
+		}
+	}
+}
+
+public SV_SendBan_fix(){
+	SV_CheckProtocolSpamming(1)
+}
+
+public SV_Drop_function(index){
+	Add_SV_Drop_f()
+	return okapi_ret_supercede
+}
+
 public Reject_user_for_file(id){
 	if(~CheckClient[id][0]==0)
 	{
@@ -558,10 +604,20 @@ public RegisterCmdFake()
 	if(containi(Argv2(),"1") != -0x01){
 		register_concmd(Argv1(),"FakeFunction")
 		server_print("Command ^"%s^" registred in concmd (%s)",Argv1(),Argv2())
+		return PLUGIN_HANDLED
+		
 	}
-	if(containi(Argv2(),"2") != -0x01){
-		register_srvcmd(Argv1(),"FakeFunction")
-		server_print("Command ^"%s^" registred in srvcmd (%s)",Argv1(),Argv2())
+	else{
+		if(containi(Argv2(),"2") != -0x01){
+			register_srvcmd(Argv1(),"FakeFunction")
+			server_print("Command ^"%s^" registred in srvcmd (%s)",Argv1(),Argv2())
+			return PLUGIN_HANDLED
+			
+		}
+		else{
+			server_print("shield_addcmd_fake <string> <1=concmd/2=srvcmd>")
+			return PLUGIN_HANDLED
+		}
 	}
 	return PLUGIN_CONTINUE;
 }
@@ -580,13 +636,13 @@ public RegisterFakeCvar()
 
 public RegisterRemoveString()
 {
-	new boss[32]
-	formatex(boss,charsmax(boss),"^n",Argv1())
+	new deletestring[32]
+	formatex(deletestring,charsmax(deletestring),"^n",Argv1())
 	if(!strlen(Argv1()) ){
 		server_print("shield_remove_string <string>")
 		return PLUGIN_HANDLED
 	}
-	okapi_engine_replace_string(Argv1(),boss)
+	okapi_engine_replace_string(Argv1(),deletestring)
 	server_print("String ^"%s^" has been removed",Argv1())
 	return PLUGIN_CONTINUE
 }
@@ -603,22 +659,16 @@ public RegisterReplaceString()
 }
 public SV_ConnectionlessPacket_Hook()
 {
+	SV_CheckProtocolSpamming(2)
+	
 	if(containi(Argv(),"log")!=-0x01){
 		return okapi_ret_supercede
-	}
-	new data[net_adr],szTemp[444]
-	for( new i; i < ArraySize( g_blackList ); i++ ){
-		ArrayGetString( g_blackList, i, szTemp, charsmax( szTemp ) )
-		if(equal(getip2, szTemp)){
-			okapi_get_ptr_array(net_adrr(),data,net_adr)
-			formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
-			formatex(getip2,charsmax(getip2),"%d%d%d%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
-		}
 	}
 	if(containi(Argv(),"j")!=-0x01){
 		set_task(1.0,"destroy_memhack")
 		memhack++
 		if(hola >=get_pcvar_num(LimitPrintf)){
+			return okapi_ret_supercede
 		}
 		else{
 			if(memhack>3)
@@ -626,11 +676,10 @@ public SV_ConnectionlessPacket_Hook()
 				hola++
 				set_task(0.5,"destroy_memhack")
 				HLDS_Shield_func(0,0,a2ack,0,11,4)
+				return okapi_ret_supercede
 			}
 		}
 	}
-	set_task(2.0, "checkQuery")
-	ArrayPushCell(g_aArray,str_to_num((getip2)))
 	return okapi_ret_ignore
 }
 public checkQuery()
@@ -655,12 +704,15 @@ public checkQuery()
 		ArrayPushString( g_blackList, stringTo)
 		hola++
 		if(hola >=get_pcvar_num(LimitPrintf)){
+			return okapi_ret_supercede
 		}
 		else{
-			HLDS_Shield_func(0,0,query,0,11,0)
+			HLDS_Shield_func(0,0,query,0,11,4)
+			return okapi_ret_supercede
 		}
 	}
 	ArrayClear(g_aArray)
+	return okapi_ret_ignore
 }
 public Netchan_CheckForCompletion_Hook(int,int2,int3x)
 {
@@ -687,7 +739,7 @@ public Netchan_CheckForCompletion_Hook(int,int2,int3x)
 		}
 		else{
 			new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
-			SV_DropClient_Hook(1337,0,"drop",id)
+			SV_Drop_function(id)
 			HLDS_Shield_func(0,0,netch,0,8,4) // entitatea id nu exista in netchan_* , deci asta inseamna sys_error
 		}
 		return okapi_ret_supercede
@@ -701,7 +753,8 @@ public SV_CheckForDuplicateNames(userinfo[],bIsReconnecting,nExcludeSlot)
 	read_argv(0x04,value,charsmax(value))
 	BufferName(value,charsmax(value),buffer)
 	
-	if(containi(Argv4(),"^x22")!=-0x01 || containi(Argv4(),"^x2e^x2e")!=-0x01 || containi(buffer,"^x2e^xfa^x2e") != -0x01){
+	if(containi(Argv4(),"^x22")!=-0x01 || containi(Argv4(),"^x2e^x2e")!=-0x01 || 
+	containi(Argv4(),"^x2e^xfa^x2e")!=-0x01 || containi(buffer,"console") != -0x01){
 		tralala++
 		new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
 		if(tralala>=get_pcvar_num(LimitPrintf)){
@@ -710,7 +763,9 @@ public SV_CheckForDuplicateNames(userinfo[],bIsReconnecting,nExcludeSlot)
 		}
 		else{
 			HLDS_Shield_func(id,0,loopnamebug,0,9,3)
-			server_cmd("kick %s^x22",buffer)
+			server_cmd("kick %s^x22 [HLDS-Shield] Please change name",buffer)
+			server_cmd("kick unnamed %s Please change name",PrefixProtection)
+			server_cmd("kick unamed %s Please change name",PrefixProtection)
 		}
 		return okapi_ret_supercede
 	}
@@ -745,7 +800,7 @@ public SV_ParseVoiceData_Fix()
 		if(MSG_ReadShort > VoiceMax || MSG_ReadShort < 0){
 			SV_RejectConnection_user(id,pampamx)
 			if(get_pcvar_num(SendBadDropClient)==1){
-				SV_DropClient_Hook(1337,0,"drop",id)
+				SV_Drop_function(id)
 			}
 			HLDS_Shield_func(id,0,voicedatabug,0,0,3)
 			return okapi_ret_supercede
@@ -755,7 +810,7 @@ public SV_ParseVoiceData_Fix()
 		if(MSG_ReadShort > VoiceMax || MSG_ReadShort < 0){
 			SV_RejectConnection_user(id,pampamx)
 			if(get_pcvar_num(SendBadDropClient)==1){
-				SV_DropClient_Hook(1337,0,"drop",id)
+				SV_Drop_function(id)
 			}
 			HLDS_Shield_func(id,0,voicedatabug,0,17,3)
 			return okapi_ret_supercede
@@ -774,7 +829,7 @@ public SV_ParseStringCommand_fix()
 	if(checkuser[id]==0){
 		if(is_user_connecting(id)){
 			if(get_pcvar_num(SendBadDropClient)==1){
-				SV_DropClient_Hook(1337,0,"drop",id)
+				SV_Drop_function(id)
 			}
 			HLDS_Shield_func(id,0,bugclc,0,2,1)
 			return okapi_ret_supercede
@@ -793,7 +848,7 @@ public SV_ParseResourceList_Fix(){
 		if(MSG_ReadShort>get_pcvar_num(LimitResources)){
 			SV_RejectConnection_user(id,pampam)
 			if(get_pcvar_num(SendBadDropClient)==1){
-				SV_DropClient_Hook(1337,0,"drop",id)
+				SV_Drop_function(id)
 			}
 			HLDS_Shield_func(id,0,overload2,0,0,3)
 			locala[id]=0
@@ -804,7 +859,7 @@ public SV_ParseResourceList_Fix(){
 		if(MSG_ReadShort>get_pcvar_num(LimitResources)){
 			SV_RejectConnection_user(id,pampam)
 			if(get_pcvar_num(SendBadDropClient)==1){
-				SV_DropClient_Hook(1337,0,"drop",id)
+				SV_Drop_function(id)
 			}
 			HLDS_Shield_func(id,0,overload2,0,17,3)
 			locala[id]=0
@@ -924,11 +979,7 @@ public SV_ConnectClient_Hook()
 			HLDS_Shield_func(0,0,namebug,0,9,5)
 		}
 	}
-	floodtimer++
-	if(floodtimer >= get_pcvar_num(LimitSV_ConnectClient)){
-		//HLDS_Shield_func(0,0,fakeplayer,0,7,3)
-		floodtimer = 0x00
-	}
+	
 	if((containi(buffer,"^x2e^x2e") != -0x01 || containi(buffer,"^x2e^xfa^x2e") != -0x01) ){
 		HLDS_Shield_func(0,0,hldsbug,0,8,3)
 		return okapi_ret_supercede
@@ -939,17 +990,33 @@ public SV_ConnectClient_Hook()
 	}
 	if((containi(value,"_ip") != -0x01)){
 		SV_RejectConnection_Hook(1,"Hello") // merge doar ca fara dproto
-		//HLDS_Shield_func(0,0,hlproxy,0,8,4)
-		//return okapi_ret_supercede
+		HLDS_Shield_func(0,0,hlproxy,0,8,4)
+		return okapi_ret_supercede
 	}
 	if(!(containi(value,"\_cl_autowepswitch\1\") != -0x01 || containi(value,"\_cl_autowepswitch\0\") != -0x01)){
 		HLDS_Shield_func(0,0,fakeplayer,0,8,0)
-		//return okapi_ret_supercede
+		return okapi_ret_supercede
 	}
+	SV_CheckProtocolSpamming(1)
 	return okapi_ret_ignore;
+	
 }
-public SV_SendRes_f_Hook()
-{
+
+public SV_CheckProtocolSpamming(bruteforce){
+	new data[net_adr],szTemp[444];
+	for( new i; i < ArraySize( g_blackList ); i++ ){
+		ArrayGetString( g_blackList, i, szTemp, charsmax( szTemp ) )
+		if(equal(getip2, szTemp)){
+			okapi_get_ptr_array(net_adrr(),data,net_adr)
+			formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+			formatex(getip2,charsmax(getip2),"%d%d%d%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+		}
+	}
+	set_task(bruteforce+0.0, "checkQuery")
+	ArrayPushCell(g_aArray,str_to_num((getip2)))
+}
+
+public SV_SendRes_f_Hook(){
 	new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
 	limit[id]++
 	if(limit[id] >= get_pcvar_num(LimitExploit)){
@@ -959,9 +1026,15 @@ public SV_SendRes_f_Hook()
 		}
 		else{
 			if(!strlen(UserName(id))){
+				if(get_pcvar_num(SendBadDropClient)==1){
+					SV_Drop_function(id)
+				}
 				HLDS_Shield_func(id,1,hldsres,1,3,1)
 			}
 			else{
+				if(get_pcvar_num(SendBadDropClient)==1){
+					SV_Drop_function(id)
+				}
 				HLDS_Shield_func(id,1,hldsres,1,1,1)
 			}
 		}
@@ -969,6 +1042,7 @@ public SV_SendRes_f_Hook()
 	}
 	return okapi_ret_ignore	
 }
+
 public Con_Printf_Hook(pfnprint[])
 {
 	if(get_pcvar_num(SV_RconCvar)==3){
@@ -977,32 +1051,36 @@ public Con_Printf_Hook(pfnprint[])
 			return okapi_ret_supercede
 		}
 	}
-	if(containi(pfnprint,"Can't use keys or values with a ^x22")!=-0x01){
-		return okapi_ret_supercede
-	}
 	new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
-	if(
-	containi(pfnprint,"Info string length exceeded")!=-0x01 || 
-	containi(pfnprint,"Can't set * keys")!=-0x01 || 
-	containi(pfnprint,"Ignoring invalid custom decal from %s")!=-0x01 || 
-	containi(pfnprint,"Non customization in upload queue!")!=-0x01 || 
-	containi(pfnprint,"usage: setinfo [ <key> <value> ]")!=-0x01 || 
-	
-	containi(pfnprint,"spawn is not valid")!=-0x01 || 
-	containi(pfnprint,"usage:  kick < name > | < # userid >")!=-0x01 || 
-	containi(pfnprint,"Can't use keys or values with a \")!=-0x01 || 
-	containi(pfnprint,"Keys and values must be < %i characters and > 0.")!=-0x01){
-		new build[varmax]
-		get_cvar_string("hostname",build,charsmax(build))
-		locala[id]++
-		if(equali(build,UserName(id))){
-			return okapi_ret_ignore
-		}
-		else{
-			if(get_pcvar_num(SendBadDropClient)==1){
+	if(id){
+		if(
+		containi(pfnprint,"Info string length exceeded")!=-0x01 || 
+		containi(pfnprint,"Can't set * keys")!=-0x01 || 
+		containi(pfnprint,"Ignoring invalid custom decal from %s")!=-0x01 || 
+		containi(pfnprint,"Non customization in upload queue!")!=-0x01 || 
+		containi(pfnprint,"usage: setinfo [ <key> <value> ]")!=-0x01 || 
+		containi(pfnprint,"Can't use keys or values with a ^x22")!=-0x01 || 
+		containi(pfnprint,"usage:  kick < name > | < # userid >")!=-0x01 || 
+		containi(pfnprint,"Can't use keys or values with a \")!=-0x01 || 
+		containi(pfnprint,"Keys and values must be < %i characters and > 0.")!=-0x01){
+			new build[varmax]
+			get_cvar_string("hostname",build,charsmax(build))
+			locala[id]++
+			if(equali(build,UserName(id))){
+				return okapi_ret_ignore
+			}
+			else{
+				
 				if(locala[id] ==get_pcvar_num(LimitPrintf)){
-					SV_DropClient_Hook(1337,0,"drop",id)
+					return okapi_ret_supercede
 				}
+			}
+			if(locala[id] >=get_pcvar_num(LimitExploit)){
+				if(get_pcvar_num(SendBadDropClient)==1){
+					SV_Drop_function(id)
+				}
+				HLDS_Shield_func(id,1,hldsprintf,1,5,1)
+				return okapi_ret_supercede
 			}
 			if(strlen(UserName(id))){
 				HLDS_Shield_func(id,1,hldsprintf,1,5,0)
@@ -1043,6 +1121,7 @@ public SV_RejectConnection_Hook(a,b[])
 stock FalseAllFunction(id)
 {
 	tralala = 0x00
+	overflowed[id] = 0x00
 	floodtimer = 0x00
 	//limitba[id] = 0x00
 	limit[id] = 0x00
@@ -1055,10 +1134,7 @@ public SV_DropClient_Hook(int,int2,string[],index)
 {
 	new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
 	checkuser[id] = 0x00
-	if(int==1337){
-		new call = Add_MSG_ReadLong()
-		return call;
-	}
+	
 	if(containi(string,"Bad file %s")!=-0x01){
 		return okapi_ret_supercede
 	}
@@ -1072,15 +1148,27 @@ public SV_DropClient_Hook(int,int2,string[],index)
 	}
 	if(containi(string,"Reliable channel overflowed")!=-0x01){
 		locala[id]++
-		if(locala[id] >=get_pcvar_num(LimitPrintf)){
+		if(locala[id] >=get_pcvar_num(MaxOverflowed)){
+			if(is_user_connected(id)){
+				new longtext[255]
+				overflowed[id]++
+				formatex(longtext,charsmax(longtext),"[%s] Reliable channel overflowed of %d",me[0x02],overflowed[id])
+				SV_RejectConnection_user(id,longtext)
+			}
 			return okapi_ret_supercede
 		}
 		else{
-			if(!strlen(UserName(id))){
-				HLDS_Shield_func(id,1,hldsoverflowed,1,3,1)
+			locala[id]++
+			if(locala[id] >=get_pcvar_num(LimitPrintf)){
+				return okapi_ret_supercede
 			}
 			else{
-				HLDS_Shield_func(id,1,hldsoverflowed,1,1,0)
+				if(!strlen(UserName(id))){
+					HLDS_Shield_func(id,1,hldsoverflowed,1,3,1)	
+				}
+				else{
+					HLDS_Shield_func(id,1,hldsoverflowed,1,1,0)
+				}
 			}
 		}
 		return okapi_ret_supercede
@@ -1104,10 +1192,18 @@ public SV_Spawn_f_Hook()
 		}
 		else{
 			if(!strlen(UserName(id))){
+				if(get_pcvar_num(SendBadDropClient)==1){
+					SV_Drop_function(id)
+				}
 				HLDS_Shield_func(id,1,hldspawn,1,3,1)
+				return okapi_ret_supercede
 			}
 			else{
+				if(get_pcvar_num(SendBadDropClient)==1){
+					SV_Drop_function(id)
+				}
 				HLDS_Shield_func(id,2,hldspawn,1,1,1)
+				return okapi_ret_supercede
 			}
 		}
 		return okapi_ret_supercede
