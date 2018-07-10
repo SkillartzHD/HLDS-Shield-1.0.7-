@@ -6,6 +6,7 @@
 #include <okapi>
 // linux singature
 
+
 new OrpheuHook:executestringhook
 new okapi_hook:sendbanhook
 new okapi_hook:spawnhook
@@ -134,9 +135,7 @@ new localas[33]
 
 //globalll
 new PrintUnknown
-new mungelimit[varmax],getip[varmax],getip2
-
-[varmax],floodtimer,memory,memory2,holax,SV_RconCvar,LimitPrintfRcon
+new mungelimit[varmax],getip[varmax],getip2[varmax],memory,memory2,holax,SV_RconCvar,LimitPrintfRcon
 new Array:cslBlock, g_ConsoleStr,hola,fuck,memhack
 new LimitResources,VAC
 new limitb[varmax],local,limita[varmax],limit[varmax]
@@ -157,7 +156,7 @@ new usercheck[33]
 new checkuser[33]
 new MaxOverflowed;
 new tralala;
-new LimitExploit,LimitSV_ConnectClient,LimitQuery,LimitImpulse,locala
+new LimitExploit,LimitQuery,LimitImpulse,locala
 
 [varmax],LimitPrintf,LimitMunge,PauseDlfile,BanTime;
 new KillBug;
@@ -685,9 +684,9 @@ stock HLDS_Shield_func(index,print,msg[],emit,log,pedeapsa)
 		}
 	}
 	else if(log==0x07){
-		okapi_get_ptr_array(net_adrr(),data,net_adr)
-		formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
-		log_to_file(settings,string4,PrefixProtection,getip,msg,floodtimer,get_pcvar_num(LimitSV_ConnectClient))
+		//okapi_get_ptr_array(net_adrr(),data,net_adr)
+		//formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+		//log_to_file(settings,string4,PrefixProtection,getip,msg,floodtimer,get_pcvar_num(LimitSV_ConnectClient))
 	}
 	else if(log==0x08){
 		if(!strlen(buffer)){
