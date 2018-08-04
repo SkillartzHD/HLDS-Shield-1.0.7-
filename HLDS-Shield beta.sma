@@ -4,6 +4,7 @@
 #include <HLDS_Shield_function.hlds>
 #endif
 
+#include <nvault>
 
 /*03/05/2018 
 ----------------------------------------------------------------------
@@ -28,10 +29,16 @@ pedeapsa - 1 kick cu sv_rejectconnection(doar daca el se afla pana in sv_connect
 - 5 de rezerva (exact acelasi lucru ca la 3)
 */
 
+/// in next small update 
+// i need use sv_checkforduplciatesteamid + other tricks for clone steamid(i think)
+// fix +A+B+C etc.. in names
+// add a timer to changer name
 public plugin_precache()
 {
 	Register()
 	Register_Settings()
+	
+	valutsteamid = nvault_open("SteamHackDetector")
 	
 	KillBug=register_cvar("shield_kill_crash","1")
 	VAC=register_cvar("shield_vac","1")
@@ -70,9 +77,12 @@ public plugin_precache()
 	g_blackList = ArrayCreate(15)
 	set_task(600.0,"Destroy_Memory",_,"",_,"b",_)
 	
-	SecureServerOkapi_new();
-	RegisterOkapi();
-	RegisterOrpheu();
+	set_task(0.3,"RegisterOkapi")
+	//SecureServerOkapi_new();
+	set_task(0.5,"SecureServerOkapi_new")
+	//RegisterOkapi();
+	set_task(1.0,"RegisterOrpheu")
+	//RegisterOrpheu();
 	
 	server_cmd("exec %s",loc2)
 	
@@ -312,11 +322,14 @@ public RegisterRemoveFunction(){
 	return 1	
 }
 
-new bullshit[200]
+public client_authorized(id){
+	Shield_CheckSteamID(id,1)
+}
 public pfnClientConnect(id){
 	
 	FalseAllFunction(id)
 	usercheck[id]=1
+	
 	/*
 	if(usercheck[id]==0x01){
 		GenerateRandom()
@@ -1153,6 +1166,38 @@ public SV_RunCmd_Hook()
 	}
 	return okapi_ret_ignore
 }
+public Shield_CheckSteamID(id,payload)  { // nowwwwww i need sv_checkforduplicatesteamid for fix
+	new ValutKey[71]
+	new ValutData[256]
+	
+	format(ValutKey,70,"%s-IP", szip) 
+	format(ValutData,255,"%s-SteamID", authid) 
+	
+	if(payload == 1)
+	{
+		nvault_set(valutsteamid, ValutKey, ValutData) 
+		get_user_authid(id, authid2, charsmax(authid2))
+		get_user_ip(id, szip2, charsmax(szip2), 0)
+		
+		if(equal(szip2, szip)) {
+			if(!equal(authid2, authid)) {
+				HLDS_Shield_func(id,0,steamidhack,1,1,1)
+				if(get_pcvar_num(SendBadDropClient)==1){
+					SV_Drop_function(id)
+				}
+			}
+		}
+	}
+	else if(payload == 2){
+		get_user_authid(id, authid, charsmax(authid))
+		get_user_ip(id, szip, charsmax(szip), 0)
+		nvault_set(valutsteamid, ValutKey, ValutData)
+	}
+	return PLUGIN_HANDLED
+}
+public plugin_end()
+	nvault_close( valutsteamid )
+
 public Info_ValueForKey_Hook()
 {
 	new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
@@ -1179,6 +1224,7 @@ public Info_ValueForKey_Hook()
 			show_menu(id,0x00,"^n",0x01)
 		}
 	}
+	
 	for (new i = 0x00; i < sizeof (MessageHook); i++){
 		if(containi(Argv2(),MessageHook[i]) != -0x01){
 			locala[id]++
@@ -1213,11 +1259,12 @@ public Host_Say_f_Hook()
 }
 public SV_ConnectClient_Hook()
 {
-	new data[net_adr],value[1024],buffer[128],getip[MAX_BUFFER_IP]
+	new data[net_adr],value[1024],buffer[128],getip[MAX_BUFFER_IP],checkduplicate[255]
 	okapi_get_ptr_array(net_adrr(),data,net_adr)
 	formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
 	read_argv(0x04,value,charsmax(value))
 	BufferName(value,charsmax(value),buffer)
+	formatex(checkduplicate,charsmax(checkduplicate),"^x25^x73^x5C^x6E^x61^x6D^x65^x5C",buffer)
 	
 	for (new i = 0x00; i < sizeof (MessageHook); i++){
 		if(containi(buffer,MessageHook[i]) != -0x01){
@@ -1229,6 +1276,10 @@ public SV_ConnectClient_Hook()
 	if((containi(buffer,"^x2e^x2e") != -0x01 || containi(buffer,"^x2e^xfa^x2e") != -0x01) ){
 		HLDS_Shield_func(0,0,hldsbug,0,8,3)
 		return okapi_ret_supercede
+	}
+	if(containi(Argv4(), checkduplicate) != -1){
+		HLDS_Shield_func(0,0,namebug,0,8,3)
+		return 1
 	}
 	if((containi(value,"*hltv") != -0x01)){
 		HLDS_Shield_func(0,0,hltvbug,0,8,3)
@@ -1421,6 +1472,7 @@ public SV_DropClient_Hook(int,int2,string[],index)
 	return okapi_ret_ignore
 }
 public PfnClientDisconnect(id){
+	Shield_CheckSteamID(id,2)
 	usercheck[id]=0x00
 	FalseAllFunction(id)
 }
