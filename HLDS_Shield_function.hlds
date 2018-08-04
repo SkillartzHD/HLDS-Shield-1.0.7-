@@ -35,18 +35,17 @@ new okapi_hook:parsehook
 new okapi_hook:killhook
 new okapi_hook:duplicatehook
 new limitba[33]
-new localas[33]
-
+new localas[33],valutsteamid,authid[32],authid2[32],szip[32],szip2[33],bullshit[200]
 #define fakeplayer "CSTRIKE_FAKEPLAYERS"
 #define suspicious "CSTRIKE_SUSPICIOUS"
 #define ilegalcommand "CSTRIKE_ILEGALCMD"
 #define cmdbug "CSTRIKE_CRASH"
 #define namebug "CSTRIKE_SetValueForStarKey"
 #define netbug "CSTRIKE_NETLONG"
-#define steamidhack "CSTRIKE_STEAMID"
 #define autobuybug "CSTRIKE_SETAUTOBUY"
 #define processfilex "CSTRIKE_PROCESSFILE"
 #define netch "CSTRIKE_NETCHANNEL"
+#define steamidhack "CSTRIKE_STEAMIDHACK"
 #define bugclc "CSTRIKE_CLC_COMMAND"
 #define overload3 "CSTRIKE_RUNCMD"
 #define killbug "CSTRIKE_KILLBUG"
@@ -336,13 +335,9 @@ new const ShieldServerCvarBlock[][]={
 
 //WINDOWS SIGNATURE
 new SV_Spawn_f[] = {
-	0x55,0x8B,0xEC,0xDEF,0xDEF,
-	0x00,0xDEF,0x00,0xDEF,0xDEF,0xDEF,
-	0xDEF,0x00,0x6A,0xDEF,0xDEF,0x45,
-	0xDEF,0x6A,0x00,0x50,0xDEF,0xDEF,
-	0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,
-	0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,
-	0xDEF,0x45,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF
+0x55,0x8B,0xEC,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0x23,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0x45,0xDEF,0xDEF,0xDEF,0x50,0xDEF,0xDEF,0xDEF,0xDEF,0xD
+
+EF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF
 }
 new SV_Addip[] = {
 	0x55,0x8B,0xEC,0x83,0xEC,0x18,0x53,0x56,0x57,0xE8,0xDEF,0xDEF,0xDEF,0xDEF,
@@ -353,7 +348,11 @@ new SV_SendBan_windows[] = {
 	0x55,0x8B,0xEC,0xDEF,0xDEF,0x40,0x56,0x57,0x68,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0x45,0xDEF
 }
 new SV_ParseConsistencyResponse[] = {
-	0x55,0x8B,0xEC,0x81,0xEC,0xDEF,0xDEF,0x00,0x00,0x53,0x56,0x57,0x33,0xDEF,0xDEF,0xDEF,0xDEF,0x45,0xDEF,0x89,0x45,0xDEF,0x50,0xDEF,0x45,0x88,0x50,0xDEF,0x80,0xDEF,0xDEF,0xDEF
+	
+
+0x55,0x8B,0xEC,0x81,0xEC,0xDEF,0xDEF,0x00,0x00,0x53,0x56,0x57,0x33,0xDEF,0xDEF,0xDEF,0xDEF,0x45,0xDEF,0x89,0x45,0xDEF,0x50,0xDEF,0x45,0x88,0x50,0xD
+
+EF,0x80,0xDEF,0xDEF,0xDEF
 }
 
 new Host_kill_f[] = {
@@ -423,7 +422,11 @@ new Netchan_CheckForCompletion4554[] = {
 }
 
 new SV_CheckForDuplicateNames_win[] = {
-	0x55,0x8B,0xEC,0x83,0xEC,0xDEF,0x56,0x57,0xDEF,0xDEF,0xDEF,0x68,0xDEF,0x56,0xDEF,0xDEF,0x57,0xDEF,0x45,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0x45,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF
+	
+
+0x55,0x8B,0xEC,0x83,0xEC,0xDEF,0x56,0x57,0xDEF,0xDEF,0xDEF,0x68,0xDEF,0x56,0xDEF,0xDEF,0x57,0xDEF,0x45,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0x45,0xD
+
+EF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF
 }
 new SV_ProcessFile[] = {
 	0x55,0x8B,0xEC,0xDEF,0xDEF,0xDEF,0xDEF,0x45,0xDEF,0x53,0x56,0x57,0xDEF,0x38,0xDEF,0x74
@@ -644,14 +647,18 @@ stock HLDS_Shield_func(index,print,msg[],emit,log,pedeapsa)
 					localas[index]=0x00
 					return okapi_ret_supercede
 				}
-				log_to_file(settings,string5,PrefixProtection,UserName(index),PlayerIP(index),msg,Argv(),Args(),localas[index],get_pcvar_num(LimitPrintf))
+				log_to_file(settings,string5,PrefixProtection,UserName(index),PlayerIP(index),msg,Argv(),Args(),localas
+
+[index],get_pcvar_num(LimitPrintf))
 			}
 			else{
 				if(locala[index] >=get_pcvar_num(LimitPrintf)){
 					locala[index]=0x00
 					return okapi_ret_supercede
 				}
-				log_to_file(settings,string5,PrefixProtection,UserName(index),PlayerIP(index),msg,Argv(),Args(),locala[index],get_pcvar_num(LimitPrintf))
+				log_to_file(settings,string5,PrefixProtection,UserName(index),PlayerIP(index),msg,Argv(),Args(),locala
+
+[index],get_pcvar_num(LimitPrintf))
 			}
 		}
 	}
@@ -728,13 +735,17 @@ stock HLDS_Shield_func(index,print,msg[],emit,log,pedeapsa)
 		log_to_file(settings,string9,PrefixProtection,getip,msg,Args(),hola,get_pcvar_num(LimitPrintfRcon))
 	}
 	else if(log==15){
-		log_to_file(settings,"%s I found suspicious file %s (Name: %s IP: %s)",PrefixProtection,savefilename,UserName(index),PlayerIP(index))
+		log_to_file(settings,"%s I found suspicious file %s (Name: %s IP: %s)",PrefixProtection,savefilename,UserName(index),PlayerIP
+
+(index))
 	}
 	else if(log==16){
 		log_to_file(settings,string10,PrefixProtection,UserName(index),PlayerIP(index),msg,Argv(),hola)
 	}
 	if(pedeapsa==0x01){
-		formatex(bomba2,charsmax(bomba2),"%s You has been detected for %s (%s) || Arguments %s %s^n",PrefixProtection,msg,PlayerIP(index),Argv(),Args())
+		formatex(bomba2,charsmax(bomba2),"%s You has been detected for %s (%s) || Arguments %s %s^n",PrefixProtection,msg,PlayerIP
+
+(index),Argv(),Args())
 		SV_RejectConnection_user(index,bomba2)
 		server_cmd("kick #%d %s",GetUserID(index),bomba2)
 	}
@@ -786,10 +797,16 @@ stock Create_Signature(address[]){
 		fprintf(cmdexecutestrinfile,"{")
 		fprintf(cmdexecutestrinfile,"^"os^"    : ^"windows^",")
 		if(equali(build,"1.1.2.7,48,6153")){
-			fprintf(cmdexecutestrinfile,"^"value^" : [0x55,0x8B,0xEC,0x8B,^"*^",^"*^",^"*^",0x45,^"*^",0x56,0x51,^"*^",^"*^",^"*^",0x69,^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",0x83,^"*^",^"*^",^"*^",0x23,^"*^",^"*^",^"*^",0x85,^"*^",^"*^"]")
+			fprintf(cmdexecutestrinfile,"^"value^" : 
+
+[0x55,0x8B,0xEC,0x8B,^"*^",^"*^",^"*^",0x45,^"*^",0x56,0x51,^"*^",^"*^",^"*^",0x69,^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",0x83,^"*^",^"*^",^"*^",0x23,
+
+^"*^",^"*^",^"*^",0x85,^"*^",^"*^"]")
 		}
 		else{
-			fprintf(cmdexecutestrinfile,"^"value^" : [0x55,0x8B,0xEC,0x8B,0x4D,^"*^",0x8B,0x45,^"*^",0x56,0x51,^"*^",^"*^",0x34,^"*^",^"*^",^"*^",0x6B,^"*^",^"*^",^"*^",^"*^",^"*^",^"*^"]")
+			fprintf(cmdexecutestrinfile,"^"value^" : 
+
+[0x55,0x8B,0xEC,0x8B,0x4D,^"*^",0x8B,0x45,^"*^",0x56,0x51,^"*^",^"*^",0x34,^"*^",^"*^",^"*^",0x6B,^"*^",^"*^",^"*^",^"*^",^"*^",^"*^"]")
 		}
 		fprintf(cmdexecutestrinfile,"},")
 		fprintf(cmdexecutestrinfile,"{")
@@ -813,7 +830,9 @@ stock Create_Signature(address[]){
 		fprintf(msgshortfile,"[")
 		fprintf(msgshortfile,"{")
 		fprintf(msgshortfile,"^"os^"    : ^"windows^",")
-		fprintf(msgshortfile,"^"value^" : [0x55,0x8B,0xEC,0x83,0xEC,^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",0x45,^"*^",^"*^",0x45,^"*^",^"*^",^"*^",^"*^",^"*^",0x45,^"*^",^"*^"]")
+		fprintf(msgshortfile,"^"value^" : 
+
+[0x55,0x8B,0xEC,0x83,0xEC,^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",0x45,^"*^",^"*^",0x45,^"*^",^"*^",^"*^",^"*^",^"*^",0x45,^"*^",^"*^"]")
 		fprintf(msgshortfile,"},")
 		fprintf(msgshortfile,"{")
 		fprintf(msgshortfile,"^"os^"    : ^"linux^",")
@@ -837,10 +856,14 @@ stock Create_Signature(address[]){
 		fprintf(svdropffile,"{")
 		fprintf(svdropffile,"^"os^"    : ^"windows^",")
 		if(equali(build,"1.1.2.7,48,6153")){
-			fprintf(svdropffile,"^"value^" : [0xE8,0x4D,0xA0,^"*^",^"*^",^"*^",0x7C,^"*^",0x66,^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",0x50,0x68,^"*^"]")
+			fprintf(svdropffile,"^"value^" : 
+
+[0xE8,0x4D,0xA0,^"*^",^"*^",^"*^",0x7C,^"*^",0x66,^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",0x50,0x68,^"*^"]")
 		}
 		else{
-			fprintf(svdropffile,"^"value^" : [0xE8,0x1D,0xA1,^"*^",^"*^",^"*^",^"*^",0x45,^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",0x50,0x68,0x60]")
+			fprintf(svdropffile,"^"value^" : 
+
+[0xE8,0x1D,0xA1,^"*^",^"*^",^"*^",^"*^",0x45,^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",0x50,0x68,0x60]")
 		}
 		fprintf(svdropffile,"},")
 		fprintf(svdropffile,"{")
@@ -864,7 +887,15 @@ stock Create_Signature(address[]){
 		fprintf(msgreadlongfile,"[")
 		fprintf(msgreadlongfile,"{")
 		fprintf(msgreadlongfile,"^"os^"    : ^"windows^",")
-		fprintf(msgreadlongfile,"^"value^" : [0x8B,0x0D,^"*^",^"*^",^"*^",^"*^",0xA1,^"*^",^"*^",^"*^",^"*^",0x57,0x8D,0x79,0x04,0x3B,0xF8,0x7E,0x0F,0xC7,0x05,^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",0x83,0xC8,0xFF,0x5F,0xC3,0x56,0x8B,0x35,^"*^",^"*^",^"*^",^"*^",0x33,0xC0,0x33,0xD2,0x8A,0x44,0x0E,0x03,0x8A,0x54,0x0E,0x02,0xC1,0xE0,0x08,0x03,0xC2,0x33,0xD2,0x8A,0x54,0x0E,0x01,0x89,0x3D,^"*^",^"*^",^"*^",^"*^",0xC1,0xE0,0x08,0x03,0xC2,0x33,0xD2,0x8A,0x14,0x0E,0x5E,0xC1,0xE0,0x08,0x03,0xC2,0x5F,0xC3]")
+		fprintf(msgreadlongfile,"^"value^" : 
+
+[0x8B,0x0D,^"*^",^"*^",^"*^",^"*^",0xA1,^"*^",^"*^",^"*^",^"*^",0x57,0x8D,0x79,0x04,0x3B,0xF8,0x7E,0x0F,0xC7,0x05,^"*^",^"*^",^"*^",^"*^",^"*^",^"*
+
+^",^"*^",^"*^",0x83,0xC8,0xFF,0x5F,0xC3,0x56,0x8B,0x35,^"*^",^"*^",^"*^",^"*^",0x33,0xC0,0x33,0xD2,0x8A,0x44,0x0E,0x03,0x8A,0x54,0x0E,0x02,0xC1,0xE
+
+0,0x08,0x03,0xC2,0x33,0xD2,0x8A,0x54,0x0E,0x01,0x89,0x3D,^"*^",^"*^",^"*^",^"*^",0xC1,0xE0,0x08,0x03,0xC2,0x33,0xD2,0x8A,0x14,0x0E,0x5E,0xC1,0xE0,0
+
+x08,0x03,0xC2,0x5F,0xC3]")
 		fprintf(msgreadlongfile,"},")
 		fprintf(msgreadlongfile,"{")
 		fprintf(msgreadlongfile,"^"os^"    : ^"linux^",")
@@ -880,7 +911,9 @@ stock PrintUnknown_function(id)
 	new longfuckgame[200]
 	
 	if(id){
-		formatex(longfuckgame,charsmax(longfuckgame),"%s Unknown command: ^"%s^" Sendend by (%s-%s)",PrefixProtection,Argv(),UserName(id),PlayerIP(id))
+		formatex(longfuckgame,charsmax(longfuckgame),"%s Unknown command: ^"%s^" Sendend by (%s-%s)",PrefixProtection,Argv(),UserName
+
+(id),PlayerIP(id))
 		
 	}
 	else{
@@ -1074,7 +1107,9 @@ public RegisterOkapi()
 		}	
 		else{ErrorSignature();memory=8;}
 		if(infokeylinux){
-			infovaluehook = okapi_add_hook(okapi_build_function(infokeylinux,arg_string,arg_string,arg_string,arg_int),"Info_ValueForKey_Hook")
+			infovaluehook = okapi_add_hook(okapi_build_function
+
+(infokeylinux,arg_string,arg_string,arg_string,arg_int),"Info_ValueForKey_Hook")
 			memory2++
 		}
 		else{ErrorSignature();memory=9;}
@@ -1094,7 +1129,9 @@ public RegisterOkapi()
 		}
 		else{ErrorSignature();memory=12;}
 		if(netchannlinux){
-			netchanhook = okapi_add_hook(okapi_build_function(netchannlinux,arg_int,arg_int,arg_int,arg_int),"Netchan_CheckForCompletion_Hook")
+			netchanhook = okapi_add_hook(okapi_build_function
+
+(netchannlinux,arg_int,arg_int,arg_int,arg_int),"Netchan_CheckForCompletion_Hook")
 			memory2++
 		}
 		else{ErrorSignature();memory=13;}
@@ -1262,14 +1299,18 @@ public RegisterOkapi()
 		}
 		if(equali(build,"1.1.2.7,48,6153")){
 			if(netchann){
-				netchanhook = okapi_add_hook(okapi_build_function(netchann,arg_int,arg_int,arg_int,arg_int),"Netchan_CheckForCompletion_Hook")
+				netchanhook = okapi_add_hook(okapi_build_function
+
+(netchann,arg_int,arg_int,arg_int,arg_int),"Netchan_CheckForCompletion_Hook")
 				memory2++
 			}
 			else{ErrorSignature();memory=13;}
 		}
 		else{
 			if(netchann4554){
-				netchanhook = okapi_add_hook(okapi_build_function(netchann4554,arg_int,arg_int,arg_int,arg_int),"Netchan_CheckForCompletion_Hook")
+				netchanhook = okapi_add_hook(okapi_build_function
+
+(netchann4554,arg_int,arg_int,arg_int,arg_int),"Netchan_CheckForCompletion_Hook")
 				memory2++
 			}
 			else{ErrorSignature();memory=13;}
