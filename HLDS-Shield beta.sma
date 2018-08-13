@@ -4,8 +4,6 @@
 #include <HLDS_Shield_function.hlds>
 #endif
 
-#include <nvault>
-
 /*03/05/2018 
 ----------------------------------------------------------------------
 rezvolarea metodei "kill" care provoca crash
@@ -33,11 +31,21 @@ pedeapsa - 1 kick cu sv_rejectconnection(doar daca el se afla pana in sv_connect
 // i need use sv_checkforduplciatesteamid + other tricks for clone steamid(i think)
 // fix +A+B+C etc.. in names
 // add a timer to changer name
+
+#include <engine>
+#include <nvault>
+#include <regex>
+
+new g_MaxClients,Regex:g_iPattern
+
 public plugin_precache()
 {
 	Register()
 	Register_Settings()
 	
+	g_MaxClients = get_global_int(GL_maxClients)
+	new szError[64],iError;
+	g_iPattern = regex_compile("[+]",iError,szError,charsmax(szError),"i")
 	valutsteamid = nvault_open("SteamHackDetector")
 	
 	KillBug=register_cvar("shield_kill_crash","1")
@@ -60,6 +68,7 @@ public plugin_precache()
 	LimitPrintfRcon=register_cvar("shield_rcon_limit","10")
 	
 	register_forward(FM_ClientConnect,"pfnClientConnect")
+	register_forward(FM_ClientUserInfoChanged,"pfnClientUserInfoChanged")
 	register_forward(FM_GetGameDescription,"pfnGetGameDescription") 
 	register_forward(FM_ClientCommand,"PfnClientCommand")
 	register_forward(FM_ClientDisconnect,"PfnClientDisconnect")
@@ -325,10 +334,34 @@ public RegisterRemoveFunction(){
 public client_authorized(id){
 	Shield_CheckSteamID(id,1)
 }
+
 public pfnClientConnect(id){
 	
 	FalseAllFunction(id)
 	usercheck[id]=1
+	
+	//procedure function fix sv_checkforduplicatesteamid
+	
+	new CertificateSteamID[50],AllUserCertificateSteamID[50]
+	
+	get_user_authid(id,CertificateSteamID,charsmax(CertificateSteamID))
+	
+	for(new i = 1; i <= g_MaxClients; i++){
+		
+		if(is_user_connected(i)){
+			get_user_authid(i,AllUserCertificateSteamID,charsmax(AllUserCertificateSteamID))
+		}
+		if(containi(CertificateSteamID, AllUserCertificateSteamID[i]) != -1){
+			new longtext[255]
+			formatex(longtext,charsmax(longtext),"[%s] Your SteamID is duplicated %s",me[0x02],CertificateSteamID)
+			SV_RejectConnection_user(id,longtext)
+			HLDS_Shield_func(id,0,steamidhack,1,1,0)
+			if(get_pcvar_num(SendBadDropClient)==1){
+				SV_Drop_function(id)
+			}
+		}		
+	}
+	//end
 	
 	/*
 	if(usercheck[id]==0x01){
@@ -388,11 +421,22 @@ public RegisterOrpheu(){
 		set_task(1.0,"debug_orpheu")
 	}
 	if(is_linux_server()){
-		server_print("%s I loaded %d functions in engine_i486.so",PrefixProtection,memory2)
+		server_print("^n%s I loaded plugin with %d functions hooked in hlds [linux]",PrefixProtection,memory)
 	}
 	else{
-		server_print("%s I loaded %d functions in swds.dll",PrefixProtection,memory2)
+		server_print("^n%s I loaded plugin with %d functions hooked in hlds [windows]",PrefixProtection,memory)
 	}
+	new Float:ft = Float:engfunc(EngFunc_Time)
+	new it = floatround(ft)
+	new seconds = it % 60,minutes = (it / 60) % 60,hours = (it / 3600) % 24,day = it / 86400
+	new AMXXVersion[32],RCONName[32]
+	
+	get_amxx_verstring(AMXXVersion,charsmax(AMXXVersion))
+	get_cvar_string("rcon_password",RCONName,charsmax(RCONName))
+
+	server_print("%s Amxx : %s",PrefixProtection,AMXXVersion)
+	server_print("%s Rcon : %s",PrefixProtection,RCONName)
+	server_print("%s UpTime Days:%i/Hours:%i/:Minutes:%i/:Seconds:%i^n",PrefixProtection,day,hours,minutes,seconds)
 }
 public Cmd_ExecuteString_Fix()
 {
@@ -760,6 +804,8 @@ public Reject_user_for_file(id){
 }
 public PfnClientCommand(id)
 {
+	new StringBuffer[100],Command[100]
+	
 	/*
 	if(usercheck[id]==1){
 		GenerateRandom()
@@ -780,10 +826,9 @@ public PfnClientCommand(id)
 		server_print("kick")
 	}
 	*/
+	
 	mungelimit[id]++
-	if(task_exists(0x01)){
-	}
-	else{
+	if(!task_exists(0x01)){
 		set_task(0.1,"LevFunction",id)
 	}
 	if(containi(Args(),"shield_")!= -0x01){
@@ -837,6 +882,15 @@ public PfnClientCommand(id)
 			return FMRES_SUPERCEDE
 		}
 	}
+	
+	//fix for null char in textmsg
+	read_argv(1,StringBuffer,charsmax(StringBuffer))
+	read_argv(0,Command,charsmax(Command))
+	replace_all(StringBuffer,charsmax(StringBuffer),"%","?")
+	//replace_all(StringBuffer,charsmax(StringBuffer),"#","*")
+	engclient_cmd(id,Command,StringBuffer)
+	// end fix null char in textmsg
+	
 	if(containi(Argv(),"say")!= -0x01 || containi(Argv(),"say_team")!= -0x01){
 		return FMRES_IGNORED
 	}
@@ -855,6 +909,7 @@ public PfnClientCommand(id)
 			}
 		}
 	}
+	
 	return FMRES_IGNORED
 }
 public RegisterCmdFake()
@@ -1006,27 +1061,49 @@ public Netchan_CheckForCompletion_Hook(int,int2,int3x)
 	return okapi_ret_ignore
 }
 
-public SV_CheckForDuplicateNames(userinfo[],bIsReconnecting,nExcludeSlot)
-{
-	new value[1024],buffer[128]
-	read_argv(0x04,value,charsmax(value))
-	BufferName(value,charsmax(value),buffer)
-	
-	if(containi(Argv4(),"^x22")!=-0x01 || containi(Argv4(),"^x2e^x2e")!=-0x01 || 
-	containi(Argv4(),"^x2e^xfa^x2e")!=-0x01 || containi(buffer,"console") != -0x01){
-		tralala++
-		new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
-		if(tralala>=get_pcvar_num(LimitPrintf)){
-			HLDS_Shield_func(id,0,loopnamebug,0,9,4)
-			tralala=0
-		}
-		else{
-			HLDS_Shield_func(id,0,loopnamebug,0,9,3)
-			server_cmd("kick %s^x22 [HLDS-Shield] Please change name",buffer)
-			server_cmd("kick unnamed %s Please change name",PrefixProtection)
-			server_cmd("kick unamed %s Please change name",PrefixProtection)
-		}
+public SV_CheckForDuplicateNames(userinfo[],bIsReconnecting,nExcludeSlot){
+	if(IsInvalidFunction(1," Your userinfo is invalid")){
 		return okapi_ret_supercede
+	}
+	return okapi_ret_ignore
+}
+
+public IsInvalidFunction(functioncall,stringexit[]){	
+	if(okapi_engine_find_string("(%d)%-0.*s")){
+		
+		if(functioncall == 1)
+		{
+			new value[1024],buffer[128]
+			read_argv(0x04,value,charsmax(value))
+			BufferName(value,charsmax(value),buffer)
+			if(containi(Argv4(),"^x22")!=-0x01 || containi(Argv4(),"^x2E^x2E")!=-0x01 ||
+			containi(Argv4(),"^x5C")!=-0x01 || containi(Argv4(),"^x2E^x20")!=-0x01 || 
+			containi(Argv4(),"^x63^x6F^x6E^x73^x6F^x6C^x65")!=-0x01) {
+				tralala++
+				if(tralala>=get_pcvar_num(LimitPrintf)){
+					HLDS_Shield_func(0,0,loopnamebug,0,9,4)
+					tralala=0
+				}
+				else{
+					HLDS_Shield_func(0,0,loopnamebug,0,9,3)
+					replace(buffer,31,"^x2E","")
+					server_cmd("^x6B^x69^x63^x6B^x20^x25^x73^x22 ^x25^x73",me[0x02],stringexit)
+					server_cmd("^x6B^x69^x63^x6B^x20^x25^x73^x2e ^x25^x73",me[0x02],stringexit)
+					server_cmd("^x6B^x69^x63^x6B^x20^x75^x6E^x6E^x61^x6D^x65^x64^x20^x25^x73",stringexit)
+					server_cmd("^x6B^x69^x63^x6B^x20^x75^x6E^x61^x6D^x65^x64^x20^x25^x73",stringexit)
+				}
+			}
+			if(functioncall == 2)
+			{
+				new checkduplicate[255]
+				formatex(checkduplicate,charsmax(checkduplicate),"^x25^x73^x5C^x6E^x61^x6D^x65^x5C",buffer)
+				if(containi(Argv4(), checkduplicate) != -1){
+					log_amx("%s : user ^"%s^" used many string ^"\name\^"",me[0x02],buffer)
+					return 1
+				}
+			}
+			return okapi_ret_supercede
+		}
 	}
 	return okapi_ret_ignore	
 }
@@ -1195,9 +1272,78 @@ public Shield_CheckSteamID(id,payload)  { // nowwwwww i need sv_checkforduplicat
 	}
 	return PLUGIN_HANDLED
 }
-public plugin_end()
-	nvault_close( valutsteamid )
+public plugin_end(){
+	nvault_close(valutsteamid)
+}
+stock SV_CheckUserNameForMenuStyle(id,szNewName[] = "")
+{
+	new GetName[32]
+	if(szNewName[0]){
+		copy(GetName,charsmax(GetName),szNewName)
+	}
+	else{
+		get_user_name(id,GetName,charsmax(GetName))
+	}
+	
+	new iNum,szSubStr[3],szNewTxtPart[3]
+	
+	while(regex_match_c(GetName,g_iPattern,iNum)){
+		regex_substr(g_iPattern,0,szSubStr,2)
+		copy(szNewTxtPart,2,szSubStr)
+		replace(szNewTxtPart,2,"+","")
+		replace_all(GetName,charsmax(GetName),szSubStr,szNewTxtPart)
+		set_user_info(id,"name",GetName)
+	}
+	return PLUGIN_CONTINUE
+}
+new NameUnLock[33]
 
+public SHIELD_NameDeBug(id){
+	NameUnLock[id] = 0
+}
+
+public SHIELD_NameDeBug2(id){
+	NameUnLock[id] = 2
+}
+
+public pfnClientUserInfoChanged(id){
+	new lastname[a_max]
+	get_user_info(id,"name",lastname,charsmax(lastname))
+	if(!equal(lastname,UserName(id))){
+		SV_CheckUserNameForMenuStyle(id,lastname)
+	}
+	#define timp 5.0
+	static szOldName[32],szNewName[32]
+	pev(id,pev_netname,szOldName,charsmax(szOldName)) 
+	get_user_info(id,"name",szNewName,charsmax(szNewName))
+	if(containi(szNewName,"%") !=-1){
+		if (NameUnLock[id]==2){
+			NameUnLock[id] = 2
+			client_print_color(id,id,"^4%s^1 Please wait^4 5 seconds^1 before change the name",PrefixProtection)
+			set_user_info(id,"name",szOldName) 
+			set_task(timp,"SHIELD_NameDeBug",id)
+			return FMRES_SUPERCEDE
+		}
+		
+		NameUnLock[id] = 0
+		set_task(0.3,"SHIELD_NameDeBug2",id)
+		return FMRES_SUPERCEDE
+		
+	}
+	if(szOldName[0]) {
+		if(!equal(szOldName,szNewName)) {
+			if (NameUnLock[id] == 1){
+				NameUnLock[id] = 1
+				client_print_color(id,id,"^4%s^1 Please wait^4 5 seconds^1 before change the name",PrefixProtection)
+				set_user_info(id,"name",szOldName) 
+				return FMRES_SUPERCEDE
+			}
+			NameUnLock[id] = 1
+			set_task(timp,"SHIELD_NameDeBug",id)
+		}
+	}
+	return FMRES_IGNORED
+}
 public Info_ValueForKey_Hook()
 {
 	new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
@@ -1241,7 +1387,7 @@ public Info_ValueForKey_Hook()
 }
 
 public Host_Say_f_Hook()
-{
+{	
 	for (new i = 0; i < sizeof (MessageHook); i++){
 		if(containi(Args(),MessageHook[i]) != -1){
 			hola++
@@ -1265,6 +1411,10 @@ public SV_ConnectClient_Hook()
 	read_argv(0x04,value,charsmax(value))
 	BufferName(value,charsmax(value),buffer)
 	formatex(checkduplicate,charsmax(checkduplicate),"^x25^x73^x5C^x6E^x61^x6D^x65^x5C",buffer)
+	
+	if(IsInvalidFunction(2,"userinfo")){
+		return okapi_ret_supercede
+	}
 	
 	for (new i = 0x00; i < sizeof (MessageHook); i++){
 		if(containi(buffer,MessageHook[i]) != -0x01){
@@ -1330,15 +1480,14 @@ public SV_SendRes_f_Hook(){
 			else{
 				HLDS_Shield_func(id,1,hldsprintf,1,5,1)
 			}
+			if(strlen(UserName(id))){
+				HLDS_Shield_func(id,1,hldsres,1,5,0)
+			}
+			else{
+				HLDS_Shield_func(0,0,hldsres,0,3,0)
+			}		
 			return okapi_ret_supercede
 		}
-		if(strlen(UserName(id))){
-			HLDS_Shield_func(id,1,hldsres,1,5,0)
-		}
-		else{
-			HLDS_Shield_func(0,0,hldsres,0,3,0)
-		}
-		return okapi_ret_supercede
 	}
 	return okapi_ret_ignore
 }
