@@ -5,15 +5,6 @@
 #endif
 
 /*03/05/2018 
-----------------------------------------------------------------------
-rezvolarea metodei "kill" care provoca crash
-FIX BUG PLUGIN
-cmd_executestring pentru 6153 si versiune mai veche(4545)
-extinedrea functilor
-dezactivare filtrului de VAC fara a reporni serverul 
--- shield_vac 1 = permite jucatori banati cu vac
--- shield_vac 0 = nu permite jucatori banati cu vac
-----------------------------------------------------------------------
 
 HLDS_Shield_func(index,print,msg[],emit,log,pedeapsa)
 index - id = jucator , 0 nimic
@@ -27,17 +18,8 @@ pedeapsa - 1 kick cu sv_rejectconnection(doar daca el se afla pana in sv_connect
 - 5 de rezerva (exact acelasi lucru ca la 3)
 */
 
-/// in next small update 
-// i need use sv_checkforduplciatesteamid + other tricks for clone steamid(i think)
-// fix +A+B+C etc.. in names
-// add a timer to changer name
 
-#include <engine>
-#include <nvault>
-#include <regex>
-
-new g_MaxClients,Regex:g_iPattern
-
+new NameProtector
 public plugin_precache()
 {
 	Register()
@@ -48,6 +30,7 @@ public plugin_precache()
 	g_iPattern = regex_compile("[+]",iError,szError,charsmax(szError),"i")
 	valutsteamid = nvault_open("SteamHackDetector")
 	
+	NameProtector=register_cvar("shield_name_protector","1")
 	KillBug=register_cvar("shield_kill_crash","1")
 	VAC=register_cvar("shield_vac","1")
 	MaxOverflowed=register_cvar("shield_max_overflowed","1000")
@@ -97,239 +80,6 @@ public plugin_precache()
 	
 }
 
-public ThisCommandNow(){ server_print("%s This function is disabled",PrefixProtection);}
-
-public RegisterRemoveFunction(){
-	
-	if(!strlen(Argv1())){
-		server_print("shield_remove_function <function>")
-		return 0;
-	}
-	
-	if(containi(Argv1(),"sv_spawn_f") != -0x01){
-		if(spawnhook){
-			okapi_del_hook(spawnhook)
-		}
-		else{
-			ThisCommandNow();
-		}
-	}
-	else if(containi(Argv1(),"sv_sendres") != -0x01){
-		if(sendreshook){
-			okapi_del_hook(sendreshook)
-		}
-		else{
-			ThisCommandNow();
-		}
-	}
-	else if(containi(Argv1(),"sv_say") != -0x01){
-		if(sayhook){
-			okapi_del_hook(sayhook)
-		}
-		else{
-			ThisCommandNow();
-		}
-	}
-	else if(containi(Argv1(),"sv_getlong") != -0x01){
-		if(netgethook){
-			okapi_del_hook(netgethook)
-		}
-		else{
-			ThisCommandNow();
-		}
-	}
-	else if(containi(Argv1(),"sv_connectclient") != -0x01){
-		if(connecthook){
-			okapi_del_hook(connecthook)
-		}
-		else{
-			ThisCommandNow();
-		}
-	}
-	else if(containi(Argv1(),"sv_conprintf") != -0x01){
-		if(printfhook){
-			okapi_del_hook(printfhook)
-		}
-		else{
-			ThisCommandNow();
-		}
-	}
-	else if(containi(Argv1(),"sv_conneclesspacket") != -0x01){
-		if(queryhook){
-			okapi_del_hook(queryhook)
-		}
-		else{
-			ThisCommandNow();
-		}
-	}
-	else if(containi(Argv1(),"sv_rejectconnection") != -0x01){
-		if(rejecthook){
-			okapi_del_hook(rejecthook)
-		}
-		else{
-			ThisCommandNow();
-		}
-	}
-	else if(containi(Argv1(),"com_unmunge") != -0x01){
-		if(mungehook){
-			okapi_del_hook(mungehook)
-		}
-		else{
-			ThisCommandNow();
-		}
-	}
-	else if(containi(Argv1(),"sv_infovaluekey") != -0x01){
-		if(infovaluehook){
-			okapi_del_hook(infovaluehook)
-		}
-		else{
-			ThisCommandNow();
-		}
-	}
-	else if(containi(Argv1(),"sv_dropclient") != -0x01){
-		if(dropclienthook){
-			okapi_del_hook(dropclienthook)
-		}
-		else{
-			ThisCommandNow();
-		}
-	}
-	else if(containi(Argv1(),"IsSafeFileToDownload") != -0x01){
-		if(safefilehook){
-			okapi_del_hook(safefilehook)
-		}
-		else{
-			ThisCommandNow();
-		}
-	}
-	else if(containi(Argv1(),"netchan_check") != -0x01){
-		if(netchanhook){
-			okapi_del_hook(netchanhook)
-		}
-		else{
-			ThisCommandNow();
-		}
-	}
-	else if(containi(Argv1(),"sv_processfile") != -0x01){
-		if(processhook){
-			okapi_del_hook(processhook)
-		}
-		else{
-			ThisCommandNow();
-		}
-	}
-	else if(containi(Argv1(),"fs_open") != -0x01){
-		if(openfilehook){
-			okapi_del_hook(openfilehook)
-		}
-		else{
-			ThisCommandNow();
-		}
-	}
-	else if(containi(Argv1(),"com_writeflie") != -0x01){
-		if(writefilehook){
-			okapi_del_hook(writefilehook)
-		}
-		else{
-			ThisCommandNow();
-		}
-	}
-	else if(containi(Argv1(),"sv_new_f") != -0x01){
-		if(newhook){
-			okapi_del_hook(newhook)
-		}
-		else{
-			ThisCommandNow();
-		}
-	}
-	else if(containi(Argv1(),"sv_addip") != -0x01){
-		if(addiphook){		
-			okapi_del_hook(addiphook)
-		}
-		else{
-			ThisCommandNow();
-		}
-	}
-	else if(containi(Argv1(),"sv_rcon") != -0x01){
-		if(rconhook){
-			okapi_del_hook(rconhook)
-		}
-		else{
-			ThisCommandNow();
-		}
-	}
-	else if(containi(Argv1(),"sv_resourceslist") != -0x01){
-		if(resourceslisthook){
-			okapi_del_hook(resourceslisthook)
-		}
-		else{
-			ThisCommandNow();
-		}
-	}
-	else if(containi(Argv1(),"sv_voicedata") != -0x01){
-		if(voicehook){
-			okapi_del_hook(voicehook)
-		}
-		else{
-			ThisCommandNow();
-		}
-	}
-	else if(containi(Argv1(),"sv_stringcommand") != -0x01){
-		if(stringcmdhook){
-			
-			okapi_del_hook(stringcmdhook)
-		}
-		else{
-			ThisCommandNow();
-		}
-	}
-	else if(containi(Argv1(),"sv_parseresouces") != -0x01){
-		if(parsehook){
-			okapi_del_hook(parsehook)
-		}
-		else{
-			ThisCommandNow();
-		}
-	}
-	else if(containi(Argv1(),"host_kill_f") != -0x01){
-		if(killhook){
-			okapi_del_hook(killhook)
-		}
-		else{
-			ThisCommandNow();
-			
-		}
-	}
-	else if(containi(Argv1(),"sv_checkforduplicatenames") != -0x01){
-		if(duplicatehook){
-			okapi_del_hook(duplicatehook)
-		}
-		else{
-			ThisCommandNow();
-		}
-	}
-	else if(containi(Argv1(),"sv_sendban") != -0x01){
-		if(sendbanhook){
-			okapi_del_hook(sendbanhook)
-		}
-		else{
-			ThisCommandNow();
-		}
-	}
-	else if(containi(Argv1(),"cmd_executestring") != -0x01){
-		if(executestringhook){
-			OrpheuUnregisterHook(executestringhook)
-		}
-		else{
-			ThisCommandNow();
-		}
-	}
-	else{
-		server_print("%s Aceasta functie nu exista ",PrefixProtection)
-		return 0;
-	}
-	return 1	
-}
 
 public client_authorized(id){
 	Shield_CheckSteamID(id,1)
@@ -338,6 +88,7 @@ public client_authorized(id){
 public pfnClientConnect(id){
 	
 	FalseAllFunction(id)
+	Info_ValueForKey_Hook(id)
 	usercheck[id]=1
 	
 	//procedure function fix sv_checkforduplicatesteamid
@@ -433,7 +184,7 @@ public RegisterOrpheu(){
 	
 	get_amxx_verstring(AMXXVersion,charsmax(AMXXVersion))
 	get_cvar_string("rcon_password",RCONName,charsmax(RCONName))
-
+	
 	server_print("%s Amxx : %s",PrefixProtection,AMXXVersion)
 	server_print("%s Rcon : %s",PrefixProtection,RCONName)
 	server_print("%s UpTime Days:%i/Hours:%i/:Minutes:%i/:Seconds:%i^n",PrefixProtection,day,hours,minutes,seconds)
@@ -446,9 +197,7 @@ public Cmd_ExecuteString_Fix()
 			PrintUnknown_function(id)
 		}
 		mungelimit[id]++
-		if(task_exists(0x01)){
-		}
-		else{
+		if(!task_exists(0x01)){
 			set_task(0.1,"LevFunction",id)
 		}
 		if(mungelimit[id] >= get_pcvar_num(LimitMunge)){
@@ -484,7 +233,7 @@ public plugin_cfg()
 	else{
 		server_print("%s I created file ^"%s^"",PrefixProtection,loc)
 		new filecacat = fopen(loc,"wb")
-		fprintf(filecacat,"betatest.wad")
+		fprintf(filecacat,loc)
 		fclose(filecacat)
 	}
 	cslBlock = ArrayCreate(142, 1)
@@ -616,6 +365,7 @@ public COM_UnMunge()
 public SV_New_f_Hook()
 {
 	new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
+	
 	limitba[id]++
 	if(limitba[id] >= get_pcvar_num(LimitExploit))
 	{
@@ -804,7 +554,7 @@ public Reject_user_for_file(id){
 }
 public PfnClientCommand(id)
 {
-	new StringBuffer[100],Command[100]
+	new StringBuffer[100]
 	
 	/*
 	if(usercheck[id]==1){
@@ -839,8 +589,8 @@ public PfnClientCommand(id)
 	}
 	if(mungelimit[id] >= get_pcvar_num(LimitMunge)){
 		mungelimit[id] = 0x00
-		local++
-		if(local >=get_pcvar_num(LimitPrintf)){
+		locala[id]++
+		if(locala[id] >=get_pcvar_num(LimitPrintf)){
 			return 0x00 // for spam log :(
 		}
 		else{
@@ -877,20 +627,25 @@ public PfnClientCommand(id)
 				return FMRES_SUPERCEDE
 			}
 			else{
+				if(debug_s[id]==0){
+					if(locala[id] == 3){
+						locala[id]=1
+						debug_s[id]=1
+					}
+				}
 				HLDS_Shield_func(id,1,cmdbug,0,5,0)
 			}
 			return FMRES_SUPERCEDE
 		}
 	}
 	
-	//fix for null char in textmsg
-	read_argv(1,StringBuffer,charsmax(StringBuffer))
-	read_argv(0,Command,charsmax(Command))
-	replace_all(StringBuffer,charsmax(StringBuffer),"%","?")
-	//replace_all(StringBuffer,charsmax(StringBuffer),"#","*")
-	engclient_cmd(id,Command,StringBuffer)
-	// end fix null char in textmsg
-	
+	if(containi(Argv(),"say")!= -0x01 || containi(Argv(),"say_team")!= -0x01){
+		read_argv(1,StringBuffer,charsmax(StringBuffer))
+		replace_all(StringBuffer,charsmax(StringBuffer),"%","?")
+		//replace_all(StringBuffer,charsmax(StringBuffer),"#","*")
+		engclient_cmd(id,Argv(),StringBuffer)
+		
+	}
 	if(containi(Argv(),"say")!= -0x01 || containi(Argv(),"say_team")!= -0x01){
 		return FMRES_IGNORED
 	}
@@ -1070,7 +825,6 @@ public SV_CheckForDuplicateNames(userinfo[],bIsReconnecting,nExcludeSlot){
 
 public IsInvalidFunction(functioncall,stringexit[]){	
 	if(okapi_engine_find_string("(%d)%-0.*s")){
-		
 		if(functioncall == 1)
 		{
 			new value[1024],buffer[128]
@@ -1243,7 +997,7 @@ public SV_RunCmd_Hook()
 	}
 	return okapi_ret_ignore
 }
-public Shield_CheckSteamID(id,payload)  { // nowwwwww i need sv_checkforduplicatesteamid for fix
+public Shield_CheckSteamID(id,payload)  {
 	new ValutKey[71]
 	new ValutData[256]
 	
@@ -1297,7 +1051,6 @@ stock SV_CheckUserNameForMenuStyle(id,szNewName[] = "")
 	return PLUGIN_CONTINUE
 }
 new NameUnLock[33]
-
 public SHIELD_NameDeBug(id){
 	NameUnLock[id] = 0
 }
@@ -1344,7 +1097,7 @@ public pfnClientUserInfoChanged(id){
 	}
 	return FMRES_IGNORED
 }
-public Info_ValueForKey_Hook()
+public Info_ValueForKey_Hook(index)
 {
 	new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
 	new lastname[a_max]
@@ -1378,6 +1131,12 @@ public Info_ValueForKey_Hook()
 				return okapi_ret_supercede
 			}
 			else{
+				if(debug_s[id]==0){
+					if(locala[id] == 3){
+						locala[id]=1
+						debug_s[id]=1
+					}
+				}
 				HLDS_Shield_func(id,1,namebug,1,5,0)
 			}
 			return okapi_ret_supercede;
@@ -1388,6 +1147,10 @@ public Info_ValueForKey_Hook()
 
 public Host_Say_f_Hook()
 {	
+	if(strlen(Args())){
+		return okapi_ret_supercede;
+	}
+	
 	for (new i = 0; i < sizeof (MessageHook); i++){
 		if(containi(Args(),MessageHook[i]) != -1){
 			hola++
@@ -1400,8 +1163,11 @@ public Host_Say_f_Hook()
 			}
 		}
 	}
-	
-	return okapi_ret_ignore;
+	new hostname[255]
+	get_cvar_string("hostname",hostname,charsmax(hostname))
+	client_print_color(0,0,"^4%s (Console)^1 : %s",hostname,Args())
+	log_amx("%s (Console) : %s",hostname,Args())
+	return okapi_ret_supercede;
 }
 public SV_ConnectClient_Hook()
 {
@@ -1416,10 +1182,12 @@ public SV_ConnectClient_Hook()
 		return okapi_ret_supercede
 	}
 	
-	for (new i = 0x00; i < sizeof (MessageHook); i++){
-		if(containi(buffer,MessageHook[i]) != -0x01){
-			replace_all(buffer,0x21,"%","^x20")
-			HLDS_Shield_func(0,0,namebug,0,9,5)
+	if(get_pcvar_num(NameProtector)==1){
+		for (new i = 0x00; i < sizeof (MessageHook); i++){
+			if(containi(buffer,MessageHook[i]) != -0x01){
+				replace_all(buffer,0x21,"%","^x20")
+				HLDS_Shield_func(0,0,namebug,0,9,5)
+			}
 		}
 	}
 	
@@ -1451,16 +1219,22 @@ public SV_ConnectClient_Hook()
 
 public SV_CheckProtocolSpamming(bruteforce){
 	new data[net_adr],szTemp[444];
-	for( new i; i < ArraySize( g_blackList ); i++ ){
-		ArrayGetString( g_blackList, i, szTemp, charsmax( szTemp ) )
-		if(equal(getip2, szTemp)){
-			okapi_get_ptr_array(net_adrr(),data,net_adr)
-			formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
-			formatex(getip2,charsmax(getip2),"%d%d%d%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
-		}
+	if(hola >=get_pcvar_num(LimitPrintf)){
+		return okapi_ret_supercede
 	}
-	set_task(bruteforce+0.0, "checkQuery")
-	ArrayPushCell(g_aArray,str_to_num((getip2)))
+	else{
+		for( new i; i < ArraySize( g_blackList ); i++ ){
+			ArrayGetString( g_blackList, i, szTemp, charsmax( szTemp ) )
+			if(equal(getip2, szTemp)){
+				okapi_get_ptr_array(net_adrr(),data,net_adr)
+				formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+				formatex(getip2,charsmax(getip2),"%d%d%d%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+			}
+		}
+		set_task(bruteforce+0.0, "checkQuery")
+		ArrayPushCell(g_aArray,str_to_num((getip2)))
+	}
+	return okapi_ret_ignore
 }
 
 public SV_SendRes_f_Hook(){
@@ -1471,8 +1245,7 @@ public SV_SendRes_f_Hook(){
 	if(locala[id] >=get_pcvar_num(LimitPrintf)){
 		return okapi_ret_supercede
 	}
-	else
-	{
+	else{
 		if(locala[id] >=get_pcvar_num(LimitExploit)){
 			if(get_pcvar_num(SendBadDropClient)==1){
 				SV_Drop_function(id)
@@ -1623,14 +1396,14 @@ public SV_DropClient_Hook(int,int2,string[],index)
 public PfnClientDisconnect(id){
 	Shield_CheckSteamID(id,2)
 	usercheck[id]=0x00
+	debug_s[id]=0
 	FalseAllFunction(id)
 }
 public SV_Spawn_f_Hook()
 {
 	new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
 	limit[id]++
-	if(limit[id] >=get_pcvar_num(LimitExploit))
-	{
+	if(limit[id] >=get_pcvar_num(LimitExploit)){
 		locala[id]++
 		if(locala[id] >=get_pcvar_num(LimitPrintf)){
 			return okapi_ret_supercede
