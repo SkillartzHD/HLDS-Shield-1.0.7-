@@ -4,9 +4,12 @@
 #include <orpheu_advanced>
 #include <orpheu>
 #include <okapi>
+#include <engine>
+#include <nvault>
+#include <regex>
 // linux singature
 
-
+new g_MaxClients,Regex:g_iPattern
 new OrpheuHook:executestringhook
 new okapi_hook:sendbanhook
 new okapi_hook:spawnhook
@@ -35,11 +38,12 @@ new okapi_hook:parsehook
 new okapi_hook:killhook
 new okapi_hook:duplicatehook
 new limitba[33]
+new debug_s[33]
 new localas[33],valutsteamid,authid[32],authid2[32],szip[32],szip2[33],bullshit[200]
 #define fakeplayer "CSTRIKE_FAKEPLAYERS"
 #define suspicious "CSTRIKE_SUSPICIOUS"
 #define ilegalcommand "CSTRIKE_ILEGALCMD"
-#define cmdbug "CSTRIKE_CRASH"
+#define cmdbug "CSTRIKE_pfnClientCommand"
 #define namebug "CSTRIKE_SetValueForStarKey"
 #define netbug "CSTRIKE_NETLONG"
 #define autobuybug "CSTRIKE_SETAUTOBUY"
@@ -1002,7 +1006,239 @@ public Register_Settings()
 		mkdir(dirmax)
 	}
 }
+public ThisCommandNow(){ server_print("%s This function is disabled",PrefixProtection);}
 
+public RegisterRemoveFunction(){
+	
+	if(!strlen(Argv1())){
+		server_print("shield_remove_function <function>")
+		return 0;
+	}
+	
+	if(containi(Argv1(),"sv_spawn_f") != -0x01){
+		if(spawnhook){
+			okapi_del_hook(spawnhook)
+		}
+		else{
+			ThisCommandNow();
+		}
+	}
+	else if(containi(Argv1(),"sv_sendres") != -0x01){
+		if(sendreshook){
+			okapi_del_hook(sendreshook)
+		}
+		else{
+			ThisCommandNow();
+		}
+	}
+	else if(containi(Argv1(),"sv_say") != -0x01){
+		if(sayhook){
+			okapi_del_hook(sayhook)
+		}
+		else{
+			ThisCommandNow();
+		}
+	}
+	else if(containi(Argv1(),"sv_getlong") != -0x01){
+		if(netgethook){
+			okapi_del_hook(netgethook)
+		}
+		else{
+			ThisCommandNow();
+		}
+	}
+	else if(containi(Argv1(),"sv_connectclient") != -0x01){
+		if(connecthook){
+			okapi_del_hook(connecthook)
+		}
+		else{
+			ThisCommandNow();
+		}
+	}
+	else if(containi(Argv1(),"sv_conprintf") != -0x01){
+		if(printfhook){
+			okapi_del_hook(printfhook)
+		}
+		else{
+			ThisCommandNow();
+		}
+	}
+	else if(containi(Argv1(),"sv_conneclesspacket") != -0x01){
+		if(queryhook){
+			okapi_del_hook(queryhook)
+		}
+		else{
+			ThisCommandNow();
+		}
+	}
+	else if(containi(Argv1(),"sv_rejectconnection") != -0x01){
+		if(rejecthook){
+			okapi_del_hook(rejecthook)
+		}
+		else{
+			ThisCommandNow();
+		}
+	}
+	else if(containi(Argv1(),"com_unmunge") != -0x01){
+		if(mungehook){
+			okapi_del_hook(mungehook)
+		}
+		else{
+			ThisCommandNow();
+		}
+	}
+	else if(containi(Argv1(),"sv_infovaluekey") != -0x01){
+		if(infovaluehook){
+			okapi_del_hook(infovaluehook)
+		}
+		else{
+			ThisCommandNow();
+		}
+	}
+	else if(containi(Argv1(),"sv_dropclient") != -0x01){
+		if(dropclienthook){
+			okapi_del_hook(dropclienthook)
+		}
+		else{
+			ThisCommandNow();
+		}
+	}
+	else if(containi(Argv1(),"IsSafeFileToDownload") != -0x01){
+		if(safefilehook){
+			okapi_del_hook(safefilehook)
+		}
+		else{
+			ThisCommandNow();
+		}
+	}
+	else if(containi(Argv1(),"netchan_check") != -0x01){
+		if(netchanhook){
+			okapi_del_hook(netchanhook)
+		}
+		else{
+			ThisCommandNow();
+		}
+	}
+	else if(containi(Argv1(),"sv_processfile") != -0x01){
+		if(processhook){
+			okapi_del_hook(processhook)
+		}
+		else{
+			ThisCommandNow();
+		}
+	}
+	else if(containi(Argv1(),"fs_open") != -0x01){
+		if(openfilehook){
+			okapi_del_hook(openfilehook)
+		}
+		else{
+			ThisCommandNow();
+		}
+	}
+	else if(containi(Argv1(),"com_writeflie") != -0x01){
+		if(writefilehook){
+			okapi_del_hook(writefilehook)
+		}
+		else{
+			ThisCommandNow();
+		}
+	}
+	else if(containi(Argv1(),"sv_new_f") != -0x01){
+		if(newhook){
+			okapi_del_hook(newhook)
+		}
+		else{
+			ThisCommandNow();
+		}
+	}
+	else if(containi(Argv1(),"sv_addip") != -0x01){
+		if(addiphook){		
+			okapi_del_hook(addiphook)
+		}
+		else{
+			ThisCommandNow();
+		}
+	}
+	else if(containi(Argv1(),"sv_rcon") != -0x01){
+		if(rconhook){
+			okapi_del_hook(rconhook)
+		}
+		else{
+			ThisCommandNow();
+		}
+	}
+	else if(containi(Argv1(),"sv_resourceslist") != -0x01){
+		if(resourceslisthook){
+			okapi_del_hook(resourceslisthook)
+		}
+		else{
+			ThisCommandNow();
+		}
+	}
+	else if(containi(Argv1(),"sv_voicedata") != -0x01){
+		if(voicehook){
+			okapi_del_hook(voicehook)
+		}
+		else{
+			ThisCommandNow();
+		}
+	}
+	else if(containi(Argv1(),"sv_stringcommand") != -0x01){
+		if(stringcmdhook){
+			
+			okapi_del_hook(stringcmdhook)
+		}
+		else{
+			ThisCommandNow();
+		}
+	}
+	else if(containi(Argv1(),"sv_parseresouces") != -0x01){
+		if(parsehook){
+			okapi_del_hook(parsehook)
+		}
+		else{
+			ThisCommandNow();
+		}
+	}
+	else if(containi(Argv1(),"host_kill_f") != -0x01){
+		if(killhook){
+			okapi_del_hook(killhook)
+		}
+		else{
+			ThisCommandNow();
+			
+		}
+	}
+	else if(containi(Argv1(),"sv_checkforduplicatenames") != -0x01){
+		if(duplicatehook){
+			okapi_del_hook(duplicatehook)
+		}
+		else{
+			ThisCommandNow();
+		}
+	}
+	else if(containi(Argv1(),"sv_sendban") != -0x01){
+		if(sendbanhook){
+			okapi_del_hook(sendbanhook)
+		}
+		else{
+			ThisCommandNow();
+		}
+	}
+	else if(containi(Argv1(),"cmd_executestring") != -0x01){
+		if(executestringhook){
+			OrpheuUnregisterHook(executestringhook)
+		}
+		else{
+			ThisCommandNow();
+		}
+	}
+	else{
+		server_print("%s Aceasta functie nu exista ",PrefixProtection)
+		return 0;
+	}
+	return 1	
+}
 public RegisterOkapi()
 {
 	new build[varmax]
