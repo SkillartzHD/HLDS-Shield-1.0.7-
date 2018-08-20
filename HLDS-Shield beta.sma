@@ -19,7 +19,10 @@ pedeapsa - 1 kick cu sv_rejectconnection(doar daca el se afla pana in sv_connect
 */
 
 
-new NameProtector
+/*
+fix in int GetChallengeNr (cunoscut ca si 0x7FFFFFFFu) sau ReplyServerChallenge
+fix in ValidInfoChallenge ( Source Engine Query )
+*/
 public plugin_precache()
 {
 	Register()
@@ -32,6 +35,7 @@ public plugin_precache()
 	
 	NameProtector=register_cvar("shield_name_protector","1")
 	KillBug=register_cvar("shield_kill_crash","1")
+	Queryviewer=register_cvar("shield_query_log","0")
 	VAC=register_cvar("shield_vac","1")
 	MaxOverflowed=register_cvar("shield_max_overflowed","1000")
 	PrintUnMunge=register_cvar("shield_printf_decrypt_munge","0")
@@ -538,7 +542,14 @@ public SecureServerOkapi_new() {
 }
 
 public SV_SendBan_fix(){
-	SV_CheckProtocolSpamming(1)
+	if(SV_CheckProtocolSpamming(2)){
+		return okapi_ret_supercede
+	}
+	
+	if(SV_FilterAddress(1)){
+		return okapi_ret_supercede
+	}
+	return okapi_ret_ignore
 }
 
 public SV_Drop_function(index){
@@ -726,10 +737,57 @@ public RegisterReplaceString()
 	okapi_engine_replace_string(Argv1(),Argv2())
 	return PLUGIN_CONTINUE
 }
+public SV_FilterAddress(writememory){	
+	
+	new data[net_adr],getip2[40]
+	okapi_get_ptr_array(net_adrr(),data,net_adr)
+	formatex(getip2,charsmax(getip2),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+	
+	if(writememory == 1){ // citeste
+		new size = file_size( ip_flitred , 1 ) 
+		for ( new i = 0 ; i < size ; i++ ){
+			new szLine[ 128 ], iLen;
+			read_file(ip_flitred, i, szLine, charsmax( szLine ), iLen );
+			if(containi(getip2,szLine[i]) != -0x01){
+				return okapi_ret_supercede
+			}
+		}
+	}
+	if(writememory == 2){ // scrie
+		new fileid = fopen(ip_flitred,"at")
+		if(fileid){
+			new compress[40];
+			formatex(compress,charsmax(compress),"%s^n",getip2)
+			fputs(fileid,compress)
+		}
+		fclose(fileid)	
+	}
+	return okapi_ret_ignore
+}
 public SV_ConnectionlessPacket_Hook()
 {
-	SV_CheckProtocolSpamming(2)
+	/* fix for
+	SVC_GetChallenge();
+	SVC_ServiceChallenge(); 
+	SV_ConnectClient(); 
+	SV_Rcon(&net_from);
+	SVC_GameDllQuery(args);
+	*/
 	
+	if(SV_CheckProtocolSpamming(2)){
+		return okapi_ret_supercede
+	}
+	
+	if(SV_FilterAddress(1)){
+		return okapi_ret_supercede
+	}
+	
+	if(get_pcvar_num(Queryviewer)==1){
+		new data[net_adr],getip2[40]
+		okapi_get_ptr_array(net_adrr(),data,net_adr)
+		formatex(getip2,charsmax(getip2),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+		log_to_file(settings,"%s SV_ConnectionlessPacket : %s with address %s",PrefixProtection,Argv1(),getip2)
+	}
 	if(containi(Argv(),"log")!=-0x01){
 		return okapi_ret_supercede
 	}
@@ -776,6 +834,7 @@ public checkQuery()
 			return okapi_ret_supercede
 		}
 		else{
+			SV_FilterAddress(2) // write
 			HLDS_Shield_func(0,0,query,0,11,4)
 			return okapi_ret_supercede
 		}
@@ -1219,6 +1278,7 @@ public SV_ConnectClient_Hook()
 
 public SV_CheckProtocolSpamming(bruteforce){
 	new data[net_adr],szTemp[444];
+	
 	if(hola >=get_pcvar_num(LimitPrintf)){
 		return okapi_ret_supercede
 	}
