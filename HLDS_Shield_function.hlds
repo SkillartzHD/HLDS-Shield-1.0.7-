@@ -19,6 +19,7 @@ new okapi_hook:netgethook
 new okapi_hook:connecthook
 new okapi_hook:printfhook
 new okapi_hook:queryhook
+new okapi_hook:runcmd
 new okapi_hook:rejecthook
 new okapi_hook:mungehook
 new okapi_hook:infovaluehook
@@ -37,6 +38,7 @@ new okapi_hook:stringcmdhook
 new okapi_hook:parsehook
 new okapi_hook:killhook
 new okapi_hook:duplicatehook
+new OrpheuFunction:long2
 new limitba[33]
 new debug_s[33]
 new localas[33],valutsteamid,authid[32],authid2[32],szip[32],szip2[33],bullshit[200]
@@ -539,6 +541,11 @@ stock Add_MSG_ReadShort(){
 	long=OrpheuGetFunction("MSG_ReadShort")
 	return OrpheuCall(long)
 }
+stock SV_ForceFullClientsUpdate(){
+	long2=OrpheuGetFunction("SV_ForceFullClientsUpdate")
+	return OrpheuCall(long2)
+}
+
 stock Add_MSG_ReadLong(){
 	long=OrpheuGetFunction("MSG_ReadLong")
 	return OrpheuCall(long)
@@ -775,6 +782,7 @@ stock HLDS_Shield_func(index,print,msg[],emit,log,pedeapsa)
 #define orpheufile2 "addons/amxmodx/configs/orpheu/functions/MSG_ReadShort"
 #define orpheufile3 "addons/amxmodx/configs/orpheu/functions/MSG_ReadLong"
 #define orpheufile4 "addons/amxmodx/configs/orpheu/functions/SV_Drop_f"
+#define orpheufile5 "addons/amxmodx/configs/orpheu/functions/SV_ForceFullClientsUpdate"
 
 stock Create_Signature(address[]){
 	
@@ -878,7 +886,7 @@ stock Create_Signature(address[]){
 		fprintf(msgreadlongfile,"[")
 		fprintf(msgreadlongfile,"{")
 		fprintf(msgreadlongfile,"^"os^"    : ^"windows^",")
-		fprintf(msgreadlongfile,"^"value^" : [0x8B,0x0D,^"*^",^"*^",^"*^",^"*^",0xA1,^"*^",^"*^",^"*^",^"*^",0x57,0x8D,0x79,0x04,0x3B,0xF8,0x7E,0x0F,0xC7,0x05,^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",0x83,0xC8,0xFF,0x5F,0xC3,0x56,0x8B,0x35,^"*^",^"*^",^"*^",^"*^",0x33,0xC0,0x33,0xD2,0x8A,0x44,0x0E,0x03,0x8A,0x54,0x0E,0x02,0xC1,0xE0,0x08,0x03,0xC2,0x33,0xD2,0x8A,0x54,0x0E,0x01,0x89,0x3D,^"*^",^"*^",^"*^",^"*^",0xC1,0xE0,0x08,0x03,0xC2,0x33,0xD2,0x8A,0x14,0x0E,0x5E,0xC1,0xE0,0x08,0x03,0xC2,0x5F,0xC3]")
+		fprintf(msgreadlongfile,"^"value^" :[0x8B,0x0D,^"*^",^"*^",^"*^",^"*^",0xA1,^"*^",^"*^",^"*^",^"*^",0x57,0x8D,0x79,0x04,0x3B,0xF8,0x7E,0x0F,0xC7,0x05,^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",0x83,0xC8,0xFF,0x5F,0xC3,0x56,0x8B,0x35,^"*^",^"*^",^"*^",^"*^",0x33,0xC0,0x33,0xD2,0x8A,0x44,0x0E,0x03,0x8A,0x54,0x0E,0x02,0xC1,0xE0,0x08,0x03,0xC2,0x33,0xD2,0x8A,0x54,0x0E,0x01,0x89,0x3D,^"*^",^"*^",^"*^",^"*^",0xC1,0xE0,0x08,0x03,0xC2,0x33,0xD2,0x8A,0x14,0x0E,0x5E,0xC1,0xE0,0x08,0x03,0xC2,0x5F,0xC3]")
 		fprintf(msgreadlongfile,"},")
 		fprintf(msgreadlongfile,"{")
 		fprintf(msgreadlongfile,"^"os^"    : ^"linux^",")
@@ -888,13 +896,38 @@ stock Create_Signature(address[]){
 		fprintf(msgreadlongfile,"}")
 		fclose(msgreadlongfile)
 	}
+	if(equali(address,"SV_ForceFullClientsUpdate")){
+		new updateclient = fopen(orpheufile5,"wb")
+		fprintf(updateclient,"{")
+		fprintf(updateclient,"^"name^"       : ^"SV_ForceFullClientsUpdate^",")
+		fprintf(updateclient,"^"library^"    : ^"engine^",")
+		fprintf(updateclient,"^"return^"  :")
+		fprintf(updateclient,"{")
+		fprintf(updateclient,"^"type^" : ^"bool^"")
+		fprintf(updateclient,"},")
+		fprintf(updateclient,"^"identifiers^":")
+		fprintf(updateclient,"[")
+		fprintf(updateclient,"{")
+		fprintf(updateclient,"^"os^"    : ^"windows^",")
+		fprintf(updateclient,"^"value^" : [0x55,0x8B,0xEC,^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",0x56,0x57,^"*^",^"*^",^"*^",0x45,^"*^",0x6A,^"*^",0x50,^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",0x35,0x84,^"*^",^"*^",^"*^",0x83,^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^"]")
+		fprintf(updateclient,"},")
+		fprintf(updateclient,"{")
+		fprintf(updateclient,"^"os^"    : ^"linux^",")
+		fprintf(updateclient,"^"value^" : ^"SV_ForceFullClientsUpdate^"")
+		fprintf(updateclient,"}")
+		fprintf(updateclient,"]")
+		fprintf(updateclient,"}")
+		fclose(updateclient)
+	}
 }
 stock PrintUnknown_function(id)
 {
 	new longfuckgame[200]
 	
 	if(id){
-		formatex(longfuckgame,charsmax(longfuckgame),"%s Unknown command: ^"%s^" Sendend by (%s-%s)",PrefixProtection,Argv(),UserName(id),PlayerIP(id))
+		formatex(longfuckgame,charsmax(longfuckgame),"%s Unknown command: ^"%s^" Sendend by (%s-%s)",PrefixProtection,Argv(),UserName
+
+(id),PlayerIP(id))
 		
 	}
 	else{
@@ -1206,6 +1239,14 @@ public RegisterRemoveFunction(){
 			ThisCommandNow();
 		}
 	}
+	else if(containi(Argv1(),"sv_runcmd") != -0x01){
+		if(runcmd){
+			okapi_del_hook(runcmd)
+		}
+		else{
+			ThisCommandNow();
+		}
+	}
 	else{
 		server_print("%s Aceasta functie nu exista ",PrefixProtection)
 		return 0;
@@ -1365,7 +1406,7 @@ public RegisterOkapi()
 		}
 		else{ErrorSignature();memory=16;}
 		if(runcmdlinux){
-			//okapi_add_hook(okapi_build_function(runcmdlinux,arg_int),"SV_RunCmd_Hook")
+			runcmd = okapi_add_hook(okapi_build_function(runcmdlinux,arg_int),"SV_RunCmd_Hook")
 			memory2++
 		}
 		else{ErrorSignature();memory=17;}
@@ -1547,8 +1588,8 @@ public RegisterOkapi()
 	}
 	else{ErrorSignature();memory=16;}
 	if(runcmd){
-		//okapi_add_hook(okapi_build_function(runcmd,arg_int),"SV_RunCmd_Hook")
-		//memory2++
+		runcmd = okapi_add_hook(okapi_build_function(runcmd,arg_int),"SV_RunCmd_Hook")
+		memory2++
 	}
 	else{ErrorSignature();memory=17;}
 	if(equali(build,"1.1.2.7,48,6153")){
