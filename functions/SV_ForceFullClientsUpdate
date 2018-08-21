@@ -1,0 +1,19 @@
+{
+    "name" : "SV_ForceFullClientsUpdate",
+    "library" : "engine",
+    "return" :
+        {
+            "type" : "bool"
+        },
+	"identifiers" :
+	[
+		{
+			"os" : "windows",
+			"value" : [0x55,0x8B,0xEC,"*","*","*","*","*","*","*","*","*","*",0x56,0x57,"*","*","*",0x45,"*",0x6A,"*",0x50,"*","*","*","*","*","*","*","*","*","*","*",0x35,0x84,"*","*","*",0x83,"*","*","*","*","*","*","*","*"]
+		},
+		{
+			"os" : "linux",
+			"value" : "SV_ForceFullClientsUpdate"
+		}
+	]
+}
