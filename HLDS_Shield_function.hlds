@@ -1281,7 +1281,7 @@ public RegisterOkapi()
 	new netchann4554 = okapi_engine_find_sig(Netchan_CheckForCompletion4554,charsmax(Netchan_CheckForCompletion4554))
 	new processfile = okapi_engine_find_sig(SV_ProcessFile,charsmax(SV_ProcessFile))
 	new fsopen = okapi_engine_find_sig(FS_Open,charsmax(FS_Open))
-	new runcmd = okapi_engine_find_sig(SV_RunCmd,charsmax(SV_RunCmd))
+	new runcmdx = okapi_engine_find_sig(SV_RunCmd,charsmax(SV_RunCmd))
 	new newf = okapi_engine_find_sig(SV_New_fw,charsmax(SV_New_fw))
 	new newf6153 = okapi_engine_find_sig(SV_New_fw6153,charsmax(SV_New_fw6153))
 	new parsebad = okapi_engine_find_sig(SV_ParseConsistencyResponse,charsmax(SV_ParseConsistencyResponse))
@@ -1587,8 +1587,8 @@ public RegisterOkapi()
 		memory2++
 	}
 	else{ErrorSignature();memory=16;}
-	if(runcmd){
-		runcmd = okapi_add_hook(okapi_build_function(runcmd,arg_int),"SV_RunCmd_Hook")
+	if(runcmdx){
+		runcmd = okapi_add_hook(okapi_build_function(runcmdx,arg_int),"SV_RunCmd_Hook")
 		memory2++
 	}
 	else{ErrorSignature();memory=17;}
