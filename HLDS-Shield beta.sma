@@ -89,37 +89,15 @@ public SV_ForceFullClientsUpdate_api(index){
 
 public client_authorized(id){
 	Shield_CheckSteamID(id,1)
+	SV_CheckForDuplicateSteamID(id)
 }
 
 public pfnClientConnect(id){
 	
 	FalseAllFunction(id)
 	Info_ValueForKey_Hook(id)
+	
 	usercheck[id]=1
-	
-	//procedure function fix sv_checkforduplicatesteamid
-	
-	new CertificateSteamID[50],AllUserCertificateSteamID[50]
-	
-	get_user_authid(id,CertificateSteamID,charsmax(CertificateSteamID))
-	
-	for(new i = 1; i <= g_MaxClients; i++){
-		
-		if(is_user_connected(i)){
-			get_user_authid(i,AllUserCertificateSteamID,charsmax(AllUserCertificateSteamID))
-		}
-		if(containi(CertificateSteamID, AllUserCertificateSteamID[i]) != -1){
-			new longtext[255]
-			formatex(longtext,charsmax(longtext),"[%s] Your SteamID is duplicated %s",me[0x02],CertificateSteamID)
-			SV_RejectConnection_user(id,longtext)
-			HLDS_Shield_func(id,0,steamidhack,1,1,0)
-			if(get_pcvar_num(SendBadDropClient)==1){
-				SV_Drop_function(id)
-			}
-		}		
-	}
-	//end
-	
 	/*
 	if(usercheck[id]==0x01){
 		GenerateRandom()
@@ -673,8 +651,10 @@ public PfnClientCommand(id)
 	if(containi(Argv(),"say")!= -0x01 || containi(Argv(),"say_team")!= -0x01){
 		return FMRES_IGNORED
 	}
-	else
-	{
+	if(containi(Argv1(),"autobuy") != -0x01){
+		return FMRES_IGNORED
+	}
+	else{
 		for (new i = 0x00; i < sizeof(ShieldServerCvarBlock); i++){
 			if(containi(Argv1(),ShieldServerCvarBlock[i]) != -0x01){
 				locala[id]++
@@ -682,9 +662,15 @@ public PfnClientCommand(id)
 					return FMRES_SUPERCEDE
 				}
 				else{
+					if(debug_s[id]==0){
+						if(locala[id] == 3){
+							locala[id]=1
+							debug_s[id]=1
+						}
+					}
 					HLDS_Shield_func(id,1,ilegalcommand,id,1,0)
+					return FMRES_SUPERCEDE;
 				}
-				return FMRES_SUPERCEDE;
 			}
 		}
 	}
@@ -1073,6 +1059,7 @@ public SV_RunCmd_Hook()
 					}
 					else{
 						HLDS_Shield_func(id,0,cmdrun,0,1,1)
+						return okapi_ret_supercede;
 					}
 				}
 				return okapi_ret_supercede;
@@ -1080,6 +1067,27 @@ public SV_RunCmd_Hook()
 		}
 	}
 	return okapi_ret_ignore
+}
+public SV_CheckForDuplicateSteamID(id){
+	//procedure function fix sv_checkforduplicatesteamid
+	
+	new CertificateSteamID[50],AllUserCertificateSteamID[50]
+	
+	get_user_authid(id,CertificateSteamID,charsmax(CertificateSteamID))
+	
+	for(new i = 1; i <= g_MaxClients; i++){
+		
+		if(is_user_connected(i)){
+			get_user_authid(i,AllUserCertificateSteamID,charsmax(AllUserCertificateSteamID))
+		}
+		if(containi(CertificateSteamID, AllUserCertificateSteamID) != -1){
+			new longtext[255]
+			formatex(longtext,charsmax(longtext),"[%s] Your SteamID is duplicated %s",me[0x02],CertificateSteamID)
+			SV_RejectConnection_user(id,longtext)
+			HLDS_Shield_func(id,0,steamidhack,1,1,0)
+		}		
+	}
+	//end
 }
 public Shield_CheckSteamID(id,payload)  {
 	new ValutKey[71]
@@ -1262,6 +1270,9 @@ public SV_ConnectClient_Hook()
 	BufferName(value,charsmax(value),buffer)
 	formatex(checkduplicate,charsmax(checkduplicate),"^x25^x73^x5C^x6E^x61^x6D^x65^x5C",buffer)
 	
+	if(IsInvalidFunction(2,"userinfo")){
+		return okapi_ret_supercede
+	}
 	
 	if(get_pcvar_num(NameProtector)==1){
 		for (new i = 0x00; i < sizeof (MessageHook); i++){
