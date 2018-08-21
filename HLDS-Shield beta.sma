@@ -83,7 +83,9 @@ public plugin_precache()
 	server_cmd("exec %s",loc2)
 	
 }
-
+public SV_ForceFullClientsUpdate_api(index){
+	SV_ForceFullClientsUpdate()
+}
 
 public client_authorized(id){
 	Shield_CheckSteamID(id,1)
@@ -142,8 +144,16 @@ public SV_ParseConsistencyResponse_fix(){
 }
 public RegisterOrpheu(){
 	
+	if(!file_exists(orpheufile5)){
+		server_print("%s Injected successfully %s",PrefixProtection,orpheufile5)
+		Create_Signature("SV_ForceFullClientsUpdate")
+		set_task(1.0,"debug_orpheu")
+	}
+	else{
+		memory2++
+	}
 	if(!file_exists(orpheufile4)){
-		server_print("%s Injected successfully SV_Drop_f",PrefixProtection)
+		server_print("%s Injected successfully %s",PrefixProtection,orpheufile4)
 		Create_Signature("SV_Drop_f")
 		set_task(1.0,"debug_orpheu")
 	}
@@ -151,7 +161,7 @@ public RegisterOrpheu(){
 		memory2++
 	}
 	if(!file_exists(orpheufile2)){
-		server_print("%s Injected successfully MSG_ReadShort",PrefixProtection)
+		server_print("%s Injected successfully %s",PrefixProtection,orpheufile2)
 		Create_Signature("MSG_ReadShort")
 		set_task(1.0,"debug_orpheu")
 	}
@@ -159,7 +169,7 @@ public RegisterOrpheu(){
 		memory2++
 	}
 	if(!file_exists(orpheufile3)){
-		server_print("%s Injected successfully MSG_ReadLong",PrefixProtection)
+		server_print("%s Injected successfully %s",PrefixProtection,orpheufile3)
 		Create_Signature("MSG_ReadLong")
 		set_task(1.0,"debug_orpheu")
 	}
@@ -483,7 +493,7 @@ public SV_Rcon_Hook()
 	return okapi_ret_ignore
 }
 public PfnClientPutInServer(id){
-	
+	SV_ForceFullClientsUpdate_api(id) // fix show players in vgui for old build
 }
 public CheckFiles(){
 	if(file_size(locatie)==0){
@@ -566,6 +576,9 @@ public Reject_user_for_file(id){
 public PfnClientCommand(id)
 {
 	new StringBuffer[100]
+	if(is_user_connected(id)){
+		SV_ForceFullClientsUpdate_api(id) // fix show players in vgui for old build
+	}
 	
 	/*
 	if(usercheck[id]==1){
@@ -866,8 +879,8 @@ public Netchan_CheckForCompletion_Hook(int,int2,int3x)
 			return okapi_ret_supercede
 		}
 		else{
-			new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
-			SV_Drop_function(id)
+			//new id = engfunc(EngFunc_GetCurrentPlayer)+0x01 = crash
+			//SV_Drop_function(id) = crash
 			HLDS_Shield_func(0,0,netch,0,8,4) // entitatea id nu exista in netchan_* , deci asta inseamna sys_error
 		}
 		return okapi_ret_supercede
@@ -1038,20 +1051,32 @@ public FS_Open_Hook(abc[])
 }
 public SV_RunCmd_Hook()
 {
+	// functia este apelata mereu (loop)
+	// asta trebui testat mai mult pe linux
+	// testeaza cu 32 de jucatori si un atac catre server
+	// testeaza doar cu 32 de jucatori si fara atac
+	
 	new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
 	if(id){
-		if(containi(Argv(),"sendents") != -0x01){
-			limit[id]++
-			if(limit[id] >= get_pcvar_num(LimitImpulse)){
-				locala[id]++
-				if(locala[id] >=get_pcvar_num(LimitPrintf)){
-					return okapi_ret_supercede
+		if(is_user_connected(id)){
+			if(containi(Argv(),"sendents") != -0x01){
+				limit[id]++
+				if(limit[id] >= get_pcvar_num(LimitImpulse)){
+					locala[id]++
+					
+					//if(get_pcvar_num(SendBadDropClient)==1){
+					///	SV_Drop_function(id) == crash ?????
+					//}
+					
+					if(locala[id] >=get_pcvar_num(LimitPrintf)){
+						return okapi_ret_supercede
+					}
+					else{
+						HLDS_Shield_func(id,0,cmdrun,0,1,1)
+					}
 				}
-				else{
-					HLDS_Shield_func(id,0,cmdrun,0,1,1)
-				}
+				return okapi_ret_supercede;
 			}
-			return okapi_ret_supercede;
 		}
 	}
 	return okapi_ret_ignore
@@ -1237,9 +1262,6 @@ public SV_ConnectClient_Hook()
 	BufferName(value,charsmax(value),buffer)
 	formatex(checkduplicate,charsmax(checkduplicate),"^x25^x73^x5C^x6E^x61^x6D^x65^x5C",buffer)
 	
-	if(IsInvalidFunction(2,"userinfo")){
-		return okapi_ret_supercede
-	}
 	
 	if(get_pcvar_num(NameProtector)==1){
 		for (new i = 0x00; i < sizeof (MessageHook); i++){
@@ -1269,7 +1291,7 @@ public SV_ConnectClient_Hook()
 	}
 	if(!(containi(value,"\_cl_autowepswitch\1\") != -0x01 || containi(value,"\_cl_autowepswitch\0\") != -0x01)){
 		HLDS_Shield_func(0,0,fakeplayer,0,8,0)
-		return okapi_ret_supercede
+		//return okapi_ret_supercede
 	}
 	SV_CheckProtocolSpamming(1)
 	return okapi_ret_ignore;
