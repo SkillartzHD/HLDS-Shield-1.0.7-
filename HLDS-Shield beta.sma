@@ -5,7 +5,6 @@
 #endif
 
 /*03/05/2018 
-
 HLDS_Shield_func(index,print,msg[],emit,log,pedeapsa)
 index - id = jucator , 0 nimic
 print - 1..3 , 0 nu este nimic
@@ -73,9 +72,10 @@ public plugin_precache()
 	g_blackList = ArrayCreate(15)
 	set_task(600.0,"Destroy_Memory",_,"",_,"b",_)
 	
-	set_task(0.3,"RegisterOkapi")
+	//RegisterOkapi()
+	set_task(0.5,"RegisterOkapi")
 	//SecureServerOkapi_new();
-	set_task(0.5,"SecureServerOkapi_new")
+	set_task(0.8,"SecureServerOkapi_new")
 	//RegisterOkapi();
 	set_task(1.0,"RegisterOrpheu")
 	//RegisterOrpheu();
@@ -533,7 +533,6 @@ public SV_SendBan_fix(){
 	if(SV_CheckProtocolSpamming(2)){
 		return okapi_ret_supercede
 	}
-	
 	if(SV_FilterAddress(1)){
 		return okapi_ret_supercede
 	}
@@ -651,7 +650,7 @@ public PfnClientCommand(id)
 	if(containi(Argv(),"say")!= -0x01 || containi(Argv(),"say_team")!= -0x01){
 		return FMRES_IGNORED
 	}
-	if(containi(Argv1(),"autobuy") != -0x01){
+	if(containi(Argv(),"cl_setautobuy") != -0x01){
 		return FMRES_IGNORED
 	}
 	else{
@@ -875,12 +874,13 @@ public Netchan_CheckForCompletion_Hook(int,int2,int3x)
 }
 
 public SV_CheckForDuplicateNames(userinfo[],bIsReconnecting,nExcludeSlot){
-	if(IsInvalidFunction(1," Your userinfo is invalid")){
+	
+	if(IsInvalidFunction(1,"userinfo is invalid"))
+	{
 		return okapi_ret_supercede
 	}
 	return okapi_ret_ignore
 }
-
 public IsInvalidFunction(functioncall,stringexit[]){	
 	if(okapi_engine_find_string("(%d)%-0.*s")){
 		if(functioncall == 1)
@@ -889,7 +889,7 @@ public IsInvalidFunction(functioncall,stringexit[]){
 			read_argv(0x04,value,charsmax(value))
 			BufferName(value,charsmax(value),buffer)
 			if(containi(Argv4(),"^x22")!=-0x01 || containi(Argv4(),"^x2E^x2E")!=-0x01 ||
-			containi(Argv4(),"^x5C")!=-0x01 || containi(Argv4(),"^x2E^x20")!=-0x01 || 
+			containi(Argv4(),"^x2E^x20")!=-0x01 || 
 			containi(Argv4(),"^x63^x6F^x6E^x73^x6F^x6C^x65")!=-0x01) {
 				tralala++
 				if(tralala>=get_pcvar_num(LimitPrintf)){
@@ -979,7 +979,7 @@ public SV_ParseStringCommand_fix()
 			if(get_pcvar_num(SendBadDropClient)==1){
 				SV_Drop_function(id)
 			}
-			HLDS_Shield_func(id,0,bugclc,0,2,1)
+			HLDS_Shield_func(id,0,bugclc,0,8,1)
 			return okapi_ret_supercede
 		}
 	}
@@ -1029,7 +1029,10 @@ public NET_GetLong()
 }
 public FS_Open_Hook(abc[])
 {
-	if(containi(abc,"!MD5")!=-0x01 || containi(abc,"..")!=-0x01 ){
+	if(containi(abc,"!MD5")!=-0x01 || containi(abc,"/")!=-0x01 ||
+	containi(abc,".cfg")!=-0x01 || containi(abc,".log")!=-0x01 ||
+	containi(abc,".cfg")!=-0x01 ||
+	containi(abc,".ini")!=-0x01 || containi(abc,"..")!=-0x01 ){
 		server_print("%s I found a access strange in ^"%s^"",PrefixProtection,abc)
 		return okapi_ret_supercede
 	}
@@ -1238,10 +1241,7 @@ public Info_ValueForKey_Hook(index)
 }
 
 public Host_Say_f_Hook()
-{	
-	if(strlen(Args())){
-		return okapi_ret_supercede;
-	}
+{
 	
 	for (new i = 0; i < sizeof (MessageHook); i++){
 		if(containi(Args(),MessageHook[i]) != -1){
@@ -1397,6 +1397,12 @@ public Con_Printf_Hook(pfnprint[])
 					return okapi_ret_supercede
 				}
 				if(strlen(UserName(id))){
+					if(debug_s[id]==0){
+						if(locala[id] == 3){
+							locala[id]=1
+							debug_s[id]=1
+						}
+					}
 					HLDS_Shield_func(id,1,hldsprintf,1,5,0)
 				}
 				else{
