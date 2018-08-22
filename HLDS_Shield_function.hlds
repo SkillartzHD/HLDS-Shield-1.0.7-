@@ -357,9 +357,10 @@ new SV_ParseConsistencyResponse[] = {
 }
 
 new Host_kill_f[] = {
-0x8B,0x0D,0xDC,0x5D,0xDEF,0xDEF,0xDEF,0x81,0xDEF,0xDEF,0x,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF}
+	0x8B,0x0D,0xDC,0x5D,0xDEF,0xDEF,0xDEF,0x81,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF
+}
 new Host_kill_f6153[] = {
-	0x8B,0x0D,0xDC,0x5D,0xDEF,0xDEF,0xDEF,0x81,0xDEF,0xDEF,0x,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF
+	0x8B,0x0D,0xDC,0x5D,0xDEF,0xDEF,0xDEF,0x81,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF
 }
 new Con_Printf_f[] = {
 	0x55,0x8B,0xEC,0xB8,0x00,0x10,0x00,0x00,0xE8,0xDEF,0xDEF,
@@ -530,9 +531,7 @@ stock Argv4(){new text[console_max];read_argv(V4nr,text,charsmax(text)); return 
 stock UserName(index){new PlayerName[Pmax];get_user_name(index,PlayerName,charsmax(PlayerName));return PlayerName;}
 stock SV_RejectConnection_user(index,message[]){message_begin(0x01,0x02,_,index);write_string(message);message_end();} 
 stock CL_Print(index,message[]){message_begin(0x01,0x08,_,index);write_string(message);message_end();}
-stock CL_CenterPrint(index,message[]){message_begin(0x01,0x1A,_,index);write_string
-	
-(message);write_byte(0x01);message_end();}
+stock CL_CenterPrint(index,message[]){message_begin(0x01,0x1A,_,index);write_string(message);write_byte(0x01);message_end();}
 stock CL_Final(index,message[]){message_begin(0x01,0x1F,_,index);write_string(message);message_end();}
 stock SVC_PrintConsole(index,msg[]){message_begin(0x01,0x08,_,index);write_string(msg);message_end();}
 stock PlayerIP(index){new PlayerIPBAN[32];get_user_ip(index,PlayerIPBAN,charsmax(PlayerIPBAN),1);return PlayerIPBAN;}
@@ -984,6 +983,7 @@ public Register_Settings()
 		fprintf(filecacat,"//shield_remove_string ^"rcon^"")
 		fprintf(filecacat,"//shield_addcmd_fake ^"kick2^" ^"1^"")
 		fprintf(filecacat,"//shield_shield_fake_cvar ^"podbot^" ^"hello^"")
+		fprintf(filecacat,"//shield_remove_function <function>")
 		fclose(filecacat)
 	}
 	if(file_exists(locatie)){
@@ -1258,7 +1258,6 @@ public RegisterOkapi()
 	new build[varmax]
 	get_cvar_string("sv_version",build,charsmax(build))
 	
-	// windows
 	new nameswin = okapi_engine_find_sig(SV_CheckForDuplicateNames_win,charsmax(SV_CheckForDuplicateNames_win))
 	new win_oldbuild = okapi_engine_find_sig(SV_CheckForDuplicateNames_wio,charsmax(SV_CheckForDuplicateNames_wio))
 	new infokey = okapi_engine_find_sig(Info_SetValueForKey_f,charsmax(Info_SetValueForKey_f))
@@ -1292,35 +1291,35 @@ public RegisterOkapi()
 	new clc_stringcmd = okapi_engine_find_sig(SV_ParseStringCommand,charsmax(SV_ParseStringCommand))
 	new hostkillf = okapi_engine_find_sig(Host_kill_f,charsmax(Host_kill_f))
 	new hostkillf6153 = okapi_engine_find_sig(Host_kill_f6153,charsmax(Host_kill_f6153))
-	//linux
-	new nameslinux = okapi_engine_get_symbol_ptr(SV_CheckForDuplicateNames_linux)
-	new badparselinux = okapi_engine_get_symbol_ptr(SV_ParseConsistencyResponse_linux)
-	new hostkillf_linux = okapi_engine_get_symbol_ptr(Host_kill_f_linux)
-	new infokeylinux = okapi_engine_get_symbol_ptr(Info_ValueForKey_linux)
-	new queryserver6153linux = okapi_engine_get_symbol_ptr(SV_ConnectionlessPacket_linux)
-	new printflinux = okapi_engine_get_symbol_ptr(Con_Printf_linux)
-	new rejectlinux = okapi_engine_get_symbol_ptr(SV_RejectConnection_linux)
-	new droplinux = okapi_engine_get_symbol_ptr(SV_DropClient_linux)
-	new comfilelinux = okapi_engine_get_symbol_ptr(COM_FileWrite_linux)
-	new connectlinux = okapi_engine_get_symbol_ptr(SV_ConnectClient_f_linux)
-	new sendreslinux = okapi_engine_get_symbol_ptr(SV_SendRes_f_linux)
-	new spawnlinux = okapi_engine_get_symbol_ptr(SV_Spawn_f)
-	new saylinux = okapi_engine_get_symbol_ptr(Host_Say_f_linux)
-	new netlinux = okapi_engine_get_symbol_ptr(NET_GetLong_linux)
-	new munge4554linux = okapi_engine_get_symbol_ptr(COM_UnMunge_linux)
-	new safefile4554linux = okapi_engine_get_symbol_ptr(SafeFileDownload_linux)
-	new netchannlinux = okapi_engine_get_symbol_ptr(Netchan_CheckForCompletion_linux)
-	new processfilelinux = okapi_engine_get_symbol_ptr(SV_ProcessFile_linux)
-	new fsopenlinux = okapi_engine_get_symbol_ptr(FS_Open_linux)
-	new runcmdlinux = okapi_engine_get_symbol_ptr(SV_RunCmd_linux)
-	new newflinux = okapi_engine_get_symbol_ptr(SV_New_f_linux)
-	new addiplinux = okapi_engine_get_symbol_ptr(SV_AddIP_f_linux)
-	new svrconlinux = okapi_engine_get_symbol_ptr(SV_Rcon_f_linux)
-	new clc_resxlinux = okapi_engine_get_symbol_ptr(SV_Reslinux)
-	new clc_voicedataxlinux = okapi_engine_get_symbol_ptr(SV_voicedatalinux)
-	new clc_stringcmdlinux = okapi_engine_get_symbol_ptr(SV_ParseStringCommand_linux)
 	
 	if(is_linux_server()){
+		new nameslinux = okapi_engine_get_symbol_ptr(SV_CheckForDuplicateNames_linux)
+		new badparselinux = okapi_engine_get_symbol_ptr(SV_ParseConsistencyResponse_linux)
+		new hostkillf_linux = okapi_engine_get_symbol_ptr(Host_kill_f_linux)
+		new infokeylinux = okapi_engine_get_symbol_ptr(Info_ValueForKey_linux)
+		new queryserver6153linux = okapi_engine_get_symbol_ptr(SV_ConnectionlessPacket_linux)
+		new printflinux = okapi_engine_get_symbol_ptr(Con_Printf_linux)
+		new rejectlinux = okapi_engine_get_symbol_ptr(SV_RejectConnection_linux)
+		new droplinux = okapi_engine_get_symbol_ptr(SV_DropClient_linux)
+		new comfilelinux = okapi_engine_get_symbol_ptr(COM_FileWrite_linux)
+		new connectlinux = okapi_engine_get_symbol_ptr(SV_ConnectClient_f_linux)
+		new sendreslinux = okapi_engine_get_symbol_ptr(SV_SendRes_f_linux)
+		new spawnlinux = okapi_engine_get_symbol_ptr(SV_Spawn_f_linux)
+		new saylinux = okapi_engine_get_symbol_ptr(Host_Say_f_linux)
+		new netlinux = okapi_engine_get_symbol_ptr(NET_GetLong_linux)
+		new munge4554linux = okapi_engine_get_symbol_ptr(COM_UnMunge_linux)
+		new safefile4554linux = okapi_engine_get_symbol_ptr(SafeFileDownload_linux)
+		new netchannlinux = okapi_engine_get_symbol_ptr(Netchan_CheckForCompletion_linux)
+		new processfilelinux = okapi_engine_get_symbol_ptr(SV_ProcessFile_linux)
+		new fsopenlinux = okapi_engine_get_symbol_ptr(FS_Open_linux)
+		new runcmdlinux = okapi_engine_get_symbol_ptr(SV_RunCmd_linux)
+		new newflinux = okapi_engine_get_symbol_ptr(SV_New_f_linux)
+		new addiplinux = okapi_engine_get_symbol_ptr(SV_AddIP_f_linux)
+		new svrconlinux = okapi_engine_get_symbol_ptr(SV_Rcon_f_linux)
+		new clc_resxlinux = okapi_engine_get_symbol_ptr(SV_Reslinux)
+		new clc_voicedataxlinux = okapi_engine_get_symbol_ptr(SV_voicedatalinux)
+		new clc_stringcmdlinux = okapi_engine_get_symbol_ptr(SV_ParseStringCommand_linux)
+		
 		if(spawnlinux){
 			spawnhook = okapi_add_hook(okapi_build_function(spawnlinux,arg_int,arg_string,arg_int),"SV_Spawn_f_Hook")
 			memory2++
@@ -1362,9 +1361,7 @@ public RegisterOkapi()
 		}	
 		else{ErrorSignature();memory=8;}
 		if(infokeylinux){
-			infovaluehook = okapi_add_hook(okapi_build_function
-
-(infokeylinux,arg_string,arg_string,arg_string,arg_int),"Info_ValueForKey_Hook")
+			infovaluehook = okapi_add_hook(okapi_build_function(infokeylinux,arg_string,arg_string,arg_string,arg_int),"Info_ValueForKey_Hook")
 			memory2++
 		}
 		else{ErrorSignature();memory=9;}
@@ -1384,9 +1381,7 @@ public RegisterOkapi()
 		}
 		else{ErrorSignature();memory=12;}
 		if(netchannlinux){
-			netchanhook = okapi_add_hook(okapi_build_function
-
-(netchannlinux,arg_int,arg_int,arg_int,arg_int),"Netchan_CheckForCompletion_Hook")
+			netchanhook = okapi_add_hook(okapi_build_function(netchannlinux,arg_int,arg_int,arg_int,arg_int),"Netchan_CheckForCompletion_Hook")
 			memory2++
 		}
 		else{ErrorSignature();memory=13;}
@@ -1554,18 +1549,14 @@ public RegisterOkapi()
 		}
 		if(equali(build,"1.1.2.7,48,6153")){
 			if(netchann){
-				netchanhook = okapi_add_hook(okapi_build_function
-
-(netchann,arg_int,arg_int,arg_int,arg_int),"Netchan_CheckForCompletion_Hook")
+				netchanhook = okapi_add_hook(okapi_build_function(netchann,arg_int,arg_int,arg_int,arg_int),"Netchan_CheckForCompletion_Hook")
 				memory2++
 			}
 			else{ErrorSignature();memory=13;}
 		}
 		else{
 			if(netchann4554){
-				netchanhook = okapi_add_hook(okapi_build_function
-
-(netchann4554,arg_int,arg_int,arg_int,arg_int),"Netchan_CheckForCompletion_Hook")
+				netchanhook = okapi_add_hook(okapi_build_function(netchann4554,arg_int,arg_int,arg_int,arg_int),"Netchan_CheckForCompletion_Hook")
 				memory2++
 			}
 			else{ErrorSignature();memory=13;}
