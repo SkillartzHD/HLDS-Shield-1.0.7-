@@ -1119,13 +1119,6 @@ public Shield_CheckSteamID(id,payload)  {
 		
 		if(equal(szip2, szip)) {
 			if(!equal(authid2, authid)) {
-				locala[id]++
-				if(debug_s[id]==0){
-					if(locala[id] == 3){
-						locala[id]=1
-						debug_s[id]=1
-					}
-				}
 				HLDS_Shield_func(id,0,steamidhack,1,1,1)
 				if(get_pcvar_num(SendBadDropClient)==1){
 					SV_Drop_function(id)
@@ -1363,12 +1356,6 @@ public SV_SendRes_f_Hook(){
 				SV_Drop_function(id)
 			}
 			else{
-				if(debug_s[id]==0){
-					if(locala[id] == 3){
-						locala[id]=1
-						debug_s[id]=1
-					}
-				}
 				HLDS_Shield_func(id,1,hldsprintf,1,5,1)
 			}
 			if(strlen(UserName(id))){
@@ -1527,18 +1514,12 @@ public SV_Spawn_f_Hook()
 {
 	new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
 	limit[id]++
-	locala[id]++
 	if(limit[id] >=get_pcvar_num(LimitExploit)){
+		locala[id]++
 		if(locala[id] >=get_pcvar_num(LimitPrintf)){
 			return okapi_ret_supercede
 		}
 		else{
-			if(debug_s[id]==0){
-				if(locala[id] == 3){
-					locala[id]=1
-					debug_s[id]=1
-				}
-			}
 			if(!strlen(UserName(id))){
 				if(get_pcvar_num(SendBadDropClient)==1){
 					SV_Drop_function(id)
