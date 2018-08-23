@@ -1024,7 +1024,7 @@ public Register_Settings()
 		mkdir(dirmax)
 	}
 }
-public ThisCommandNow(){ server_print("%s This function is disabled",PrefixProtection);}
+public ThisCommandNow(){ server_print("%s This function ^"%s^" is disabled",PrefixProtection,Argv1());}
 
 public RegisterRemoveFunction(){
 	
@@ -1268,7 +1268,7 @@ public RegisterRemoveFunction(){
 		}
 	}
 	else{
-		server_print("%s Aceasta functie nu exista ",PrefixProtection)
+		server_print("%s This function ^"%s^" don't exist registred",PrefixProtection,Argv1())
 		return 0;
 	}
 	return 1	
@@ -1676,7 +1676,7 @@ public RegisterOkapiWindows(){
 			memory2++
 		}
 	}
-	if(win_oldbuild){
+	else if(win_oldbuild){
 		duplicatehook = okapi_add_hook(okapi_build_function(win_oldbuild,arg_string,arg_int,arg_int),"SV_CheckForDuplicateNames")
 		memory2++
 	}	
