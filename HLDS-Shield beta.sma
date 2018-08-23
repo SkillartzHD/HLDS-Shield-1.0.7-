@@ -1293,8 +1293,11 @@ public Host_Say_f_Hook()
 			}
 		}
 	}
-	new hostname[255]
+	new hostname[50]
 	get_cvar_string("hostname",hostname,charsmax(hostname))
+	if( strlen(Args())>=139 ){
+		return okapi_ret_supercede;
+	}
 	client_print_color(0,0,"^4%s (Console)^1 : %s",hostname,Args())
 	log_amx("%s (Console) : %s",hostname,Args())
 	return okapi_ret_supercede;
