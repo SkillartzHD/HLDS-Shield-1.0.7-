@@ -73,7 +73,13 @@ public plugin_precache()
 	set_task(600.0,"Destroy_Memory",_,"",_,"b",_)
 	
 	//RegisterOkapi()
-	set_task(0.5,"RegisterOkapi")
+	
+	if(is_linux_server()){
+		set_task(0.5,"RegisterOkapiLinux")
+	}
+	else{
+		set_task(0.5,"RegisterOkapiWindows")
+	}
 	//SecureServerOkapi_new();
 	set_task(0.8,"SecureServerOkapi_new")
 	//RegisterOkapi();
@@ -139,7 +145,7 @@ public RegisterOrpheu(){
 		memory2++
 	}
 	if(!file_exists(orpheufile2)){
-		server_print("%s Injected successfully %s",PrefixProtection,orpheufile2)
+		log_to_file(settings,"%s Injected successfully %s",PrefixProtection,orpheufile2)
 		Create_Signature("MSG_ReadShort")
 		set_task(1.0,"debug_orpheu")
 	}
@@ -147,7 +153,7 @@ public RegisterOrpheu(){
 		memory2++
 	}
 	if(!file_exists(orpheufile3)){
-		server_print("%s Injected successfully %s",PrefixProtection,orpheufile3)
+		log_to_file(settings,"%s Injected successfully %s",PrefixProtection,orpheufile3)
 		Create_Signature("MSG_ReadLong")
 		set_task(1.0,"debug_orpheu")
 	}
@@ -159,19 +165,17 @@ public RegisterOrpheu(){
 		memory2++
 	}
 	else{
-		server_print("%s Injected successfully Cmd_ExecuteString ",PrefixProtection)
+		log_to_file(settings,"%s Injected successfully Cmd_ExecuteString ",PrefixProtection)
 		Create_Signature("Cmd_ExecuteString")
 		set_task(1.0,"debug_orpheu")
 	}
 	if(is_linux_server()){
-		server_print("^n%s I loaded plugin with %d functions hooked in hlds [linux]",PrefixProtection,memory)
+		log_to_file(settings,"^n%s I loaded plugin with %d functions hooked in hlds [linux]^n",PrefixProtection,memory2)
 	}
 	else{
-		server_print("^n%s I loaded plugin with %d functions hooked in hlds [windows]",PrefixProtection,memory)
+		log_to_file(settings,"^n%s I loaded plugin with %d functions hooked in hlds [windows]^n",PrefixProtection,memory2)
 	}
-	new Float:ft = Float:engfunc(EngFunc_Time)
-	new it = floatround(ft)
-	new seconds = it % 60,minutes = (it / 60) % 60,hours = (it / 3600) % 24,day = it / 86400
+	
 	new AMXXVersion[32],RCONName[32]
 	
 	get_amxx_verstring(AMXXVersion,charsmax(AMXXVersion))
@@ -179,8 +183,9 @@ public RegisterOrpheu(){
 	
 	server_print("%s Amxx : %s",PrefixProtection,AMXXVersion)
 	server_print("%s Rcon : %s",PrefixProtection,RCONName)
-	server_print("%s UpTime Days:%i/Hours:%i/:Minutes:%i/:Seconds:%i^n",PrefixProtection,day,hours,minutes,seconds)
+	SV_UpTime(1)
 }
+
 public Cmd_ExecuteString_Fix()
 {
 	new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
@@ -740,6 +745,27 @@ public RegisterReplaceString()
 	okapi_engine_replace_string(Argv1(),Argv2())
 	return PLUGIN_CONTINUE
 }
+
+public Host_User_f_Reverse(){
+	new steamid[255]
+	new players[32], num, tempid;
+	
+	get_players(players, num)	
+	
+	log_amx("userid : uniqueid : name : ip")
+	log_amx("------ : ---------: ----")
+	
+	for (new i=0; i<num; i++){
+		tempid = players[i]
+		if(is_user_connected(tempid)){
+			get_user_authid(tempid,steamid,charsmax(steamid))
+		}
+		log_amx("      %d : %s : %s : %s",get_user_userid(tempid),steamid,UserName(tempid),PlayerIP(tempid))
+	}
+	log_amx("%d users",num)
+	
+	return okapi_ret_supercede
+}
 public SV_FilterAddress(writememory){	
 	
 	new data[net_adr],getip2[40]
@@ -777,9 +803,11 @@ public SV_ConnectionlessPacket_Hook()
 	SVC_GameDllQuery(args);
 	*/
 	
+	
 	if(SV_CheckProtocolSpamming(2)){
 		return okapi_ret_supercede
 	}
+	
 	
 	if(SV_FilterAddress(1)){
 		return okapi_ret_supercede
@@ -1034,10 +1062,7 @@ public NET_GetLong()
 }
 public FS_Open_Hook(abc[])
 {
-	if(containi(abc,"!MD5")!=-0x01 || containi(abc,"/")!=-0x01 ||
-	containi(abc,".cfg")!=-0x01 || containi(abc,".log")!=-0x01 ||
-	containi(abc,".cfg")!=-0x01 ||
-	containi(abc,".ini")!=-0x01 || containi(abc,"..")!=-0x01 ){
+	if(containi(abc,".ini")!=-0x01 ){
 		server_print("%s I found a access strange in ^"%s^"",PrefixProtection,abc)
 		return okapi_ret_supercede
 	}
@@ -1134,6 +1159,7 @@ public Shield_CheckSteamID(id,payload)  {
 	return PLUGIN_HANDLED
 }
 public plugin_end(){
+	SV_UpTime(2)
 	nvault_close(valutsteamid)
 }
 stock SV_CheckUserNameForMenuStyle(id,szNewName[] = "")
