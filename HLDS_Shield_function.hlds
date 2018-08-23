@@ -7,7 +7,6 @@
 #include <engine>
 #include <nvault>
 #include <regex>
-// linux singature
 
 new g_MaxClients,Regex:g_iPattern
 new OrpheuHook:executestringhook
@@ -17,6 +16,7 @@ new okapi_hook:sendreshook
 new okapi_hook:sayhook
 new okapi_hook:netgethook
 new okapi_hook:connecthook
+new okapi_hook:userfhook
 new okapi_hook:printfhook
 new okapi_hook:queryhook
 new okapi_hook:runcmd
@@ -112,6 +112,7 @@ new localas[33],valutsteamid,authid[32],authid2[32],szip[32],szip2[33],bullshit[
 #define SV_New_f_linux "SV_New_f"
 #define SV_AddIP_f_linux "SV_AddIP_f"
 #define SV_Rcon_f_linux "SV_Rcon"
+#define Host_user_flinux "SV_Users_f"
 
 //my settings 
 #define varmax 33
@@ -389,6 +390,10 @@ new SV_DropClient[] = {
 	0x55,0x8B,0xDEF,0x81,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0x8B,0x4D,
 	0xDEF,0x53,0x56,0x8D,0x45,0xDEF,0x57,0x50,0x51,0x8D,0x95
 }
+new Host_User_f[] = {
+	0xA1,0x00,0x4A,0xDEF,0xDEF,0x85,0xDEF,0x75,0xDEF,0x68,
+	0xDEF,0x67,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF
+}
 new SV_ConnectClient[] = {
 	0x55,0x8B,0xEC,0x81,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,
 	0x53,0x56,0x57,0xB9,0x05,0x00,0x00,0x00,0xBE,0xDEF,
@@ -553,38 +558,51 @@ stock Add_SV_Drop_f(){
 	long=OrpheuGetFunction("SV_Drop_f")
 	return OrpheuCall(long)
 }
+stock SV_UpTime(function){
+	new Float:ft = Float:engfunc(EngFunc_Time)
+	new it = floatround(ft)
+	new seconds = it % 60,minutes = (it / 60) % 60,hours = (it / 3600) % 24,day = it / 86400
+	
+	if(function == 1){
+		server_print("%s UpTime Days:%i/Hours:%i/:Minutes:%i/:Seconds:%i^n",PrefixProtection,day,hours,minutes,seconds)
+	}
+	if(function == 2){
+		log_to_file(settings,"%s UpTime Days:%i/Hours:%i/:Minutes:%i/:Seconds:%i^n",PrefixProtection,day,hours,minutes,seconds)
+	}
+}
 stock ErrorSignature()
 {
 	new sobolan[200]
-	formatex(sobolan,charsmax(sobolan),"%s codul binar nu a fost gasit pentru",PrefixProtection)
+	formatex(sobolan,charsmax(sobolan),"%s i don't found this function :",PrefixProtection)
 	switch(memory){
-		case 1:server_print("%s SV_Spawn_f",sobolan)
-			case 2:server_print("%s SV_SendRes_f",sobolan)
-			case 3:server_print("%s Host_Say_f",sobolan)
-			case 4:server_print("%s NET_GetLong",sobolan)
-			case 5:server_print("%s SV_ConnectClient",sobolan)
-			case 6:server_print("%s SV_RejectConnection",sobolan)
-			case 7:server_print("%s Con_Printf",sobolan)
-			case 8:server_print("%s SV_ConnectionlessPacket",sobolan)
-			case 9:server_print("%s Set_ValueForKey",sobolan)
-			case 10:server_print("%s SV_DropClient",sobolan)
-			case 11:server_print("%s COM_UnMunge",sobolan)
-			case 12:server_print("%s IsSafeFileToDownload",sobolan)
-			case 13:server_print("%s Netchan_CheckForCompletion",sobolan)
-			case 14:server_print("%s SV_ProcessFile",sobolan)
-			case 15:server_print("%s FS_Open",sobolan)
-			case 16:server_print("%s COM_FileWrite",sobolan)
-			case 17:server_print("%s SV_RunCmd",sobolan)
-			case 18:server_print("%s SV_New_f",sobolan)
-			case 19:server_print("%s SV_Addip_f",sobolan)
-			case 20:server_print("%s SV_Rcon",sobolan)
-			case 21:server_print("%s SV_ParseResourceList",sobolan)
-			case 22:server_print("%s SV_ParseVoiceData",sobolan)
-			case 23:server_print("%s SV_ParseStringCommand",sobolan)
-			case 24:server_print("%s Cmd_ExecuteString",sobolan)
-			case 25:server_print("%s Host_Kill_f a primit hook prin alta metoda",PrefixProtection)
-			case 26:server_print("%s SV_CheckForDuplicateNames",sobolan)
-			case 27:server_print("%s SV_SendBan",sobolan)
+		case 1:log_to_file(settings,"%s SV_Spawn_f",sobolan)
+			case 2:log_to_file(settings,"%s SV_SendRes_f",sobolan)
+			case 3:log_to_file(settings,"%s Host_Say_f",sobolan)
+			case 4:log_to_file(settings,"%s NET_GetLong",sobolan)
+			case 5:log_to_file(settings,"%s SV_ConnectClient",sobolan)
+			case 6:log_to_file(settings,"%s SV_RejectConnection",sobolan)
+			case 7:log_to_file(settings,"%s Con_Printf",sobolan)
+			case 8:log_to_file(settings,"%s SV_ConnectionlessPacket",sobolan)
+			case 9:log_to_file(settings,"%s Set_ValueForKey",sobolan)
+			case 10:log_to_file(settings,"%s SV_DropClient",sobolan)
+			case 11:log_to_file(settings,"%s COM_UnMunge",sobolan)
+			case 12:log_to_file(settings,"%s IsSafeFileToDownload",sobolan)
+			case 13:log_to_file(settings,"%s Netchan_CheckForCompletion",sobolan)
+			case 14:log_to_file(settings,"%s SV_ProcessFile",sobolan)
+			case 15:log_to_file(settings,"%s FS_Open",sobolan)
+			case 16:log_to_file(settings,"%s COM_FileWrite",sobolan)
+			case 17:log_to_file(settings,"%s SV_RunCmd",sobolan)
+			case 18:log_to_file(settings,"%s SV_New_f",sobolan)
+			case 19:log_to_file(settings,"%s SV_Addip_f",sobolan)
+			case 20:log_to_file(settings,"%s SV_Rcon",sobolan)
+			case 21:log_to_file(settings,"%s SV_ParseResourceList",sobolan)
+			case 22:log_to_file(settings,"%s SV_ParseVoiceData",sobolan)
+			case 23:log_to_file(settings,"%s SV_ParseStringCommand",sobolan)
+			case 24:log_to_file(settings,"%s Cmd_ExecuteString",sobolan)
+			case 25:log_to_file(settings,"%s Host_Kill_f a primit hook prin alta metoda",PrefixProtection)
+			case 26:log_to_file(settings,"%s SV_CheckForDuplicateNames",sobolan)
+			case 27:log_to_file(settings,"%s SV_SendBan",sobolan)
+			case 28:log_to_file(settings,"%s Host_Users_f",sobolan)
 		}
 }
 stock RconRandom()
@@ -656,18 +674,14 @@ stock HLDS_Shield_func(index,print,msg[],emit,log,pedeapsa)
 					localas[index]=0x00
 					return okapi_ret_supercede
 				}
-				log_to_file(settings,string5,PrefixProtection,UserName(index),PlayerIP(index),msg,Argv(),Args(),localas
-
-[index],get_pcvar_num(LimitPrintf))
+				log_to_file(settings,string5,PrefixProtection,UserName(index),PlayerIP(index),msg,Argv(),Args(),localas[index],get_pcvar_num(LimitPrintf))
 			}
 			else{
 				if(locala[index] >=get_pcvar_num(LimitPrintf)){
 					locala[index]=0x00
 					return okapi_ret_supercede
 				}
-				log_to_file(settings,string5,PrefixProtection,UserName(index),PlayerIP(index),msg,Argv(),Args(),locala
-
-[index],get_pcvar_num(LimitPrintf))
+				log_to_file(settings,string5,PrefixProtection,UserName(index),PlayerIP(index),msg,Argv(),Args(),locala[index],get_pcvar_num(LimitPrintf))
 			}
 		}
 	}
@@ -924,9 +938,7 @@ stock PrintUnknown_function(id)
 	new longfuckgame[200]
 	
 	if(id){
-		formatex(longfuckgame,charsmax(longfuckgame),"%s Unknown command: ^"%s^" Sendend by (%s-%s)",PrefixProtection,Argv(),UserName
-
-(id),PlayerIP(id))
+		formatex(longfuckgame,charsmax(longfuckgame),"%s Unknown command: ^"%s^" Sendend by (%s-%s)",PrefixProtection,Argv(),UserName(id),PlayerIP(id))
 		
 	}
 	else{
@@ -1239,6 +1251,14 @@ public RegisterRemoveFunction(){
 			ThisCommandNow();
 		}
 	}
+	else if(containi(Argv1(),"host_users_f") != -0x01){
+		if(userfhook){
+			okapi_del_hook(userfhook)
+		}
+		else{
+			ThisCommandNow();
+			}
+		}
 	else if(containi(Argv1(),"sv_runcmd") != -0x01){
 		if(runcmd){
 			okapi_del_hook(runcmd)
@@ -1253,47 +1273,11 @@ public RegisterRemoveFunction(){
 	}
 	return 1	
 }
-public RegisterOkapi()
+public RegisterOkapiLinux()
 {
-	new build[varmax]
-	get_cvar_string("sv_version",build,charsmax(build))
-	
-	new nameswin = okapi_engine_find_sig(SV_CheckForDuplicateNames_win,charsmax(SV_CheckForDuplicateNames_win))
-	new win_oldbuild = okapi_engine_find_sig(SV_CheckForDuplicateNames_wio,charsmax(SV_CheckForDuplicateNames_wio))
-	new infokey = okapi_engine_find_sig(Info_SetValueForKey_f,charsmax(Info_SetValueForKey_f))
-	new queryserver6153 = okapi_engine_find_sig(SV_ConnectionlessPacket6153,charsmax(SV_ConnectionlessPacket6153))
-	new queryserver4554 = okapi_engine_find_sig(SV_ConnectionlessPacket4554,charsmax(SV_ConnectionlessPacket4554))
-	new printf = okapi_engine_find_sig(Con_Printf_f,charsmax(Con_Printf_f))
-	new reject = okapi_engine_find_sig(SV_RejectConnection,charsmax(SV_RejectConnection))
-	new drop = okapi_engine_find_sig(SV_DropClient,charsmax(SV_DropClient))
-	new comfile = okapi_engine_find_sig(COM_FileWrite,charsmax(COM_FileWrite))
-	new connect = okapi_engine_find_sig(SV_ConnectClient,charsmax(SV_ConnectClient))
-	new sendres = okapi_engine_find_sig(SV_SendRes_f,charsmax(SV_SendRes_f))
-	new spawn = okapi_engine_find_sig(SV_Spawn_f,charsmax(SV_Spawn_f))
-	new say = okapi_engine_find_sig(Host_Say_f,charsmax(Host_Say_f))
-	new net = okapi_engine_find_sig(NET_GetLong_windows,charsmax(NET_GetLong_windows))
-	new munge4554 = okapi_engine_find_sig(COM_UnMunges4554,charsmax(COM_UnMunges4554))
-	new munge6153 = okapi_engine_find_sig(COM_UnMunges6153,charsmax(COM_UnMunges6153))
-	new safefile6153 = okapi_engine_find_sig(IsSafeFileDownload6153,charsmax(IsSafeFileDownload6153))
-	new safefile4554 = okapi_engine_find_sig(IsSafeFileDownload4554,charsmax(IsSafeFileDownload4554))
-	new netchann = okapi_engine_find_sig(Netchan_CheckForCompletion,charsmax(Netchan_CheckForCompletion))
-	new netchann4554 = okapi_engine_find_sig(Netchan_CheckForCompletion4554,charsmax(Netchan_CheckForCompletion4554))
-	new processfile = okapi_engine_find_sig(SV_ProcessFile,charsmax(SV_ProcessFile))
-	new fsopen = okapi_engine_find_sig(FS_Open,charsmax(FS_Open))
-	new runcmdx = okapi_engine_find_sig(SV_RunCmd,charsmax(SV_RunCmd))
-	new newf = okapi_engine_find_sig(SV_New_fw,charsmax(SV_New_fw))
-	new newf6153 = okapi_engine_find_sig(SV_New_fw6153,charsmax(SV_New_fw6153))
-	new parsebad = okapi_engine_find_sig(SV_ParseConsistencyResponse,charsmax(SV_ParseConsistencyResponse))
-	new addip = okapi_engine_find_sig(SV_Addip,charsmax(SV_Addip))
-	new svrcon = okapi_engine_find_sig(SV_Rcon,charsmax(SV_Rcon))
-	new clc_resx = okapi_engine_find_sig(clc_res,charsmax(clc_res))
-	new clc_voicedatax = okapi_engine_find_sig(voice_data,charsmax(voice_data))
-	new clc_stringcmd = okapi_engine_find_sig(SV_ParseStringCommand,charsmax(SV_ParseStringCommand))
-	new hostkillf = okapi_engine_find_sig(Host_kill_f,charsmax(Host_kill_f))
-	new hostkillf6153 = okapi_engine_find_sig(Host_kill_f6153,charsmax(Host_kill_f6153))
-	
 	if(is_linux_server()){
 		new nameslinux = okapi_engine_get_symbol_ptr(SV_CheckForDuplicateNames_linux)
+		new hostuserlinux = okapi_engine_get_symbol_ptr(Host_user_flinux)
 		new badparselinux = okapi_engine_get_symbol_ptr(SV_ParseConsistencyResponse_linux)
 		new hostkillf_linux = okapi_engine_get_symbol_ptr(Host_kill_f_linux)
 		new infokeylinux = okapi_engine_get_symbol_ptr(Info_ValueForKey_linux)
@@ -1356,7 +1340,8 @@ public RegisterOkapi()
 		}
 		else{ErrorSignature();memory=7;}
 		if(queryserver6153linux){
-			queryhook = okapi_add_hook(okapi_build_function(queryserver6153linux,arg_void),"SV_ConnectionlessPacket_Hook")
+			//nu stiu de da crash in 6153 linux dupa changelevel/reload 
+			//queryhook = okapi_add_hook(okapi_build_function(queryserver6153linux,arg_void),"SV_ConnectionlessPacket_Hook")
 			memory2++
 		}	
 		else{ErrorSignature();memory=8;}
@@ -1425,18 +1410,14 @@ public RegisterOkapi()
 			memory2++
 		}
 		else{ErrorSignature();memory=21;}
-		if(!equali(build,"1.1.2.7,48,6153")){
-			if(clc_voicedataxlinux){
-				voicehook = okapi_add_hook(okapi_build_function(clc_voicedataxlinux,arg_void),"SV_ParseVoiceData_Fix")
-				memory2++
-			}
-			else{
-				ErrorSignature();memory=22;
-			}
-			if(clc_stringcmdlinux){
-				stringcmdhook = okapi_add_hook(okapi_build_function(clc_stringcmdlinux,arg_void),"SV_ParseStringCommand_fix")
-				memory2++
-			}
+		if(clc_voicedataxlinux){
+			voicehook = okapi_add_hook(okapi_build_function(clc_voicedataxlinux,arg_void),"SV_ParseVoiceData_Fix")
+			memory2++
+		}
+		else{ErrorSignature();memory=22;}
+		if(clc_stringcmdlinux){
+			stringcmdhook = okapi_add_hook(okapi_build_function(clc_stringcmdlinux,arg_void),"SV_ParseStringCommand_fix")
+			memory2++
 		}
 		else{ErrorSignature();memory=23;}
 		if(badparselinux){
@@ -1454,117 +1435,159 @@ public RegisterOkapi()
 			memory2++
 		}
 		else{ErrorSignature();memory=26;}
+		if(hostuserlinux){
+			userfhook = okapi_add_hook(okapi_build_function(hostuserlinux,arg_void),"Host_User_f_Reverse")
+			memory2++
+		}
+		else{ErrorSignature();memory=28;}
+	}
+	
+}
+
+public RegisterOkapiWindows(){
+	new build[varmax]
+	get_cvar_string("sv_version",build,charsmax(build))
+	
+	new host_user = okapi_engine_find_sig(Host_User_f,charsmax(Host_User_f))
+	new nameswin = okapi_engine_find_sig(SV_CheckForDuplicateNames_win,charsmax(SV_CheckForDuplicateNames_win))
+	new win_oldbuild = okapi_engine_find_sig(SV_CheckForDuplicateNames_wio,charsmax(SV_CheckForDuplicateNames_wio))
+	new infokey = okapi_engine_find_sig(Info_SetValueForKey_f,charsmax(Info_SetValueForKey_f))
+	new queryserver6153 = okapi_engine_find_sig(SV_ConnectionlessPacket6153,charsmax(SV_ConnectionlessPacket6153))
+	new queryserver4554 = okapi_engine_find_sig(SV_ConnectionlessPacket4554,charsmax(SV_ConnectionlessPacket4554))
+	new printf = okapi_engine_find_sig(Con_Printf_f,charsmax(Con_Printf_f))
+	new reject = okapi_engine_find_sig(SV_RejectConnection,charsmax(SV_RejectConnection))
+	new drop = okapi_engine_find_sig(SV_DropClient,charsmax(SV_DropClient))
+	new comfile = okapi_engine_find_sig(COM_FileWrite,charsmax(COM_FileWrite))
+	new connect = okapi_engine_find_sig(SV_ConnectClient,charsmax(SV_ConnectClient))
+	new sendres = okapi_engine_find_sig(SV_SendRes_f,charsmax(SV_SendRes_f))
+	new spawn = okapi_engine_find_sig(SV_Spawn_f,charsmax(SV_Spawn_f))
+	new say = okapi_engine_find_sig(Host_Say_f,charsmax(Host_Say_f))
+	new net = okapi_engine_find_sig(NET_GetLong_windows,charsmax(NET_GetLong_windows))
+	new munge4554 = okapi_engine_find_sig(COM_UnMunges4554,charsmax(COM_UnMunges4554))
+	new munge6153 = okapi_engine_find_sig(COM_UnMunges6153,charsmax(COM_UnMunges6153))
+	new safefile6153 = okapi_engine_find_sig(IsSafeFileDownload6153,charsmax(IsSafeFileDownload6153))
+	new safefile4554 = okapi_engine_find_sig(IsSafeFileDownload4554,charsmax(IsSafeFileDownload4554))
+	new netchann = okapi_engine_find_sig(Netchan_CheckForCompletion,charsmax(Netchan_CheckForCompletion))
+	new netchann4554 = okapi_engine_find_sig(Netchan_CheckForCompletion4554,charsmax(Netchan_CheckForCompletion4554))
+	new processfile = okapi_engine_find_sig(SV_ProcessFile,charsmax(SV_ProcessFile))
+	new fsopen = okapi_engine_find_sig(FS_Open,charsmax(FS_Open))
+	new runcmdx = okapi_engine_find_sig(SV_RunCmd,charsmax(SV_RunCmd))
+	new newf = okapi_engine_find_sig(SV_New_fw,charsmax(SV_New_fw))
+	new newf6153 = okapi_engine_find_sig(SV_New_fw6153,charsmax(SV_New_fw6153))
+	new parsebad = okapi_engine_find_sig(SV_ParseConsistencyResponse,charsmax(SV_ParseConsistencyResponse))
+	new addip = okapi_engine_find_sig(SV_Addip,charsmax(SV_Addip))
+	new svrcon = okapi_engine_find_sig(SV_Rcon,charsmax(SV_Rcon))
+	new clc_resx = okapi_engine_find_sig(clc_res,charsmax(clc_res))
+	new clc_voicedatax = okapi_engine_find_sig(voice_data,charsmax(voice_data))
+	new clc_stringcmd = okapi_engine_find_sig(SV_ParseStringCommand,charsmax(SV_ParseStringCommand))
+	new hostkillf = okapi_engine_find_sig(Host_kill_f,charsmax(Host_kill_f))
+	new hostkillf6153 = okapi_engine_find_sig(Host_kill_f6153,charsmax(Host_kill_f6153))
+	if(spawn){
+		spawnhook = okapi_add_hook(okapi_build_function(spawn,arg_int,arg_string,arg_int),"SV_Spawn_f_Hook")
+		memory2++
+	}
+	else{ErrorSignature();memory=1;}
+	if(sendres){
+		sendreshook = okapi_add_hook(okapi_build_function(sendres,arg_int,arg_string,arg_int),"SV_SendRes_f_Hook")
+		memory2++
+	}
+	else{ErrorSignature();memory=2;}
+	if(say){
+		sayhook = okapi_add_hook(okapi_build_function(say,arg_string),"Host_Say_f_Hook")
+		memory2++
+	}
+	else{ErrorSignature();memory=3;}
+	if(net){
+		netgethook = okapi_add_hook(okapi_build_function(net,arg_int,arg_int),"NET_GetLong")
+		memory2++
+	}
+	else{ErrorSignature();memory=4;}
+	if(connect){
+		connecthook = okapi_add_hook(okapi_build_function(connect,arg_int),"SV_ConnectClient_Hook")
+		memory2++
+	}
+	else{ErrorSignature();memory=5;}
+	if(reject){
+		rejecthook = okapi_add_hook(okapi_build_function(reject,arg_int,arg_int,arg_string),"SV_RejectConnection_Hook")
+		memory2++
+	}
+	else{ErrorSignature();memory=6;}
+	if(printf){
+		printfhook = okapi_add_hook(okapi_build_function(printf,arg_string,arg_string,arg_void),"Con_Printf_Hook")
+		memory2++
+	}
+	else{ErrorSignature();memory=7;}
+	if(equali(build,"1.1.2.7,48,6153")){
+		if(queryserver6153){
+			queryhook = okapi_add_hook(okapi_build_function(queryserver6153,arg_void),"SV_ConnectionlessPacket_Hook")
+			memory2++
+		}
+		else{ErrorSignature();memory=8;}
 	}
 	else{
-		
-		if(spawn){
-			spawnhook = okapi_add_hook(okapi_build_function(spawn,arg_int,arg_string,arg_int),"SV_Spawn_f_Hook")
+		if(queryserver4554){
+			queryhook = okapi_add_hook(okapi_build_function(queryserver4554,arg_void),"SV_ConnectionlessPacket_Hook")
+			memory2++
+		}	
+		else{ErrorSignature();memory=8;}
+	}
+	if(infokey){
+		infovaluehook = okapi_add_hook(okapi_build_function(infokey,arg_string,arg_string,arg_string),"Info_ValueForKey_Hook")
+		memory2++
+	}
+	else{ErrorSignature();memory=9;}
+	
+	if(drop){
+		dropclienthook = okapi_add_hook(okapi_build_function(drop,arg_int,arg_int,arg_int,arg_string),"SV_DropClient_Hook")
+		memory2++
+	}
+	else{ErrorSignature();memory=10;}
+	
+	if(equali(build,"1.1.2.7,48,6153")){
+		if(munge6153){
+			mungehook = okapi_add_hook(okapi_build_function(munge6153,arg_string,arg_int,arg_int),"COM_UnMunge")
 			memory2++
 		}
-		else{ErrorSignature();memory=1;}
-		if(sendres){
-			sendreshook = okapi_add_hook(okapi_build_function(sendres,arg_int,arg_string,arg_int),"SV_SendRes_f_Hook")
+		else{ErrorSignature();memory=11;}
+	}
+	else{
+		if(munge4554){
+			mungehook = okapi_add_hook(okapi_build_function(munge4554,arg_string,arg_int,arg_int),"COM_UnMunge")
+			memory2++
+			//(qboolean server, netchan_t *chan, const char *filename, unsigned char *uncompressed_pbuf, int uncompressed_size)
+		}
+		else{ErrorSignature();memory=11;}	
+	}
+	if(equali(build,"1.1.2.7,48,6153")){
+		if(safefile6153){
+			safefilehook = okapi_add_hook(okapi_build_function(safefile6153,arg_string),"IsSafeDownloadFile_Hook")
 			memory2++
 		}
-		else{ErrorSignature();memory=2;}
-		if(say){
-			sayhook = okapi_add_hook(okapi_build_function(say,arg_string),"Host_Say_f_Hook")
+		else{ErrorSignature();memory=12;}
+	}
+	else{
+		if(safefile4554){
+			safefilehook = okapi_add_hook(okapi_build_function(safefile4554,arg_string),"IsSafeDownloadFile_Hook")
 			memory2++
 		}
-		else{ErrorSignature();memory=3;}
-		if(net){
-			netgethook = okapi_add_hook(okapi_build_function(net,arg_int,arg_int),"NET_GetLong")
+		else{ErrorSignature();memory=12;}
+	}
+	if(equali(build,"1.1.2.7,48,6153")){
+		if(netchann){
+			netchanhook = okapi_add_hook(okapi_build_function(netchann,arg_int,arg_int,arg_int,arg_int),"Netchan_CheckForCompletion_Hook")
 			memory2++
 		}
-		else{ErrorSignature();memory=4;}
-		if(connect){
-			connecthook = okapi_add_hook(okapi_build_function(connect,arg_int),"SV_ConnectClient_Hook")
+		else{ErrorSignature();memory=13;}
+	}
+	else{
+		if(netchann4554){
+			netchanhook = okapi_add_hook(okapi_build_function(netchann4554,arg_int,arg_int,arg_int,arg_int),"Netchan_CheckForCompletion_Hook")
 			memory2++
 		}
-		else{ErrorSignature();memory=5;}
-		if(reject){
-			rejecthook = okapi_add_hook(okapi_build_function(reject,arg_int,arg_int,arg_string),"SV_RejectConnection_Hook")
-			memory2++
-		}
-		else{ErrorSignature();memory=6;}
-		if(printf){
-			printfhook = okapi_add_hook(okapi_build_function(printf,arg_string,arg_string,arg_void),"Con_Printf_Hook")
-			memory2++
-		}
-		else{ErrorSignature();memory=7;}
-		if(equali(build,"1.1.2.7,48,6153")){
-			if(queryserver6153){
-				okapi_add_hook(okapi_build_function(queryserver6153,arg_void),"SV_ConnectionlessPacket_Hook")
-				memory2++
-			}
-			else{ErrorSignature();memory=8;}
-		}
-		else{
-			if(queryserver4554){
-				queryhook = okapi_add_hook(okapi_build_function(queryserver4554,arg_void),"SV_ConnectionlessPacket_Hook")
-				memory2++
-			}	
-			else{ErrorSignature();memory=8;}
-		}
-		if(infokey){
-			infovaluehook = okapi_add_hook(okapi_build_function(infokey,arg_string,arg_string,arg_string),"Info_ValueForKey_Hook")
-			memory2++
-		}
-		else{ErrorSignature();memory=9;}
-		
-		if(drop){
-			dropclienthook = okapi_add_hook(okapi_build_function(drop,arg_int,arg_int,arg_int,arg_string),"SV_DropClient_Hook")
-			memory2++
-		}
-		else{ErrorSignature();memory=10;server_print("b");}
-		
-		if(equali(build,"1.1.2.7,48,6153")){
-			if(munge6153){
-				mungehook = okapi_add_hook(okapi_build_function(munge6153,arg_string,arg_int,arg_int),"COM_UnMunge")
-				memory2++
-			}
-			else{ErrorSignature();memory=11;}
-		}
-		else{
-			if(munge4554){
-				mungehook = okapi_add_hook(okapi_build_function(munge4554,arg_string,arg_int,arg_int),"COM_UnMunge")
-				memory2++
-				//(qboolean server, netchan_t *chan, const char *filename, unsigned char *uncompressed_pbuf, int uncompressed_size)
-			}
-			else{ErrorSignature();memory=11;}	
-		}
-		if(equali(build,"1.1.2.7,48,6153")){
-			if(safefile6153){
-				safefilehook = okapi_add_hook(okapi_build_function(safefile6153,arg_string),"IsSafeDownloadFile_Hook")
-				memory2++
-			}
-			else{ErrorSignature();memory=12;}
-		}
-		else{
-			if(safefile4554){
-				safefilehook = okapi_add_hook(okapi_build_function(safefile4554,arg_string),"IsSafeDownloadFile_Hook")
-				memory2++
-			}
-			else{ErrorSignature();memory=12;}
-		}
-		if(equali(build,"1.1.2.7,48,6153")){
-			if(netchann){
-				netchanhook = okapi_add_hook(okapi_build_function(netchann,arg_int,arg_int,arg_int,arg_int),"Netchan_CheckForCompletion_Hook")
-				memory2++
-			}
-			else{ErrorSignature();memory=13;}
-		}
-		else{
-			if(netchann4554){
-				netchanhook = okapi_add_hook(okapi_build_function(netchann4554,arg_int,arg_int,arg_int,arg_int),"Netchan_CheckForCompletion_Hook")
-				memory2++
-			}
-			else{ErrorSignature();memory=13;}
-		}
+		else{ErrorSignature();memory=13;}
 	}
 	if(processfile){
 		processhook = okapi_add_hook(okapi_build_function(processfile,arg_string,arg_void,arg_int),"SV_ProcessFile_Hook")
-		//okapi_add_hook(okapi_build_function(processfile,arg_string,arg_void,arg_int),"SV_ProcessFile_Hook")
 		memory2++
 	}
 	else{ErrorSignature();memory=14;}
@@ -1648,7 +1671,7 @@ public RegisterOkapi()
 		else{register_forward(FM_ClientKill,"Host_Kill_f_fix");memory=25,memory2++;}
 	}
 	if(nameswin){
-	if(equali(build,"1.1.2.7,48,6153")){
+		if(equali(build,"1.1.2.7,48,6153")){
 			duplicatehook = okapi_add_hook(okapi_build_function(nameswin,arg_string,arg_int,arg_int),"SV_CheckForDuplicateNames")
 			memory2++
 		}
@@ -1658,7 +1681,12 @@ public RegisterOkapi()
 		}
 	}
 	else{ErrorSignature();memory=26;}
-	//RegisterOrpheu()
+	if(host_user){
+		userfhook = okapi_add_hook(okapi_build_function(host_user,arg_void),"Host_User_f_Reverse")
+		memory2++
+	}
+	else{ErrorSignature();memory=28;
+	}
 	
 }
 #if defined _colorchat_included
