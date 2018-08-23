@@ -654,7 +654,7 @@ stock HLDS_Shield_func(index,print,msg[],emit,log,pedeapsa)
 		CL_Print(index,bomba3)
 	}
 	if(emit== 0x01){
-		client_cmd(index,"^"spk hello^"")
+		client_cmd(index,"spk doop")
 	}
 	if(log==0x01){
 		if(locala[index]==get_pcvar_num(LimitPrintf)){
@@ -1675,11 +1675,11 @@ public RegisterOkapiWindows(){
 			duplicatehook = okapi_add_hook(okapi_build_function(nameswin,arg_string,arg_int,arg_int),"SV_CheckForDuplicateNames")
 			memory2++
 		}
-		else{
-			duplicatehook = okapi_add_hook(okapi_build_function(win_oldbuild,arg_string,arg_int,arg_int),"SV_CheckForDuplicateNames")
-			memory2++
-		}
 	}
+	if(win_oldbuild){
+		duplicatehook = okapi_add_hook(okapi_build_function(win_oldbuild,arg_string,arg_int,arg_int),"SV_CheckForDuplicateNames")
+		memory2++
+	}	
 	else{ErrorSignature();memory=26;}
 	if(host_user){
 		userfhook = okapi_add_hook(okapi_build_function(host_user,arg_void),"Host_User_f_Reverse")
