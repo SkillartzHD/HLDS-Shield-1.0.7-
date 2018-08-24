@@ -614,7 +614,7 @@ stock RconRandom()
 	random_num('A','Z'),random_num('1','9'),random_num('a','z'),random_num('A','Z'),random_num('1','9'),random_num('a','z'),
 	random_num('A','Z'),random_num('1','9'),random_num('a','z'),random_num('A','Z'),random_num('1','9'),random_num('a','z'))
 	server_cmd("rcon_password %s",bitch)
-	server_print("%s I changed rcon password ^"%s^"  ^"%s^"",PrefixProtection,RconVar,bitch)
+	server_print("%s I changed rcon old password : ^"%s^"  with new password : ^"%s^"",PrefixProtection,RconVar,bitch)
 }
 stock net_adrr()
 {
