@@ -18,15 +18,11 @@ pedeapsa - 1 kick cu sv_rejectconnection(doar daca el se afla pana in sv_connect
 */
 
 
-/*
-fix in int GetChallengeNr (cunoscut ca si 0x7FFFFFFFu) sau ReplyServerChallenge
-fix in ValidInfoChallenge ( Source Engine Query )
-*/
+new UserCheckImpulse[33]
 public plugin_precache()
 {
 	Register()
 	Register_Settings()
-	
 	g_MaxClients = get_global_int(GL_maxClients)
 	new szError[64],iError;
 	g_iPattern = regex_compile("[+]",iError,szError,charsmax(szError),"i")
@@ -46,7 +42,7 @@ public plugin_precache()
 	LimitQuery=register_cvar("shield_query_limit","40")
 	LimitMunge=register_cvar("shield_munge_comamnd_limit","15")
 	LimitExploit=register_cvar("shield_exploit_cmd_limit","5")
-	LimitImpulse=register_cvar("shield_sv_runcmd_limit","60")
+	LimitImpulse=register_cvar("shield_sv_runcmd_limit","100")
 	LimitResources=register_cvar("shield_sv_parseresource_limit","1")
 	BanTime=register_cvar("shield_bantime","1")
 	PauseDlfile=register_cvar("shield_dlfile_pause","1")
@@ -98,11 +94,14 @@ public client_authorized(id){
 	SV_CheckForDuplicateSteamID(id)
 }
 
+public UserImpulseFalse(id){
+	UserCheckImpulse[id] = 0
+}
 public pfnClientConnect(id){
 	
 	FalseAllFunction(id)
 	Info_ValueForKey_Hook(id)
-	
+	set_task(1.0,"UserImpulseFalse",id)
 	usercheck[id]=1
 	/*
 	if(usercheck[id]==0x01){
@@ -481,7 +480,7 @@ public SV_Rcon_Hook()
 	return okapi_ret_ignore
 }
 public PfnClientPutInServer(id){
-	SV_ForceFullClientsUpdate_api(id) // fix show players in vgui for old build
+	SV_ForceFullClientsUpdate_api(id) // fix show players in vgui for old
 }
 public CheckFiles(){
 	if(file_size(locatie)==0){
@@ -564,6 +563,7 @@ public PfnClientCommand(id)
 {
 	new StringBuffer[100]
 	if(is_user_connected(id)){
+		UserCheckImpulse[id] = 1
 		SV_ForceFullClientsUpdate_api(id) // fix show players in vgui for old build
 	}
 	
@@ -1077,8 +1077,9 @@ public SV_RunCmd_Hook()
 	
 	new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
 	if(id){
-		if(is_user_connected(id)){
-			if(containi(Argv(),"sendents") != -0x01){
+		if(is_user_connected(id))
+		{
+			if(UserCheckImpulse[id] == 0){
 				limit[id]++
 				if(limit[id] >= get_pcvar_num(LimitImpulse)){
 					locala[id]++
@@ -1092,10 +1093,10 @@ public SV_RunCmd_Hook()
 					}
 					else{
 						HLDS_Shield_func(id,0,cmdrun,0,1,1)
+						UserCheckImpulse[id] = 1
 						return okapi_ret_supercede;
 					}
 				}
-				return okapi_ret_supercede;
 			}
 		}
 	}
@@ -1277,7 +1278,9 @@ public Info_ValueForKey_Hook(index)
 	}
 	return okapi_ret_ignore
 }
-
+public plugin_pause(){
+	server_cmd("amxx unpause HLDS-Shield.amxx")
+}
 public Host_Say_f_Hook()
 {
 	
@@ -1482,6 +1485,7 @@ public SV_RejectConnection_Hook(a,b[])
 }
 public FalseAllFunction(id)
 {
+	UserCheckImpulse[id] = 1
 	locala[id] = 0x00
 	tralala = 0x00
 	overflowed[id] = 0x00
