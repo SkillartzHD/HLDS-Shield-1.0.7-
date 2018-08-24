@@ -17,8 +17,6 @@ pedeapsa - 1 kick cu sv_rejectconnection(doar daca el se afla pana in sv_connect
 - 5 de rezerva (exact acelasi lucru ca la 3)
 */
 
-
-new UserCheckImpulse[33]
 public plugin_precache()
 {
 	Register()
@@ -28,7 +26,17 @@ public plugin_precache()
 	g_iPattern = regex_compile("[+]",iError,szError,charsmax(szError),"i")
 	valutsteamid = nvault_open("SteamHackDetector")
 	
-	NameProtector=register_cvar("shield_name_protector","1")
+	UpdateClient = register_cvar("shield_update_vgui_client","1")
+	NameBugShowMenu = register_cvar("shield_namebug_showmenu","1")
+	SpectatorVguiBug = register_cvar("shield_vgui_specbug","1")
+	Radio = register_cvar("shield_radio","1")
+	CommandBug=register_cvar("shield_cmdbug","1")
+	IlegalCmd=register_cvar("shield_ilegalcmd","1")
+	NameBug=register_cvar("shield_name_bug_on_server","1")
+	NameSpammer=register_cvar("shield_name_spammer","1")
+	RandomSteamid=register_cvar("shield_steamid_hack","1")
+	DuplicateSteamid=register_cvar("shield_steamid_duplicate","1")
+	NameProtector=register_cvar("shield_name_protector_sv_connect ","1")
 	KillBug=register_cvar("shield_kill_crash","1")
 	Queryviewer=register_cvar("shield_query_log","0")
 	VAC=register_cvar("shield_vac","1")
@@ -90,8 +98,12 @@ public SV_ForceFullClientsUpdate_api(index){
 }
 
 public client_authorized(id){
-	Shield_CheckSteamID(id,1)
-	SV_CheckForDuplicateSteamID(id)
+	if(get_pcvar_num(RandomSteamid)>0){
+		Shield_CheckSteamID(id,1)
+	}
+	if(get_pcvar_num(DuplicateSteamid)>0){
+		SV_CheckForDuplicateSteamID(id)
+	}
 }
 
 public UserImpulseFalse(id){
@@ -564,7 +576,9 @@ public PfnClientCommand(id)
 	new StringBuffer[100]
 	if(is_user_connected(id)){
 		UserCheckImpulse[id] = 1
-		SV_ForceFullClientsUpdate_api(id) // fix show players in vgui for old build
+		if(get_pcvar_num(UpdateClient)>0){
+			SV_ForceFullClientsUpdate_api(id) // fix show players in vgui for old build
+		}
 	}
 	
 	/*
@@ -618,54 +632,26 @@ public PfnClientCommand(id)
 			return FMRES_SUPERCEDE
 		}
 	}
-	if(equali(Argv(), "joinclass") || (equali(Argv(), "menuselect") && get_pdata_int(id,205) == 0x03)){
-		if(get_user_team(id) == 3){
-			set_pdata_int(id,205,0)
-			engclient_cmd(id, "jointeam", "6")
-			return FMRES_SUPERCEDE
-		}
-	}
-	for (new i = 0x00; i < sizeof(RadioCommand); i++){
-		if(containi(Argv(),RadioCommand[i]) != -0x01){
-			HLDS_Shield_func(id,3,radiofunction,0,0,0)
-			return FMRES_SUPERCEDE
-		}
-	}
-	for (new i = 0x00; i < sizeof(MessageHook); i++){
-		if(containi(Args(),MessageHook[i])!= -0x01 || containi(Argv(),MessageHook[i])!= -0x01){
-			locala[id]++
-			if(locala[id] >=get_pcvar_num(LimitPrintf)){
+	if(get_pcvar_num(SpectatorVguiBug)>0){
+		if(equali(Argv(), "joinclass") || (equali(Argv(), "menuselect") && get_pdata_int(id,205) == 0x03)){
+			if(get_user_team(id) == 3){
+				set_pdata_int(id,205,0)
+				engclient_cmd(id, "jointeam", "6")
 				return FMRES_SUPERCEDE
 			}
-			else{
-				if(debug_s[id]==0){
-					if(locala[id] == 3){
-						locala[id]=1
-						debug_s[id]=1
-					}
-				}
-				HLDS_Shield_func(id,1,cmdbug,0,5,0)
-			}
-			return FMRES_SUPERCEDE
 		}
 	}
-	
-	if(containi(Argv(),"say")!= -0x01 || containi(Argv(),"say_team")!= -0x01){
-		read_argv(1,StringBuffer,charsmax(StringBuffer))
-		replace_all(StringBuffer,charsmax(StringBuffer),"%","?")
-		//replace_all(StringBuffer,charsmax(StringBuffer),"#","*")
-		engclient_cmd(id,Argv(),StringBuffer)
-		
+	if(get_pcvar_num(Radio)>0){
+		for (new i = 0x00; i < sizeof(RadioCommand); i++){
+			if(containi(Argv(),RadioCommand[i]) != -0x01){
+				HLDS_Shield_func(id,3,radiofunction,0,0,0)
+				return FMRES_SUPERCEDE
+			}
+		}
 	}
-	if(containi(Argv(),"say")!= -0x01 || containi(Argv(),"say_team")!= -0x01){
-		return FMRES_IGNORED
-	}
-	if(containi(Argv(),"cl_setautobuy") != -0x01){
-		return FMRES_IGNORED
-	}
-	else{
-		for (new i = 0x00; i < sizeof(ShieldServerCvarBlock); i++){
-			if(containi(Argv1(),ShieldServerCvarBlock[i]) != -0x01){
+	if(get_pcvar_num(CommandBug)>0){
+		for (new i = 0x00; i < sizeof(MessageHook); i++){
+			if(containi(Args(),MessageHook[i])!= -0x01 || containi(Argv(),MessageHook[i])!= -0x01){
 				locala[id]++
 				if(locala[id] >=get_pcvar_num(LimitPrintf)){
 					return FMRES_SUPERCEDE
@@ -677,8 +663,43 @@ public PfnClientCommand(id)
 							debug_s[id]=1
 						}
 					}
-					HLDS_Shield_func(id,1,ilegalcommand,id,1,0)
-					return FMRES_SUPERCEDE;
+					HLDS_Shield_func(id,1,cmdbug,0,5,0)
+				}
+				return FMRES_SUPERCEDE
+			}
+		}
+	}
+	if(get_pcvar_num(CommandBug)>0){
+		if(containi(Argv(),"say")!= -0x01 || containi(Argv(),"say_team")!= -0x01){
+			read_argv(1,StringBuffer,charsmax(StringBuffer))
+			replace_all(StringBuffer,charsmax(StringBuffer),"%","?")
+			//replace_all(StringBuffer,charsmax(StringBuffer),"#","*")
+			engclient_cmd(id,Argv(),StringBuffer)
+			
+		}
+	}
+	
+	if(get_pcvar_num(IlegalCmd)>0){
+		if(containi(Argv(),"cl_setautobuy") != -0x01){
+			return FMRES_IGNORED
+		}
+		else{
+			for (new i = 0x00; i < sizeof(ShieldServerCvarBlock); i++){
+				if(containi(Argv1(),ShieldServerCvarBlock[i]) != -0x01){
+					locala[id]++
+					if(locala[id] >=get_pcvar_num(LimitPrintf)){
+						return FMRES_SUPERCEDE
+					}
+					else{
+						if(debug_s[id]==0){
+							if(locala[id] == 3){
+								locala[id]=1
+								debug_s[id]=1
+							}
+						}
+						HLDS_Shield_func(id,1,ilegalcommand,id,1,0)
+						return FMRES_SUPERCEDE;
+					}
 				}
 			}
 		}
@@ -1075,26 +1096,31 @@ public SV_RunCmd_Hook()
 	// testeaza cu 32 de jucatori si un atac catre server
 	// testeaza doar cu 32 de jucatori si fara atac
 	
-	new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
-	if(id){
-		if(is_user_connected(id))
-		{
-			if(UserCheckImpulse[id] == 0){
-				limit[id]++
-				if(limit[id] >= get_pcvar_num(LimitImpulse)){
-					locala[id]++
-					
-					//if(get_pcvar_num(SendBadDropClient)==1){
-					///	SV_Drop_function(id) == crash ?????
-					//}
-					
-					if(locala[id] >=get_pcvar_num(LimitPrintf)){
-						return okapi_ret_supercede
-					}
-					else{
-						HLDS_Shield_func(id,0,cmdrun,0,1,1)
-						UserCheckImpulse[id] = 1
-						return okapi_ret_supercede;
+	if(get_pcvar_num(LimitImpulse)==0){
+		return okapi_ret_ignore
+	}
+	else if (get_pcvar_num(LimitImpulse)>0){
+		new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
+		if(id){
+			if(is_user_connected(id))
+			{
+				if(UserCheckImpulse[id] == 0){
+					limit[id]++
+					if(limit[id] >= get_pcvar_num(LimitImpulse)){
+						locala[id]++
+						
+						//if(get_pcvar_num(SendBadDropClient)==1){
+						///	SV_Drop_function(id) == crash ?????
+						//}
+						
+						if(locala[id] >=get_pcvar_num(LimitPrintf)){
+							return okapi_ret_supercede
+						}
+						else{
+							HLDS_Shield_func(id,0,cmdrun,0,1,1)
+							UserCheckImpulse[id] = 1
+							return okapi_ret_supercede;
+						}
 					}
 				}
 			}
@@ -1184,7 +1210,6 @@ stock SV_CheckUserNameForMenuStyle(id,szNewName[] = "")
 	}
 	return PLUGIN_CONTINUE
 }
-new NameUnLock[33]
 public SHIELD_NameDeBug(id){
 	NameUnLock[id] = 0
 }
@@ -1194,86 +1219,94 @@ public SHIELD_NameDeBug2(id){
 }
 
 public pfnClientUserInfoChanged(id){
-	new lastname[a_max]
-	get_user_info(id,"name",lastname,charsmax(lastname))
-	if(!equal(lastname,UserName(id))){
-		SV_CheckUserNameForMenuStyle(id,lastname)
-	}
-	#define timp 5.0
-	static szOldName[32],szNewName[32]
-	pev(id,pev_netname,szOldName,charsmax(szOldName)) 
-	get_user_info(id,"name",szNewName,charsmax(szNewName))
-	if(containi(szNewName,"%") !=-1){
-		if (NameUnLock[id]==2){
-			NameUnLock[id] = 2
-			client_print_color(id,id,"^4%s^1 Please wait^4 5 seconds^1 before change the name",PrefixProtection)
-			set_user_info(id,"name",szOldName) 
-			set_task(timp,"SHIELD_NameDeBug",id)
-			return FMRES_SUPERCEDE
+	if(get_pcvar_num(NameBugShowMenu)>0){
+		new lastname[a_max]
+		get_user_info(id,"name",lastname,charsmax(lastname))
+		if(!equal(lastname,UserName(id))){
+			SV_CheckUserNameForMenuStyle(id,lastname)
 		}
 		
-		NameUnLock[id] = 0
-		set_task(0.3,"SHIELD_NameDeBug2",id)
-		return FMRES_SUPERCEDE
-		
 	}
-	if(szOldName[0]) {
-		if(!equal(szOldName,szNewName)) {
-			if (NameUnLock[id] == 1){
-				NameUnLock[id] = 1
+	if(get_pcvar_num(NameSpammer)>0){
+		
+		#define timp 5.0
+		static szOldName[32],szNewName[32]
+		pev(id,pev_netname,szOldName,charsmax(szOldName)) 
+		get_user_info(id,"name",szNewName,charsmax(szNewName))
+		if(containi(szNewName,"%") !=-1){
+			if (NameUnLock[id]==2){
+				NameUnLock[id] = 2
 				client_print_color(id,id,"^4%s^1 Please wait^4 5 seconds^1 before change the name",PrefixProtection)
 				set_user_info(id,"name",szOldName) 
+				set_task(timp,"SHIELD_NameDeBug",id)
 				return FMRES_SUPERCEDE
 			}
-			NameUnLock[id] = 1
-			set_task(timp,"SHIELD_NameDeBug",id)
+			
+			NameUnLock[id] = 0
+			set_task(0.3,"SHIELD_NameDeBug2",id)
+			return FMRES_SUPERCEDE
+			
+		}
+		if(szOldName[0]) {
+			if(!equal(szOldName,szNewName)) {
+				if (NameUnLock[id] == 1){
+					NameUnLock[id] = 1
+					client_print_color(id,id,"^4%s^1 Please wait^4 5 seconds^1 before change the name",PrefixProtection)
+					set_user_info(id,"name",szOldName) 
+					return FMRES_SUPERCEDE
+				}
+				NameUnLock[id] = 1
+				set_task(timp,"SHIELD_NameDeBug",id)
+			}
 		}
 	}
 	return FMRES_IGNORED
 }
 public Info_ValueForKey_Hook(index)
 {
-	new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
-	new lastname[a_max]
-	
-	if(is_user_connected(id)){
-		new Count=admins_num()
-		new NameList[b_max],PWList[b_max],MyPW[a_max],PlayerPW[a_max]
+	if(get_pcvar_num(NameBug)>0){
+		new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
+		new lastname[a_max]
 		
-		for (new i = 0x00; i < Count; ++i){	
-			admins_lookup(i,AdminProp_Auth,NameList,charsmax(NameList))
-			admins_lookup(i,AdminProp_Password,PWList,charsmax(PWList))
-			get_cvar_string("amx_password_field",MyPW,charsmax(MyPW))
-			get_user_info(id,MyPW,PlayerPW,charsmax(PlayerPW))
-			if(equal(UserName(id),NameList)){
-				if(!equal(PlayerPW,PWList)){
-					HLDS_Shield_func(id,2,adminbug,1,1,1)
-				}
-			}
-		}
-	}
-	if(is_user_admin(id)){
-		if(!equal(lastname,UserName(id))){
-			show_menu(id,0x00,"^n",0x01)
-		}
-	}
-	
-	for (new i = 0x00; i < sizeof (MessageHook); i++){
-		if(containi(Argv2(),MessageHook[i]) != -0x01){
-			locala[id]++
-			if(locala[id] >=get_pcvar_num(LimitPrintf)){
-				return okapi_ret_supercede
-			}
-			else{
-				if(debug_s[id]==0){
-					if(locala[id] == 3){
-						locala[id]=1
-						debug_s[id]=1
+		if(is_user_connected(id)){
+			new Count=admins_num()
+			new NameList[b_max],PWList[b_max],MyPW[a_max],PlayerPW[a_max]
+			
+			for (new i = 0x00; i < Count; ++i){	
+				admins_lookup(i,AdminProp_Auth,NameList,charsmax(NameList))
+				admins_lookup(i,AdminProp_Password,PWList,charsmax(PWList))
+				get_cvar_string("amx_password_field",MyPW,charsmax(MyPW))
+				get_user_info(id,MyPW,PlayerPW,charsmax(PlayerPW))
+				if(equal(UserName(id),NameList)){
+					if(!equal(PlayerPW,PWList)){
+						HLDS_Shield_func(id,2,adminbug,1,1,1)
 					}
 				}
-				HLDS_Shield_func(id,1,namebug,1,5,0)
 			}
-			return okapi_ret_supercede;
+		}
+		if(is_user_admin(id)){
+			if(!equal(lastname,UserName(id))){
+				show_menu(id,0x00,"^n",0x01)
+			}
+		}
+		
+		for (new i = 0x00; i < sizeof (MessageHook); i++){
+			if(containi(Argv2(),MessageHook[i]) != -0x01){
+				locala[id]++
+				if(locala[id] >=get_pcvar_num(LimitPrintf)){
+					return okapi_ret_supercede
+				}
+				else{
+					if(debug_s[id]==0){
+						if(locala[id] == 3){
+							locala[id]=1
+							debug_s[id]=1
+						}
+					}
+					HLDS_Shield_func(id,1,namebug,1,5,0)
+				}
+				return okapi_ret_supercede;
+			}
 		}
 	}
 	return okapi_ret_ignore
@@ -1538,7 +1571,9 @@ public SV_DropClient_Hook(int,int2,string[],index)
 	return okapi_ret_ignore
 }
 public PfnClientDisconnect(id){
-	Shield_CheckSteamID(id,2)
+	if(get_pcvar_num(RandomSteamid)>0){
+		Shield_CheckSteamID(id,2)
+	}
 	usercheck[id]=0x00
 	debug_s[id]=0
 	FalseAllFunction(id)
