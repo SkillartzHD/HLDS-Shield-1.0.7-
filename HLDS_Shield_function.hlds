@@ -41,6 +41,18 @@ new okapi_hook:duplicatehook
 new OrpheuFunction:long2
 new limitba[33]
 new debug_s[33]
+new UserCheckImpulse[33]
+new DuplicateSteamid
+new RandomSteamid
+new IlegalCmd
+new SpectatorVguiBug
+new Radio
+new NameUnLock[33]
+new NameBugShowMenu
+new CommandBug
+new UpdateClient
+new NameBug
+new NameSpammer
 new localas[33],valutsteamid,authid[32],authid2[32],szip[32],szip2[33],bullshit[200]
 #define fakeplayer "CSTRIKE_FAKEPLAYERS"
 #define suspicious "CSTRIKE_SUSPICIOUS"
