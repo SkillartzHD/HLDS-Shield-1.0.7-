@@ -19,6 +19,7 @@ new okapi_hook:connecthook
 new okapi_hook:userfhook
 new okapi_hook:printfhook
 new okapi_hook:queryhook
+new OrpheuHook:queryhook2
 new okapi_hook:runcmd
 new okapi_hook:rejecthook
 new okapi_hook:mungehook
@@ -331,7 +332,7 @@ new const MessageHook[][]={
 }
 new const CommandAllowInpfnClientConnect[][]={
 	"sendres","dlfile","new","sendents","_","amxxauth","connect","U","V","TSource",
-	"rcon","getchallenge","challenge","dropclient","  "
+	"rcon","getchallenge","challenge","dropclient","setinfo","Vwóµ9","specmode","unpause","vban","VModEnable","Uwóµ9","Uwóµ9"
 }
 new const SafeDownload[][]={
 	".cfg",".dll",".asi",".ini",".amxx",
@@ -808,6 +809,8 @@ stock HLDS_Shield_func(index,print,msg[],emit,log,pedeapsa)
 #define orpheufile3 "addons/amxmodx/configs/orpheu/functions/MSG_ReadLong"
 #define orpheufile4 "addons/amxmodx/configs/orpheu/functions/SV_Drop_f"
 #define orpheufile5 "addons/amxmodx/configs/orpheu/functions/SV_ForceFullClientsUpdate"
+#define orpheufile6 "addons/amxmodx/configs/orpheu/functions/SV_ConnectionlessPacket"
+
 
 stock Create_Signature(address[]){
 	
@@ -921,29 +924,32 @@ stock Create_Signature(address[]){
 		fprintf(msgreadlongfile,"}")
 		fclose(msgreadlongfile)
 	}
-	if(equali(address,"SV_ForceFullClientsUpdate")){
-		new updateclient = fopen(orpheufile5,"wb")
-		fprintf(updateclient,"{")
-		fprintf(updateclient,"^"name^"       : ^"SV_ForceFullClientsUpdate^",")
-		fprintf(updateclient,"^"library^"    : ^"engine^",")
-		fprintf(updateclient,"^"return^"  :")
-		fprintf(updateclient,"{")
-		fprintf(updateclient,"^"type^" : ^"bool^"")
-		fprintf(updateclient,"},")
-		fprintf(updateclient,"^"identifiers^":")
-		fprintf(updateclient,"[")
-		fprintf(updateclient,"{")
-		fprintf(updateclient,"^"os^"    : ^"windows^",")
-		fprintf(updateclient,"^"value^" : [0x55,0x8B,0xEC,^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",0x56,0x57,^"*^",^"*^",^"*^",0x45,^"*^",0x6A,^"*^",0x50,^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",0x35,0x84,^"*^",^"*^",^"*^",0x83,^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^"]")
-		fprintf(updateclient,"},")
-		fprintf(updateclient,"{")
-		fprintf(updateclient,"^"os^"    : ^"linux^",")
-		fprintf(updateclient,"^"value^" : ^"SV_ForceFullClientsUpdate^"")
-		fprintf(updateclient,"}")
-		fprintf(updateclient,"]")
-		fprintf(updateclient,"}")
-		fclose(updateclient)
+	if(equali(address,"SV_ConnectionslessPacket")){
+		new queryserver = fopen(orpheufile6,"wb")
+		fprintf(queryserver,"{")
+		fprintf(queryserver,"^"name^"       : ^"SV_ConnectionlessPacket^",")
+		fprintf(queryserver,"^"library^"    : ^"engine^",")
+		fprintf(queryserver,"^"arguments^"  :")
+		fprintf(queryserver,"[")
+		fprintf(queryserver,"{")
+		fprintf(queryserver,"^"type^" : ^"long^"")
+		fprintf(queryserver,"}")
+		fprintf(queryserver,"],")
+		fprintf(queryserver,"^"identifiers^":")
+		fprintf(queryserver,"[")
+		fprintf(queryserver,"{")
+		fprintf(queryserver,"^"os^"    : ^"windows^",")
+		fprintf(queryserver,"^"value^" : [0x56,0x57,^"*^",0x39,^"*^",^"*^",^"*^",^"*^",0x64,^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^"]")
+		fprintf(queryserver,"},")
+		fprintf(queryserver,"{")
+		fprintf(queryserver,"^"os^"    : ^"linux^",")
+		fprintf(queryserver,"^"value^" : ^"SV_ConnectionlessPacket^"")
+		fprintf(queryserver,"}")
+		fprintf(queryserver,"]")
+		fprintf(queryserver,"}")
+		fclose(queryserver)
 	}
+
 }
 stock PrintUnknown_function(id)
 {
@@ -1097,10 +1103,13 @@ public RegisterRemoveFunction(){
 		if(queryhook){
 			okapi_del_hook(queryhook)
 		}
+		else if(queryhook2){
+			OrpheuUnregisterHook(queryhook2)
+		}
 		else{
 			ThisCommandNow();
 		}
-	}
+	}	
 	else if(containi(Argv1(),"sv_rejectconnection") != -0x01){
 		if(rejecthook){
 			okapi_del_hook(rejecthook)
@@ -1354,7 +1363,15 @@ public RegisterOkapiLinux()
 		if(queryserver6153linux){
 			//nu stiu de da crash in 6153 linux dupa changelevel/reload 
 			//queryhook = okapi_add_hook(okapi_build_function(queryserver6153linux,arg_void),"SV_ConnectionlessPacket_Hook")
-			memory2++
+			if(file_exists(orpheufile6)){
+				queryhook2 = OrpheuRegisterHook(OrpheuGetFunction("SV_ConnectionlessPacket"),"SV_ConnectionlessPacket_Hook")
+				memory2++
+			}
+			else{
+				log_to_file(settings,"%s Injected successfully %s",PrefixProtection,orpheufile6)
+				Create_Signature("SV_ConnectionslessPacket")
+				set_task(1.0,"debug_orpheu")
+			}
 		}	
 		else{ErrorSignature();memory=8;}
 		if(infokeylinux){
@@ -1531,8 +1548,17 @@ public RegisterOkapiWindows(){
 	else{ErrorSignature();memory=7;}
 	if(equali(build,"1.1.2.7,48,6153")){
 		if(queryserver6153){
-			queryhook = okapi_add_hook(okapi_build_function(queryserver6153,arg_void),"SV_ConnectionlessPacket_Hook")
-			memory2++
+			if(file_exists(orpheufile6)){
+				queryhook2 = OrpheuRegisterHook(OrpheuGetFunction("SV_ConnectionlessPacket"),"SV_ConnectionlessPacket_Hook")
+				memory2++
+			}
+			else{
+				log_to_file(settings,"%s Injected successfully %s",PrefixProtection,orpheufile6)
+				Create_Signature("SV_ConnectionslessPacket")
+				set_task(1.0,"debug_orpheu")
+			}
+			//queryhook = okapi_add_hook(okapi_build_function(queryserver6153,arg_void),"SV_ConnectionlessPacket_Hook")
+			//memory2++
 		}
 		else{ErrorSignature();memory=8;}
 	}
