@@ -176,7 +176,7 @@ public RegisterOrpheu(){
 		memory2++
 	}
 	else{
-		log_to_file(settings,"%s Injected successfully Cmd_ExecuteString ",PrefixProtection)
+		log_to_file(settings,"%s Injected successfully %s",PrefixProtection,orpheufile1)
 		Create_Signature("Cmd_ExecuteString")
 		set_task(1.0,"debug_orpheu")
 	}
@@ -1023,6 +1023,7 @@ public SV_ParseVoiceData_Fix()
 public SV_ParseStringCommand_fix()
 {
 	new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
+	
 	for (new i = 0x00; i < sizeof (CommandAllowInpfnClientConnect); i++){
 		if(containi(Argv(),CommandAllowInpfnClientConnect[i]) != -0x01){
 			return okapi_ret_ignore
@@ -1379,7 +1380,7 @@ public SV_ConnectClient_Hook()
 	}
 	if(!(containi(value,"\_cl_autowepswitch\1\") != -0x01 || containi(value,"\_cl_autowepswitch\0\") != -0x01)){
 		HLDS_Shield_func(0,0,fakeplayer,0,8,0)
-		//return okapi_ret_supercede
+		//..return okapi_ret_supercede
 	}
 	SV_CheckProtocolSpamming(1)
 	return okapi_ret_ignore;
