@@ -97,7 +97,7 @@ new localas[33],valutsteamid,authid[32],authid2[32],szip[32],szip2[33],bullshit[
 #define locatie "addons/amxmodx/configs/settings/HLDS_FilesCheck.ini"
 #define ip_flitred "addons/amxmodx/configs/settings/HLDS_BlackListIP.ini"
 
-#define SV_SendBan_linux "SV_SendBan"
+#define SV_SendBan_linux "SV_ReadPackets"
 #define SV_Spawn_f_linux "SV_Spawn_f"
 #define Host_Say_f_linux "Host_Say_f"
 #define SVC_PingSignature_linux "net_from"
