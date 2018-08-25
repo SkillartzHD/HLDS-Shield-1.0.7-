@@ -97,7 +97,7 @@ new localas[33],valutsteamid,authid[32],authid2[32],szip[32],szip2[33],bullshit[
 #define locatie "addons/amxmodx/configs/settings/HLDS_FilesCheck.ini"
 #define ip_flitred "addons/amxmodx/configs/settings/HLDS_BlackListIP.ini"
 
-#define SV_SendBan_linux "SV_ReadPackets"
+#define SV_SendBan_linux "SV_FilterPacket"
 #define SV_Spawn_f_linux "SV_Spawn_f"
 #define Host_Say_f_linux "Host_Say_f"
 #define SVC_PingSignature_linux "net_from"
@@ -955,7 +955,7 @@ stock Create_Signature(address[]){
 		fprintf(queryserver,"^"arguments^"  :")
 		fprintf(queryserver,"[")
 		fprintf(queryserver,"{")
-		fprintf(queryserver,"^"type^" : ^"long^"")
+		fprintf(queryserver,"^"type^" : ^"char *^"")
 		fprintf(queryserver,"}")
 		fprintf(queryserver,"],")
 		fprintf(queryserver,"^"identifiers^":")
@@ -1385,7 +1385,7 @@ public RegisterOkapiLinux()
 		else{ErrorSignature();memory=7;}
 		if(queryserver6153linux){
 			//nu stiu de da crash in 6153 linux dupa changelevel/reload 
-			//queryhook = okapi_add_hook(okapi_build_function(queryserver6153linux,arg_void),"SV_ConnectionlessPacket_Hook")
+			//queryhook = okapi_add_hook(okapi_build_function(queryserver6153linux,arg_string,arg_string),"SV_ConnectionlessPacket_Hook")
 			if(file_exists(orpheufile6)){
 				queryhook2 = OrpheuRegisterHook(OrpheuGetFunction("SV_ConnectionlessPacket"),"SV_ConnectionlessPacket_Hook")
 				memory2++
@@ -1580,14 +1580,14 @@ public RegisterOkapiWindows(){
 				Create_Signature("SV_ConnectionslessPacket")
 				set_task(1.0,"debug_orpheu")
 			}
-			//queryhook = okapi_add_hook(okapi_build_function(queryserver6153,arg_void),"SV_ConnectionlessPacket_Hook")
+			//queryhook = okapi_add_hook(okapi_build_function(queryserver6153,arg_string,arg_string),"SV_ConnectionlessPacket_Hook")
 			//memory2++
 		}
 		else{ErrorSignature();memory=8;}
 	}
 	else{
 		if(queryserver4554){
-			queryhook = okapi_add_hook(okapi_build_function(queryserver4554,arg_void),"SV_ConnectionlessPacket_Hook")
+			queryhook = okapi_add_hook(okapi_build_function(queryserver4554,arg_string,arg_string),"SV_ConnectionlessPacket_Hook")
 			memory2++
 		}	
 		else{ErrorSignature();memory=8;}
