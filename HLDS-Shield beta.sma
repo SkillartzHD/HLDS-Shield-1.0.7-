@@ -551,9 +551,9 @@ public SecureServerOkapi_new() {
 }
 
 public SV_SendBan_fix(){
-	if(SV_CheckProtocolSpamming(2)){
-		return okapi_ret_supercede
-	}
+	//if(SV_CheckProtocolSpamming(2)){
+	//	return okapi_ret_supercede
+	//}
 	if(SV_FilterAddress(1)){
 		return okapi_ret_supercede
 	}
@@ -814,7 +814,7 @@ public SV_FilterAddress(writememory){
 	}
 	return okapi_ret_ignore
 }
-public SV_ConnectionlessPacket_Hook()
+public SV_ConnectionlessPacket_Hook(message[],b[])
 {
 	/* fix for
 	SVC_GetChallenge();
@@ -824,24 +824,18 @@ public SV_ConnectionlessPacket_Hook()
 	SVC_GameDllQuery(args);
 	*/
 	
-	
-	if(SV_CheckProtocolSpamming(2)){
-		return okapi_ret_supercede
-	}
-	
+	SV_CheckProtocolSpamming(2)
 	
 	if(SV_FilterAddress(1)){
 		return okapi_ret_supercede
 	}
-	
-	if(get_pcvar_num(Queryviewer)==1){
-		new data[net_adr],getip2[40]
+	if(get_pcvar_num(Queryviewer)>0){
+		new data[net_adr],getip2[40],ziua[32],puya[255]
 		okapi_get_ptr_array(net_adrr(),data,net_adr)
+		get_time("%m_%d_%Y",ziua,charsmax(ziua))
 		formatex(getip2,charsmax(getip2),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
-		log_to_file(settings,"%s SV_ConnectionlessPacket : %s with address %s",PrefixProtection,Argv1(),getip2)
-	}
-	if(containi(Argv(),"log")!=-0x01){
-		return okapi_ret_supercede
+		formatex(puya,charsmax(puya),"addons/amxmodx/configs/settings/HLDS-QueryViewer_%s.txt",ziua)
+		log_to_file(puya,"%s SV_ConnectionlessPacket : %s with address %s",PrefixProtection,Argv(),getip2)
 	}
 	if(containi(Argv(),"j")!=-0x01){
 		set_task(1.0,"destroy_memhack")
@@ -1382,7 +1376,6 @@ public SV_ConnectClient_Hook()
 		HLDS_Shield_func(0,0,fakeplayer,0,8,0)
 		//..return okapi_ret_supercede
 	}
-	SV_CheckProtocolSpamming(1)
 	return okapi_ret_ignore;
 	
 }
