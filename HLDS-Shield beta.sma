@@ -48,7 +48,7 @@ public plugin_precache()
 	GameData=register_cvar("shield_gamedata","HLDS-Shield 1.0.7")
 	LimitPrintf=register_cvar("shield_printf_limit","5")
 	LimitQuery=register_cvar("shield_query_limit","40")
-	LimitMunge=register_cvar("shield_munge_comamnd_limit","15")
+	LimitMunge=register_cvar("shield_munge_comamnd_limit","30")
 	LimitExploit=register_cvar("shield_exploit_cmd_limit","5")
 	LimitImpulse=register_cvar("shield_sv_runcmd_limit","100")
 	LimitResources=register_cvar("shield_sv_parseresource_limit","1")
@@ -680,7 +680,8 @@ public PfnClientCommand(id)
 	}
 	
 	if(get_pcvar_num(IlegalCmd)>0){
-		if(containi(Argv(),"cl_setautobuy") != -0x01){
+		if(containi(Argv(),"cl_setautobuy") != -0x01 || containi(Argv(),"say_team") != -0x01 
+		|| containi(Argv(),"say") != -0x01){
 			return FMRES_IGNORED
 		}
 		else{
@@ -988,28 +989,30 @@ public SV_ParseVoiceData_Fix()
 {
 	hola++
 	new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
-	new MSG_ReadShort = Add_MSG_ReadShort()
-	new pampamx[200]
-	new VoiceMax = 4096
-	formatex(pampamx,charsmax(pampamx),"%s You are detected for %s (%d)",PrefixProtection,voicedatabug,MSG_ReadShort)
-	if(hola >=get_pcvar_num(LimitPrintf)){
-		if(MSG_ReadShort > VoiceMax || MSG_ReadShort < 0){
-			SV_RejectConnection_user(id,pampamx)
-			if(get_pcvar_num(SendBadDropClient)==1){
-				SV_Drop_function(id)
+	if(!is_user_connected(id)){
+		new MSG_ReadShort = Add_MSG_ReadShort()
+		new pampamx[200]
+		new VoiceMax = 4096
+		formatex(pampamx,charsmax(pampamx),"%s You are detected for %s (%d)",PrefixProtection,voicedatabug,MSG_ReadShort)
+		if(hola >=get_pcvar_num(LimitPrintf)){
+			if(MSG_ReadShort > VoiceMax || MSG_ReadShort < 0){
+				SV_RejectConnection_user(id,pampamx)
+				if(get_pcvar_num(SendBadDropClient)==1){
+					SV_Drop_function(id)
+				}
+				HLDS_Shield_func(id,0,voicedatabug,0,0,3)
+				return okapi_ret_supercede
 			}
-			HLDS_Shield_func(id,0,voicedatabug,0,0,3)
-			return okapi_ret_supercede
 		}
-	}
-	else{
-		if(MSG_ReadShort > VoiceMax || MSG_ReadShort < 0){
-			SV_RejectConnection_user(id,pampamx)
-			if(get_pcvar_num(SendBadDropClient)==1){
-				SV_Drop_function(id)
+		else{
+			if(MSG_ReadShort > VoiceMax || MSG_ReadShort < 0){
+				SV_RejectConnection_user(id,pampamx)
+				if(get_pcvar_num(SendBadDropClient)==1){
+					SV_Drop_function(id)
+				}
+				HLDS_Shield_func(id,0,voicedatabug,0,17,3)
+				return okapi_ret_supercede
 			}
-			HLDS_Shield_func(id,0,voicedatabug,0,17,3)
-			return okapi_ret_supercede
 		}
 	}
 	return okapi_ret_ignore
