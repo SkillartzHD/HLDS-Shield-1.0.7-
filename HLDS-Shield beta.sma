@@ -72,6 +72,8 @@ public plugin_precache()
 	register_srvcmd("shield_remove_function","RegisterRemoveFunction")
 	register_srvcmd("shield_fake_cvar","RegisterFakeCvar")
 	
+	register_clcmd("usersid","SV_UsersID")
+	
 	g_aArray = ArrayCreate(1) 
 	g_blackList = ArrayCreate(15)
 	set_task(600.0,"Destroy_Memory",_,"",_,"b",_)
@@ -97,6 +99,15 @@ public SV_ForceFullClientsUpdate_api(index){
 	SV_ForceFullClientsUpdate()
 }
 
+public SV_UsersID(id){
+	new players[32], num, tempid;
+	get_players(players, num)
+	for (new i=0; i<num; i++){
+		tempid = players[i]
+		client_print(id,print_console,"|User : %s - #%d|",UserName(tempid),get_user_userid(tempid))
+	}
+	return PLUGIN_HANDLED
+}
 public client_authorized(id){
 	if(get_pcvar_num(RandomSteamid)>0){
 		Shield_CheckSteamID(id,1)
@@ -771,20 +782,19 @@ public RegisterReplaceString()
 public Host_User_f_Reverse(){
 	new steamid[255]
 	new players[32], num, tempid;
-	
 	get_players(players, num)	
 	
-	log_amx("userid : uniqueid : name : ip")
-	log_amx("------ : ---------: ----")
+	server_print("^nuserid : uniqueid : name : ip")
+	server_print("------ : ---------: ----")
 	
 	for (new i=0; i<num; i++){
 		tempid = players[i]
 		if(is_user_connected(tempid)){
 			get_user_authid(tempid,steamid,charsmax(steamid))
 		}
-		log_amx("      %d : %s : %s : %s",get_user_userid(tempid),steamid,UserName(tempid),PlayerIP(tempid))
+		server_print("      %d : %s : %s : %s",get_user_userid(tempid),steamid,UserName(tempid),PlayerIP(tempid))
 	}
-	log_amx("%d users",num)
+	server_print("%d users^n",num)
 	
 	return okapi_ret_supercede
 }
@@ -968,7 +978,6 @@ public IsInvalidFunction(functioncall,stringexit[]){
 	}
 	return okapi_ret_ignore	
 }
-
 public SV_ProcessFile_Hook()
 {
 	new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
@@ -1228,14 +1237,15 @@ public pfnClientUserInfoChanged(id){
 	if(get_pcvar_num(NameSpammer)>0){
 		
 		#define timp 5.0
-		static szOldName[32],szNewName[32]
+		static szOldName[32],szNewName[32],longformate[255]
 		pev(id,pev_netname,szOldName,charsmax(szOldName)) 
+		formatex(longformate,charsmax(longformate),"(%d)%s",random(32),szOldName)
 		get_user_info(id,"name",szNewName,charsmax(szNewName))
 		if(containi(szNewName,"%") !=-1){
 			if (NameUnLock[id]==2){
 				NameUnLock[id] = 2
 				client_print_color(id,id,"^4%s^1 Please wait^4 5 seconds^1 before change the name",PrefixProtection)
-				set_user_info(id,"name",szOldName) 
+				set_user_info(id,"name",longformate) 
 				set_task(timp,"SHIELD_NameDeBug",id)
 				return FMRES_SUPERCEDE
 			}
@@ -1250,7 +1260,7 @@ public pfnClientUserInfoChanged(id){
 				if (NameUnLock[id] == 1){
 					NameUnLock[id] = 1
 					client_print_color(id,id,"^4%s^1 Please wait^4 5 seconds^1 before change the name",PrefixProtection)
-					set_user_info(id,"name",szOldName) 
+					set_user_info(id,"name",longformate) 
 					return FMRES_SUPERCEDE
 				}
 				NameUnLock[id] = 1
@@ -1265,7 +1275,6 @@ public Info_ValueForKey_Hook(index)
 	if(get_pcvar_num(NameBug)>0){
 		new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
 		new lastname[a_max]
-		
 		if(is_user_connected(id)){
 			new Count=admins_num()
 			new NameList[b_max],PWList[b_max],MyPW[a_max],PlayerPW[a_max]
@@ -1452,35 +1461,37 @@ public Con_Printf_Hook(pfnprint[])
 		containi(pfnprint,"usage:  kick < name > | < # userid >")!=-0x01 || 
 		containi(pfnprint,"Can't use keys or values with a \")!=-0x01 || 
 		containi(pfnprint,"Keys and values must be < %i characters and > 0.")!=-0x01){
-			new build[varmax]
-			get_cvar_string("hostname",build,charsmax(build))
-			locala[id]++
-			
-			if(locala[id] >=get_pcvar_num(LimitPrintf)){
-				return okapi_ret_supercede
-			}
-			else
-			{
-				if(locala[id] >=get_pcvar_num(LimitExploit)){
-					if(get_pcvar_num(SendBadDropClient)==1){
-						SV_Drop_function(id)
-					}
-					else{
-						HLDS_Shield_func(id,1,hldsprintf,1,5,1)
-					}
+			if(is_user_connected(id)){
+				new build[varmax]
+				get_cvar_string("hostname",build,charsmax(build))
+				locala[id]++
+				
+				if(locala[id] >=get_pcvar_num(LimitPrintf)){
 					return okapi_ret_supercede
 				}
-				if(strlen(UserName(id))){
-					if(debug_s[id]==0){
-						if(locala[id] == 3){
-							locala[id]=1
-							debug_s[id]=1
+				else
+				{
+					if(locala[id] >=get_pcvar_num(LimitExploit)){
+						if(get_pcvar_num(SendBadDropClient)==1){
+							SV_Drop_function(id)
 						}
+						else{
+							HLDS_Shield_func(id,1,hldsprintf,1,5,1)
+						}
+						return okapi_ret_supercede
 					}
-					HLDS_Shield_func(id,1,hldsprintf,1,5,0)
-				}
-				else{
-					HLDS_Shield_func(0,0,hldsprintf,0,3,0)
+					if(strlen(UserName(id))){
+						if(debug_s[id]==0){
+							if(locala[id] == 3){
+								locala[id]=1
+								debug_s[id]=1
+							}
+						}
+						HLDS_Shield_func(id,1,hldsprintf,1,5,0)
+					}
+					else{
+						HLDS_Shield_func(0,0,hldsprintf,0,3,0)
+					}
 				}
 			}
 		}
