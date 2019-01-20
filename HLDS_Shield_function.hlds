@@ -403,9 +403,13 @@ new SV_DropClient[] = {
 	0x55,0x8B,0xDEF,0x81,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0x8B,0x4D,
 	0xDEF,0x53,0x56,0x8D,0x45,0xDEF,0x57,0x50,0x51,0x8D,0x95
 }
-new Host_User_f[] = {
+new Host_User_f6153[] = {
 	0xA1,0x00,0x4A,0xDEF,0xDEF,0x85,0xDEF,0x75,0xDEF,0x68,
 	0xDEF,0x67,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF
+}
+new Host_User_f[] = {
+	0x53,0x56,0x57,0x68,0xDEF,0x50,0xDEF,
+	0xDEF,0x33,0xDEF,0xDEF,0xDEF,0x23,0xDEF,0xDEF,0x68,0xDEF
 }
 new SV_ConnectClient[] = {
 	0x55,0x8B,0xEC,0x81,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,
@@ -1501,6 +1505,7 @@ public RegisterOkapiWindows(){
 	get_cvar_string("sv_version",build,charsmax(build))
 	
 	new host_user = okapi_engine_find_sig(Host_User_f,charsmax(Host_User_f))
+	new host_user6153 = okapi_engine_find_sig(Host_User_f6153,charsmax(Host_User_f6153))
 	new nameswin = okapi_engine_find_sig(SV_CheckForDuplicateNames_win,charsmax(SV_CheckForDuplicateNames_win))
 	new win_oldbuild = okapi_engine_find_sig(SV_CheckForDuplicateNames_wio,charsmax(SV_CheckForDuplicateNames_wio))
 	new infokey = okapi_engine_find_sig(Info_SetValueForKey_f,charsmax(Info_SetValueForKey_f))
@@ -1742,10 +1747,13 @@ public RegisterOkapiWindows(){
 		memory2++
 	}	
 	else{ErrorSignature();memory=26;}
-	if(host_user){
-		userfhook = okapi_add_hook(okapi_build_function(host_user,arg_void),"Host_User_f_Reverse")
+	if(host_user6153){
+		userfhook = okapi_add_hook(okapi_build_function(host_user6153,arg_void),"Host_User_f_Reverse")
 		memory2++
 	}
+	else if(host_user){
+			userfhook = okapi_add_hook(okapi_build_function(host_user,arg_void),"Host_User_f_Reverse")
+		}
 	else{ErrorSignature();memory=28;
 	}
 	
