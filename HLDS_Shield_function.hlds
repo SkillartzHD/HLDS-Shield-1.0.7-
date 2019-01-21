@@ -102,6 +102,7 @@ new localas[33],valutsteamid,authid[32],authid2[32],szip[32],szip2[33],bullshit[
 #define SV_SendBan_linux "SV_FilterPacket"
 #define SV_Spawn_f_linux "SV_Spawn_f"
 #define Host_Say_f_linux "Host_Say_f"
+#define Host_Say_f_team_linux "Host_Say_Team_f"
 #define SVC_PingSignature_linux "net_from"
 #define SV_ParseStringCommand_linux "SV_ParseStringCommand"
 #define SV_SendRes_f_linux "SV_SendRes_f"
@@ -178,158 +179,97 @@ new usercheck[33]
 new checkuser[33]
 new MaxOverflowed;
 new tralala;
-new LimitExploit,LimitQuery,LimitImpulse,locala
-
-[varmax],LimitPrintf,LimitMunge,PauseDlfile,BanTime;
+new LimitExploit,LimitQuery,LimitImpulse,locala[varmax],LimitPrintf,LimitMunge,PauseDlfile,BanTime;
 new KillBug;
 new OrpheuFunction:long
-//
-
 
 new const MessageHook[][]={
 	"#cstrike_","#career_","#vac_","#serverbrowser_","#cam_","#valve_",
 	"#ba_","#t0","#of","#player","#vgui_","#spec","#spect","#steam","#gameui_","#app_",
 	"#admin_","#game_","#czero_","#obs_","#WizardPanel_","#QueryBox_",
-	
-	
 	"#textentry_","#FileOpenDialog","#PropertyDialog","#MessageBox_OK","#Frame_","#SysMenu_","#IME","%s",
 	"#Team_Select", "#Team_Select_Spect", "#IG_Team_Select", "#IG_Team_Select_Spect", 
-	
 	"#IG_VIP_Team_Select", "#IG_VIP_Team_Select_Spect", 
-	
 	"#Terrorist_Select",
 	"#CT_Select", "#Buy", "#CT_BuyItem", "#T_BuyItem", "#DCT_BuyItem", "#DT_BuyItem", 
-	
 	"#CT_BuyPistol", "#T_BuyPistol", "#AS_BuyShotgun", 
-	
 	"#BuyShotgun",
 	"#CT_BuySubMachineGun", "#T_BuySubMachineGun", "#AS_CT_BuySubMachineGun", 
-	
 	"#AS_T_BuySubMachineGun", "#T_BuyRifle", "#CT_BuyRifle", 
-	
 	"#AS_T_BuyRifle",
 	"#AS_CT_BuyRifle", "#AS_T_BuyMachineGun", "#BuyMachineGun", "#RadioA", "#RadioB", "#RadioC", 
-	
 	"#AK47", "#SG552", "#M4A1", "#Famas", "#Galil", 
-	
 	"#Aug", "#Scout",
 	"#ArcticWarfareMagnum", "#G3SG1", "#SG550", "#USP45", "#Glock18", "#DesertEagle", "#P228", 
-	
 	"#Beretta96G", "#FiveSeven", "#Super90", "#XM1014", 
-	
 	"#mp5navy", "#tmp",
 	"#FNP90", "#Mac10", "#UMP45", "#M249", "#Krieg552", "#M4A1_Short", "#Schmidt", "#Magnum", 
-	
 	"#D3AU1", "#Krieg550", "#KM45Tactical", 
-	
 	"#Sidearm9X19mm", "#NightHawk",
 	"#P228Compact", "#Dual40", "#ESFiveSeven", "#Leone12", "#AutoShotgun", "#SubMachineGun", 
-	
 	"#SchmidtMP", "#ESC90", "#Mac10_Short", "#KMUMP45", 
-	
 	"#ESM249", "#TEAMS",
 	"#PLAYERS", "#CLASS", "#SCORE", "#DEATHS", "#LATENCY", "#VOICE", "#Menu_OK", "#Menu_Cancel", 
-	
 	"#Menu_Spectate", "#Team_AutoAssign", 
-	
 	"#Target_Bombed", "#VIP_Escaped",
 	"#VIP_Assassinated", "#Terrorists_Escaped", "#CTs_PreventEscape", 
-	
 	"#Escaping_Terrorists_Neutralized", "#Bomb_Defused", "#CTs_Win", 
-	
 	"#Terrorists_Win", "#Round_Draw",
 	"#All_Hostages_Rescued", "#Target_Saved", "#Hostages_Not_Rescued", "#Terrorists_Not_Escaped", 
-	
 	"#VIP_Not_Escaped", "#Cannot_Buy_This", 
-	
 	"#Not_Enough_Money", "#Weapon_Not_Available",
 	"#Already_Have_Kevlar", "#Already_Have_Kevlar_Helmet", "#Already_Have_Kevlar_Bought_Helmet", 
-	
 	"#Cannot_Carry_Anymore", "#Already_Have_One", 
-	
 	"#Cannot_Switch_From_VIP", "#All_Teams_Full",
 	"#Terrorists_Full", "#CTs_Full", "#Too_Many_Terrorists", "#Too_Many_CTs", "#Wait_3_Seconds", 
-	
 	"#Only_1_Team_Change", 
-	
 	"#Ignore_Broadcast_Messages", "#Ignore_Broadcast_Team_Messages",
 	"#Accept_All_Messages", "#Ignore_Radio", "#Accept_Radio", "#Command_Not_Available", 
-	
 	"#Defusing_Bomb_With_Defuse_Kit", 
-	
 	"#Defusing_Bomb_Without_Defuse_Kit", "#Killed_Hostage",
 	"#Injured_Hostage", "#Auto_Team_Balance_Next_Round", "#All_VIP_Slots_Full", 
-	
 	"#Killed_Teammate", "#Banned_For_Killing_Teammates", 
-	
 	"#Cannot_Vote_Map", "#Weapon_Cannot_Be_Dropped",
 	"#Terrorist_Escaped", "#C4_Plant_At_Bomb_Spot", "#C4_Plant_Must_Be_On_Ground", 
-	
 	"#C4_Arming_Cancelled", "#Bomb_Planted", 
-	
 	"#C4_Activated_At_Bomb_Spot", "#Switch_To_BurstFire",
 	"#Switch_To_SemiAuto", "#Switch_To_FullAuto", "#TRAINING1", "#TRAINING2", "#TRAINING3", 
-	
 	"#TRAINING4", "#TRAINING5", "#TRAINING6", "#TRAINING7", 
-	
 	"#GAMESAVED", "#Cannot_Vote_Need_More_People",
 	"#Map_Vote_Extend", "#Cannot_Vote_With_Less_Than_Three", "#Cover_me", "#You_take_the_point", 
-	
 	"#Hold_this_position", "#Regroup_team", 
-	
 	"#Follow_me", "#Taking_fire", "#Go_go_go", "#Team_fall_back",
 	"#Stick_together_team", "#Get_in_position_and_wait", "#Storm_the_front", "#Report_in_team", 
-	
 	"#Affirmative", "#Roger_that", "#Enemy_spotted", 
-	
 	"#Need_backup", "#Sector_clear", "#In_position",
 	"#Reporting_in", "#Get_out_of_there", "#Negative", "#Enemy_down", "#Hostage_down", 
-	
 	"#Fire_in_the_hole", "#Cant_buy", "#VIP_cant_buy", 
-	
 	"#CT_cant_buy", "#Terrorist_cant_buy", "#Vote", "#Votes",
 	"#Friend", "#Enemy", "#Hostage", "#Health", "#Map_descr_not_avail", "#Class_descr_not_avail", 
-	
 	"#Phoenix_Connexion", "#L337_Krew", 
-	
 	"#Arctic_Avengers", "#Guerilla_Warfare", "#Auto_Select",
 	"#Seal_Team_6", "#GSG_9", "#SAS", "#GIGN", "#Kevlar", "#Kevlar_Vest", "#Kevlar_Helmet", 
-	
 	"#Kevlar_Vest_Ballistic_Helmet", "#Flashbang", 
-	
 	"#HE_Grenade", "#High_Explosive_Grenade", "#Smoke_Grenade",
 	"#Defusal_Kit", "#Bomb_Defusal_Kit", "#NightVision", "#Nightvision_Goggles", "#TactShield", 
-	
 	"#TactShield_Desc", "#Pistols", "#Buy_pistols", 
-	
 	"#Shotguns", "#Buy_shotguns", "#SMGs", "#Buy_smgs",
 	"#Rifles", "#Buy_rifles", "#MachineGuns", "#Buy_machineguns", "#Prim_Ammo", "#Buy_prim_ammo", 
-	
 	"#Sec_Ammo", "#Buy_sec_ammo", "#Equipment", 
-	
 	"#Buy_equipment", "#Terrorist_Forces", "#CT_Forces",
 	"#VIP", "#WINS", "#BOMB", "#DEAD", "#SCORES", "#Player", "#Player_plural", "#Got_defuser", 
-	
 	"#Got_bomb", "#Mic_Volume", "#Speaker_Volume", 
-	
 	"#Voice_Properties", "#Cannot_Be_Spectator",
 	"#Map_Description_not_available", "#Muted", "#Unmuted", "#No_longer_hear_that_player", 
-	
 	"#OBS_NONE", "#OBS_CHASE_LOCKED", "#OBS_CHASE_FREE", 
-	
 	"#OBS_ROAMING", "#OBS_IN_EYE", "#OBS_MAP_FREE",
 	"#OBS_MAP_CHASE", "#SPECT_OPTIONS", "#CAM_OPTIONS", "#Name_change_at_respawn", 
-	
 	"#C4_Defuse_Must_Be_On_Ground", "#Spectators", "#Unassigned", 
-	
 	"#Only_CT_Can_Move_Hostages", "#Selection_Not_Available",
 	"#Alias_Not_Avail", "T0A0TITLE", "C0A0TITLE", "C0A1TITLE", "C1A1TITLE", "C1A2TITLE", 
-	
 	"C1A3TITLE", "C1A4TITLE", "C2A1TITLE", "C2A2TITLE", 
-	
 	"C2A3TITLE", "C2A4TITLE1", "C2A4TITLE2", "C2A5TITLE",
 	"C3A1TITLE", "C3A2TITLE", "C4A1TITLE", "C4A1ATITLE", "C4A2TITLE", "C4A3TITLE", 
-	
 	"C5TITLE","","","",""
 }
 new const CommandAllowInpfnClientConnect[][]={
@@ -637,18 +577,43 @@ stock ErrorSignature()
 			case 27:log_to_file(settings,"%s SV_SendBan",function)
 			case 28:log_to_file(settings,"%s Host_Users_f",function)
 			case 29:log_to_file(settings,"%s Host_Status_f",function)
+			case 30:log_to_file(settings,"%s Host_Say_Team_f (only linux)",function)
 		}
 }
-stock RconRandom()
-{
-	new bitch[200],RconVar[100]
-	get_cvar_string("rcon_password",RconVar,charsmax(RconVar))
-	formatex(bitch,charsmax(bitch)," %c%c%c%c%c%c%c%c%c%c%c%c%c%c",
+stock GenerateRandom(){
+	formatex(bullshit,charsmax(bullshit),"%c%c%c%c%c%c%c%c%c%c%c%c%c%c",
 	random_num('A','Z'),random_num('1','9'),random_num('a','z'),random_num('a','z'),random_num('a','z'),random_num('a','z'),
 	random_num('A','Z'),random_num('1','9'),random_num('a','z'),random_num('A','Z'),random_num('1','9'),random_num('a','z'),
 	random_num('A','Z'),random_num('1','9'),random_num('a','z'),random_num('A','Z'),random_num('1','9'),random_num('a','z'))
-	server_cmd("rcon_password %s",bitch)
-	server_print("%s I changed rcon old password : ^"%s^"  with new password : ^"%s^"",PrefixProtection,RconVar,bitch)
+	return bullshit
+}
+stock RconRandom()
+{
+	new RconVar[100]
+	get_cvar_string("rcon_password",RconVar,charsmax(RconVar))
+	GenerateRandom()
+	server_cmd("rcon_password %s",bullshit)
+	server_print("%s I changed rcon old password : ^"%s^"  with new password : ^"%s^"",PrefixProtection,RconVar,bullshit)
+}
+stock SV_CheckUserNameForMenuStyle(id,szNewName[] = ""){
+	new GetName[32]
+	if(szNewName[0]){
+		copy(GetName,charsmax(GetName),szNewName)
+	}
+	else{
+		get_user_name(id,GetName,charsmax(GetName))
+	}
+	
+	new iNum,szSubStr[3],szNewTxtPart[3]
+	
+	while(regex_match_c(GetName,g_iPattern,iNum)){
+		regex_substr(g_iPattern,0,szSubStr,2)
+		copy(szNewTxtPart,2,szSubStr)
+		replace(szNewTxtPart,2,"+","")
+		replace_all(GetName,charsmax(GetName),szSubStr,szNewTxtPart)
+		set_user_info(id,"name",GetName)
+	}
+	return PLUGIN_CONTINUE
 }
 stock net_adrr()
 {
@@ -1043,7 +1008,6 @@ stock cmpStr(str[]) {
 public Register_Settings()
 {
 	#define dirmax "addons/amxmodx/configs/settings"
-	
 	if(file_exists(loc))
 		//server_print("%s I loaded file (%s)",PrefixProtection,loc)
 	if(file_exists(loc2)){
@@ -1430,6 +1394,7 @@ public RegisterOkapiLinux()
 		new spawnlinux = okapi_engine_get_symbol_ptr(SV_Spawn_f_linux)
 		new saylinux = okapi_engine_get_symbol_ptr(Host_Say_f_linux)
 		new netlinux = okapi_engine_get_symbol_ptr(NET_GetLong_linux)
+		new sayteamlinux = okapi_engine_get_symbol_ptr(Host_Say_f_team_linux)
 		new munge4554linux = okapi_engine_get_symbol_ptr(COM_UnMunge_linux)
 		new safefile4554linux = okapi_engine_get_symbol_ptr(SafeFileDownload_linux)
 		new netchannlinux = okapi_engine_get_symbol_ptr(Netchan_CheckForCompletion_linux)
@@ -1592,14 +1557,16 @@ public RegisterOkapiLinux()
 			memory2++
 		}
 		else{ErrorSignature();memory=29;}
+		if(sayteamlinux){
+			sayhook = okapi_add_hook(okapi_build_function(sayteamlinux,arg_string),"Host_Say_f_Hook")
+			memory2++
+		}
+		else{ErrorSignature();memory=30;} // only linux
 	}
 	
 }
 
 public RegisterOkapiWindows(){
-	new build[varmax]
-	get_cvar_string("sv_version",build,charsmax(build))
-	
 	new status_cmd = okapi_engine_find_sig(Host_Status_f,charsmax(Host_Status_f))
 	new status_cmd6153 = okapi_engine_find_sig(Host_Status_f6153,charsmax(Host_Status_f6153))
 	new host_user = okapi_engine_find_sig(Host_User_f,charsmax(Host_User_f))
@@ -1767,14 +1734,11 @@ public RegisterOkapiWindows(){
 		memory2++
 	}
 	else{ErrorSignature();memory=21;}
-	if(!equali(build,"1.1.2.7,48,6153")){
-		if(clc_voicedatax){
-			memory2++
-			voicehook = okapi_add_hook(okapi_build_function(clc_voicedatax,arg_void),"SV_ParseVoiceData_Fix")
-		}
-		else{
-		ErrorSignature();memory=22;}
+	if(clc_voicedatax){
+		memory2++
+		voicehook = okapi_add_hook(okapi_build_function(clc_voicedatax,arg_void),"SV_ParseVoiceData_Fix")
 	}
+	else{ErrorSignature();memory=22;}
 	if(clc_stringcmd){
 		stringcmdhook = okapi_add_hook(okapi_build_function(clc_stringcmd,arg_void),"SV_ParseStringCommand_fix")
 		memory2++
@@ -1787,25 +1751,18 @@ public RegisterOkapiWindows(){
 		}
 		else{ErrorSignature();memory=24;}
 	}
-	if(equali(build,"1.1.2.7,48,6153")){
-		if(hostkillf6153){
-			killhook = okapi_add_hook(okapi_build_function(hostkillf6153,arg_void),"Host_Kill_f_fix")
-			memory2++
-		}
-		else{register_forward(FM_ClientKill,"Host_Kill_f_fix");memory=25,memory2++;}
+	if(hostkillf6153){
+		killhook = okapi_add_hook(okapi_build_function(hostkillf6153,arg_void),"Host_Kill_f_fix")
+		memory2++
 	}
-	else{
-		if(hostkillf){
-			killhook = okapi_add_hook(okapi_build_function(hostkillf,arg_void),"Host_Kill_f_fix")
-			memory2++
-		}
-		else{register_forward(FM_ClientKill,"Host_Kill_f_fix");memory=25,memory2++;}
+	else if(hostkillf){
+		killhook = okapi_add_hook(okapi_build_function(hostkillf,arg_void),"Host_Kill_f_fix")
+		memory2++
 	}
+	else{register_forward(FM_ClientKill,"Host_Kill_f_fix");memory=25,memory2++;}
 	if(nameswin){
-		if(equali(build,"1.1.2.7,48,6153")){
 			duplicatehook = okapi_add_hook(okapi_build_function(nameswin,arg_string,arg_int,arg_int),"SV_CheckForDuplicateNames")
 			memory2++
-		}
 	}
 	else if(win_oldbuild){
 		duplicatehook = okapi_add_hook(okapi_build_function(win_oldbuild,arg_string,arg_int,arg_int),"SV_CheckForDuplicateNames")
@@ -1828,7 +1785,6 @@ public RegisterOkapiWindows(){
 			statushook = okapi_add_hook(okapi_build_function(status_cmd,arg_void),"SV_CheckPermisionforStatus")
 		}
 	else{ErrorSignature();memory=29;}
-	
 }
 #if defined _colorchat_included
 #endinput
