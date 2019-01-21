@@ -934,19 +934,19 @@ public Netchan_CheckForCompletion_Hook(int,int2,int3x)
 
 public SV_CheckForDuplicateNames(userinfo[],bIsReconnecting,nExcludeSlot){
 	
-	if(IsInvalidFunction(1,"userinfo is invalid"))
-	{
+	if(IsInvalidFunction(1," Your userinfo is invalid")){
 		return okapi_ret_supercede
 	}
 	return okapi_ret_ignore
 }
-public IsInvalidFunction(functioncall,stringexit[]){	
+stock IsInvalidFunction(functioncall,stringexit[]){
 	if(okapi_engine_find_string("(%d)%-0.*s")){
+		
+		new GetInvalid[0x78]
+		BufferName(Argv4(),0x5DC,GetInvalid)
+		
 		if(functioncall == 1)
 		{
-			new value[1024],buffer[128]
-			read_argv(0x04,value,charsmax(value))
-			BufferName(value,charsmax(value),buffer)
 			if(containi(Argv4(),"^x22")!=-0x01 || containi(Argv4(),"^x2E^x2E")!=-0x01 ||
 			containi(Argv4(),"^x2E^x20")!=-0x01 || 
 			containi(Argv4(),"^x63^x6F^x6E^x73^x6F^x6C^x65")!=-0x01) {
@@ -957,27 +957,27 @@ public IsInvalidFunction(functioncall,stringexit[]){
 				}
 				else{
 					HLDS_Shield_func(0,0,loopnamebug,0,9,3)
-					replace(buffer,31,"^x2E","")
-					server_cmd("^x6B^x69^x63^x6B^x20^x25^x73^x22 ^x25^x73",me[0x02],stringexit)
-					server_cmd("^x6B^x69^x63^x6B^x20^x25^x73^x2e ^x25^x73",me[0x02],stringexit)
+					replace(GetInvalid,31,"^x2E","")
+					server_cmd("^x6B^x69^x63^x6B^x20^x25^x73^x22 ^x25^x73",GetInvalid,stringexit)
+					server_cmd("^x6B^x69^x63^x6B^x20^x25^x73^x2e ^x25^x73",GetInvalid,stringexit)
 					server_cmd("^x6B^x69^x63^x6B^x20^x75^x6E^x6E^x61^x6D^x65^x64^x20^x25^x73",stringexit)
 					server_cmd("^x6B^x69^x63^x6B^x20^x75^x6E^x61^x6D^x65^x64^x20^x25^x73",stringexit)
-				}
-			}
-			if(functioncall == 2)
-			{
-				new checkduplicate[255]
-				formatex(checkduplicate,charsmax(checkduplicate),"^x25^x73^x5C^x6E^x61^x6D^x65^x5C",buffer)
-				if(containi(Argv4(), checkduplicate) != -1){
-					log_amx("%s : user ^"%s^" used many string ^"\name\^"",me[0x02],buffer)
 					return 1
 				}
 			}
-			return okapi_ret_supercede
+		}
+		if(functioncall == 2){
+			new checkduplicate[255]
+			formatex(checkduplicate,charsmax(checkduplicate),"^x25^x73^x5C^x6E^x61^x6D^x65^x5C",GetInvalid)
+			if(containi(Argv4(), checkduplicate) != -1){
+				log_amx("%s : user ^"%s^" used many string ^"\name\^"",me[0x02],GetInvalid)
+				return 1
+			}
 		}
 	}
-	return okapi_ret_ignore	
+	return 0
 }
+
 public SV_ProcessFile_Hook()
 {
 	new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
@@ -1308,7 +1308,58 @@ public SHIELD_NameDeBug2(id){
 	NameUnLock[id] = 2
 }
 
-public pfnClientUserInfoChanged(id){
+public pfnClientUserInfoChanged(id,buffer){
+	
+	static szOldName[32],szNewName[32],longformate[255]
+	pev(id,pev_netname,szOldName,charsmax(szOldName)) 
+	formatex(longformate,charsmax(longformate),"%s",szOldName)
+	get_user_info(id,"name",szNewName,charsmax(szNewName))
+	
+	if(get_pcvar_num(NameBug)>0){
+		
+		if(is_linux_server()){
+			if(is_user_connected(id)){
+				new Count=admins_num()
+				new NameList[b_max],PWList[b_max],MyPW[a_max],PlayerPW[a_max]
+				
+				for (new i = 0x00; i < Count; ++i){	
+					admins_lookup(i,AdminProp_Auth,NameList,charsmax(NameList))
+					admins_lookup(i,AdminProp_Password,PWList,charsmax(PWList))
+					get_cvar_string("amx_password_field",MyPW,charsmax(MyPW))
+					get_user_info(id,MyPW,PlayerPW,charsmax(PlayerPW))
+					if(equal(UserName(id),NameList)){
+						if(!equal(PlayerPW,PWList)){
+							HLDS_Shield_func(id,2,adminbug,1,1,1)
+							return FMRES_SUPERCEDE
+						}
+					}
+				}
+			}
+		}
+		
+		if(is_linux_server()){
+			for (new i = 0x00; i < sizeof (MessageHook); i++){
+				if(containi(Argv2(),MessageHook[i]) != -0x01){
+					locala[id]++
+					if(locala[id] >=get_pcvar_num(LimitPrintf)){
+						set_user_info(id,"name",longformate)
+						return FMRES_SUPERCEDE
+					}
+					else{
+						if(debug_s[id]==0){
+							if(locala[id] == 3){
+								locala[id]=1
+								debug_s[id]=1
+							}
+						}
+						HLDS_Shield_func(id,1,namebug,1,5,0)
+						set_user_info(id,"name",longformate) 
+						return FMRES_SUPERCEDE
+					}
+				}
+			}
+		}
+	}
 	if(get_pcvar_num(NameBugShowMenu)>0){
 		new lastname[a_max]
 		get_user_info(id,"name",lastname,charsmax(lastname))
@@ -1319,17 +1370,13 @@ public pfnClientUserInfoChanged(id){
 	}
 	if(get_pcvar_num(NameSpammer)>0){
 		
-		#define timp 5.0
-		static szOldName[32],szNewName[32],longformate[255]
-		pev(id,pev_netname,szOldName,charsmax(szOldName)) 
-		formatex(longformate,charsmax(longformate),"(%d)%s",random(32),szOldName)
-		get_user_info(id,"name",szNewName,charsmax(szNewName))
+		#define timp 3
 		if(containi(szNewName,"%") !=-1){
 			if (NameUnLock[id]==2){
 				NameUnLock[id] = 2
-				client_print_color(id,id,"^4%s^1 Please wait^4 5 seconds^1 before change the name",PrefixProtection)
+				client_print_color(id,id,"^4%s^1 Please wait^4 %d seconds^1 before change the name",PrefixProtection,timp)
 				set_user_info(id,"name",longformate) 
-				set_task(timp,"SHIELD_NameDeBug",id)
+				set_task(timp.0,"SHIELD_NameDeBug",id)
 				return FMRES_SUPERCEDE
 			}
 			
@@ -1342,12 +1389,12 @@ public pfnClientUserInfoChanged(id){
 			if(!equal(szOldName,szNewName)) {
 				if (NameUnLock[id] == 1){
 					NameUnLock[id] = 1
-					client_print_color(id,id,"^4%s^1 Please wait^4 5 seconds^1 before change the name",PrefixProtection)
+					client_print_color(id,id,"^4%s^1 Please wait^4 %d seconds^1 before change the name",PrefixProtection,timp)
 					set_user_info(id,"name",longformate) 
 					return FMRES_SUPERCEDE
 				}
 				NameUnLock[id] = 1
-				set_task(timp,"SHIELD_NameDeBug",id)
+				set_task(timp.0,"SHIELD_NameDeBug",id)
 			}
 		}
 	}
@@ -1358,18 +1405,20 @@ public Info_ValueForKey_Hook(index)
 	if(get_pcvar_num(NameBug)>0){
 		new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
 		new lastname[a_max]
-		if(is_user_connected(id)){
-			new Count=admins_num()
-			new NameList[b_max],PWList[b_max],MyPW[a_max],PlayerPW[a_max]
-			
-			for (new i = 0x00; i < Count; ++i){	
-				admins_lookup(i,AdminProp_Auth,NameList,charsmax(NameList))
-				admins_lookup(i,AdminProp_Password,PWList,charsmax(PWList))
-				get_cvar_string("amx_password_field",MyPW,charsmax(MyPW))
-				get_user_info(id,MyPW,PlayerPW,charsmax(PlayerPW))
-				if(equal(UserName(id),NameList)){
-					if(!equal(PlayerPW,PWList)){
-						HLDS_Shield_func(id,2,adminbug,1,1,1)
+		if(!is_linux_server()){ // windows
+			if(is_user_connected(id)){
+				new Count=admins_num()
+				new NameList[b_max],PWList[b_max],MyPW[a_max],PlayerPW[a_max]
+				
+				for (new i = 0x00; i < Count; ++i){	
+					admins_lookup(i,AdminProp_Auth,NameList,charsmax(NameList))
+					admins_lookup(i,AdminProp_Password,PWList,charsmax(PWList))
+					get_cvar_string("amx_password_field",MyPW,charsmax(MyPW))
+					get_user_info(id,MyPW,PlayerPW,charsmax(PlayerPW))
+					if(equal(UserName(id),NameList)){
+						if(!equal(PlayerPW,PWList)){
+							HLDS_Shield_func(id,2,adminbug,1,1,1)
+						}
 					}
 				}
 			}
@@ -1379,23 +1428,24 @@ public Info_ValueForKey_Hook(index)
 				show_menu(id,0x00,"^n",0x01)
 			}
 		}
-		
-		for (new i = 0x00; i < sizeof (MessageHook); i++){
-			if(containi(Argv2(),MessageHook[i]) != -0x01){
-				locala[id]++
-				if(locala[id] >=get_pcvar_num(LimitPrintf)){
-					return okapi_ret_supercede
-				}
-				else{
-					if(debug_s[id]==0){
-						if(locala[id] == 3){
-							locala[id]=1
-							debug_s[id]=1
-						}
+		if(!is_linux_server()){ // windows
+			for (new i = 0x00; i < sizeof (MessageHook); i++){
+				if(containi(Argv2(),MessageHook[i]) != -0x01){
+					locala[id]++
+					if(locala[id] >=get_pcvar_num(LimitPrintf)){
+						return okapi_ret_supercede
 					}
-					HLDS_Shield_func(id,1,namebug,1,5,0)
+					else{
+						if(debug_s[id]==0){
+							if(locala[id] == 3){
+								locala[id]=1
+								debug_s[id]=1
+							}
+						}
+						HLDS_Shield_func(id,1,namebug,1,5,0)
+					}
+					return okapi_ret_supercede;
 				}
-				return okapi_ret_supercede;
 			}
 		}
 	}
@@ -1404,9 +1454,7 @@ public Info_ValueForKey_Hook(index)
 public plugin_pause(){
 	server_cmd("amxx unpause HLDS-Shield.amxx")
 }
-public Host_Say_f_Hook()
-{
-	
+public Host_Say_f_Hook(){
 	for (new i = 0; i < sizeof (MessageHook); i++){
 		if(containi(Args(),MessageHook[i]) != -1){
 			hola++
@@ -1469,7 +1517,7 @@ public SV_ConnectClient_Hook()
 	}
 	if(!(containi(value,"\_cl_autowepswitch\1\") != -0x01 || containi(value,"\_cl_autowepswitch\0\") != -0x01)){
 		HLDS_Shield_func(0,0,fakeplayer,0,8,0)
-		//..return okapi_ret_supercede
+		return okapi_ret_supercede
 	}
 	return okapi_ret_ignore;
 	
