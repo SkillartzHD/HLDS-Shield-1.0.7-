@@ -1096,6 +1096,89 @@ public FS_Open_Hook(abc[])
 	}
 	return okapi_ret_ignore
 }
+public SV_CheckPermisionforStatus(){
+	
+	new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
+	
+	if(is_user_admin(id)){
+		ReBuild_Status(1)
+	}
+	else{
+		if(!id){
+			ReBuild_Status(2) // is server
+		}
+		else{
+			ReBuild_Status(0)
+		}
+	}
+	return okapi_ret_supercede
+}
+public ReBuild_Status(steamidshow){
+	
+	new players[32],MapName[32],AddressHLDS[32],EngineHLDS[32],EngineHostName[32],num
+	new PlayerName[32],PlayerSteamID[32],PingPlayer,LossPlayer
+	new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
+	
+	get_players(players, num)
+	get_mapname(MapName,charsmax(MapName))
+	get_cvar_string("net_address",AddressHLDS,charsmax(AddressHLDS))
+	get_cvar_string("sv_version",EngineHLDS,charsmax(EngineHLDS))
+	get_cvar_string("hostname",EngineHostName,charsmax(EngineHostName))
+	
+	if(steamidshow == 2){
+		server_print("^nPlayers : %d/%d",get_playersnum(),get_maxplayers())
+		server_print("Map : %s",MapName)
+		server_print("TCP/IP : %s",AddressHLDS)
+		server_print("Engine : %s",EngineHLDS)
+		server_print("HostName : %s^n",EngineHostName)
+	}
+	else{
+		client_print(id,print_console,"^nPlayers : %d/%d",get_playersnum(),get_maxplayers())
+		client_print(id,print_console,"Map : %s",MapName)
+		client_print(id,print_console,"TCP/IP : %s",AddressHLDS)
+		client_print(id,print_console,"Engine : %s",EngineHLDS)
+		client_print(id,print_console,"HostName : %s^n",EngineHostName)
+	}
+	
+	if(steamidshow == 1){
+		client_print(id,print_console,"[Name:] [UserID:] [SteamID:] [FRAG:] [TIME PLAYED:] [PING:]^n")
+	}
+	else if(steamidshow == 0){
+		client_print(id,print_console,"[Name:] [UserID:] [FRAG:] [TIME PLAYED:] [PING:]^n")
+	}
+	else{
+		server_print("[Name:] [UserID:] [SteamID:] [FRAG:] [TIME PLAYED:] [PING:]^n")
+	}
+	
+	
+	for(new i = 0 ; i < num ; i++){
+		new PlayerTime=get_user_time(players[i])
+		if(steamidshow == 1 || steamidshow == 2){
+			get_user_authid(players[i],PlayerSteamID,charsmax(PlayerSteamID))
+		}
+		get_user_name(players[i],PlayerName,charsmax(PlayerName))
+		get_user_ping(players[i],PingPlayer,LossPlayer)
+		
+		if(is_user_bot(players[i])){
+			if(steamidshow == 3){
+				server_print("[%s]-[VALVE_BOT]-[FRAGS : %d]-[%d Seconds]",PlayerName,get_user_frags(players[i]),PlayerTime)
+			}
+			else{
+				client_print(id,print_console,"[%s]-[VALVE_BOT]-[FRAGS : %d]-[%d Seconds]",PlayerName,get_user_frags(players[i]),PlayerTime)
+			}
+		}
+		
+		if(steamidshow == 1){
+			client_print(id,print_console,"[%s]-[%i]-[%s]-[%d]-[%d Seconds]-[%d]",PlayerName,get_user_userid(players[i]),PlayerSteamID,get_user_frags(players[i]),PlayerTime,PingPlayer)
+		}
+		else if(steamidshow == 0){
+			client_print(id,print_console,"[%s]-[%i]-[%d]-[%d Seconds]-[%d]",PlayerName,get_user_userid(players[i]),get_user_frags(players[i]),PlayerTime,PingPlayer)
+		}
+		else{
+			server_print("[%s]-[%i]-[%s]-[%d]-[%d Seconds]-[%d]",PlayerName,get_user_userid(players[i]),PlayerSteamID,get_user_frags(players[i]),PlayerTime,PingPlayer)
+		}
+	}
+}
 public SV_RunCmd_Hook()
 {
 	// functia este apelata mereu (loop)
