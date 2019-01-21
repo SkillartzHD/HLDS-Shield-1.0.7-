@@ -11,6 +11,7 @@
 new g_MaxClients,Regex:g_iPattern
 new OrpheuHook:executestringhook
 new okapi_hook:sendbanhook
+new okapi_hook:statushook
 new okapi_hook:spawnhook
 new okapi_hook:sendreshook
 new okapi_hook:sayhook
@@ -97,6 +98,7 @@ new localas[33],valutsteamid,authid[32],authid2[32],szip[32],szip2[33],bullshit[
 #define locatie "addons/amxmodx/configs/settings/HLDS_FilesCheck.ini"
 #define ip_flitred "addons/amxmodx/configs/settings/HLDS_BlackListIP.ini"
 
+#define Host_Status_f_linux "Host_Status_f"
 #define SV_SendBan_linux "SV_FilterPacket"
 #define SV_Spawn_f_linux "SV_Spawn_f"
 #define Host_Say_f_linux "Host_Say_f"
@@ -356,7 +358,9 @@ new const ShieldServerCvarBlock[][]={
 
 //WINDOWS SIGNATURE
 new SV_Spawn_f[] = {
-0x55,0x8B,0xEC,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0x23,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0x45,0xDEF,0xDEF,0xDEF,0x50,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF
+	0x55,0x8B,0xEC,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0x23,0xDEF,0xDEF,0xDEF,
+	0xDEF,0xDEF,0xDEF,0x45,0xDEF,0xDEF,0xDEF,0x50,0xDEF,
+	0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF
 }
 new SV_Addip[] = {
 	0x55,0x8B,0xEC,0x83,0xEC,0x18,0x53,0x56,0x57,0xE8,0xDEF,0xDEF,0xDEF,0xDEF,
@@ -367,14 +371,19 @@ new SV_SendBan_windows[] = {
 	0x55,0x8B,0xEC,0xDEF,0xDEF,0x40,0x56,0x57,0x68,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0x45,0xDEF
 }
 new SV_ParseConsistencyResponse[] = {
-	0x55,0x8B,0xEC,0x81,0xEC,0xDEF,0xDEF,0x00,0x00,0x53,0x56,0x57,0x33,0xDEF,0xDEF,0xDEF,0xDEF,0x45,0xDEF,0x89,0x45,0xDEF,0x50,0xDEF,0x45,0x88,0x50,0xDEF,0x80,0xDEF,0xDEF,0xDEF
+	0x55,0x8B,0xEC,0x81,0xEC,0xDEF,0xDEF,0x00,0x00,
+	0x53,0x56,0x57,0x33,0xDEF,0xDEF,
+	0xDEF,0xDEF,0x45,0xDEF,0x89,0x45,0xDEF,0x50,
+	0xDEF,0x45,0x88,0x50,0xDEF,0x80,0xDEF,0xDEF,0xDEF
 }
 
 new Host_kill_f[] = {
-	0x8B,0x0D,0xDC,0x5D,0xDEF,0xDEF,0xDEF,0x81,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF
+	0x8B,0x0D,0xDC,0x5D,0xDEF,0xDEF,0xDEF,0x81,0xDEF,0xDEF,
+	0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF
 }
 new Host_kill_f6153[] = {
-	0x8B,0x0D,0xDC,0x5D,0xDEF,0xDEF,0xDEF,0x81,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF
+	0x8B,0x0D,0xDC,0x5D,0xDEF,0xDEF,0xDEF,0x81,0xDEF,0xDEF,
+	0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF
 }
 new Con_Printf_f[] = {
 	0x55,0x8B,0xEC,0xB8,0x00,0x10,0x00,0x00,0xE8,0xDEF,0xDEF,
@@ -474,7 +483,14 @@ new IsSafeFileDownload6153[] = {
 	//0xDEF,0x50,0xDEF,0xDEF,0x65,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0x51,0xDEF,0xDEF,
 	//0x6A,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF
 }
-
+new Host_Status_f[] = {
+	0x55,0x8B,0xEC,0x81,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0x34,0xDEF,
+	0xDEF,0x53,0x56,0x57,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0x33,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0x89,0xDEF,0xDEF,0x89
+}
+new Host_Status_f6153[] = {
+	0x55,0x8B,0xDEF,0x81,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xA1,0xDEF,0xDEF,0xDEF,0xDEF,
+	0x53,0x56,0x57,0xBF,0xDEF,0xDEF,0xDEF,0xDEF,0x33,0xDEF,0x8B,0xDEF,0x3B,0xDEF,0x89,0xDEF,0xDEF,0x89,0xDEF,0xDEF,0x89
+}
 new IsSafeFileDownload4554[] = {
 	0x55,0x8b,0xec,0x56,0x8b,0x75,0xDEF,0x85,0xf6,
 	0x57,0x0f,0x84,0xDEF,0xDEF,0xDEF,0xDEF,0x6A,0x04
@@ -589,37 +605,38 @@ stock SV_UpTime(function){
 }
 stock ErrorSignature()
 {
-	new sobolan[200]
-	formatex(sobolan,charsmax(sobolan),"%s i don't found this function :",PrefixProtection)
+	new function[200]
+	formatex(function,charsmax(function),"%s i don't found this function :",PrefixProtection)
 	switch(memory){
-		case 1:log_to_file(settings,"%s SV_Spawn_f",sobolan)
-			case 2:log_to_file(settings,"%s SV_SendRes_f",sobolan)
-			case 3:log_to_file(settings,"%s Host_Say_f",sobolan)
-			case 4:log_to_file(settings,"%s NET_GetLong",sobolan)
-			case 5:log_to_file(settings,"%s SV_ConnectClient",sobolan)
-			case 6:log_to_file(settings,"%s SV_RejectConnection",sobolan)
-			case 7:log_to_file(settings,"%s Con_Printf",sobolan)
-			case 8:log_to_file(settings,"%s SV_ConnectionlessPacket",sobolan)
-			case 9:log_to_file(settings,"%s Set_ValueForKey",sobolan)
-			case 10:log_to_file(settings,"%s SV_DropClient",sobolan)
-			case 11:log_to_file(settings,"%s COM_UnMunge",sobolan)
-			case 12:log_to_file(settings,"%s IsSafeFileToDownload",sobolan)
-			case 13:log_to_file(settings,"%s Netchan_CheckForCompletion",sobolan)
-			case 14:log_to_file(settings,"%s SV_ProcessFile",sobolan)
-			case 15:log_to_file(settings,"%s FS_Open",sobolan)
-			case 16:log_to_file(settings,"%s COM_FileWrite",sobolan)
-			case 17:log_to_file(settings,"%s SV_RunCmd",sobolan)
-			case 18:log_to_file(settings,"%s SV_New_f",sobolan)
-			case 19:log_to_file(settings,"%s SV_Addip_f",sobolan)
-			case 20:log_to_file(settings,"%s SV_Rcon",sobolan)
-			case 21:log_to_file(settings,"%s SV_ParseResourceList",sobolan)
-			case 22:log_to_file(settings,"%s SV_ParseVoiceData",sobolan)
-			case 23:log_to_file(settings,"%s SV_ParseStringCommand",sobolan)
-			case 24:log_to_file(settings,"%s Cmd_ExecuteString",sobolan)
-			case 25:log_to_file(settings,"%s Host_Kill_f a primit hook prin alta metoda",PrefixProtection)
-			case 26:log_to_file(settings,"%s SV_CheckForDuplicateNames",sobolan)
-			case 27:log_to_file(settings,"%s SV_SendBan",sobolan)
-			case 28:log_to_file(settings,"%s Host_Users_f",sobolan)
+		case 1:log_to_file(settings,"%s SV_Spawn_f",function)
+			case 2:log_to_file(settings,"%s SV_SendRes_f",function)
+			case 3:log_to_file(settings,"%s Host_Say_f",function)
+			case 4:log_to_file(settings,"%s NET_GetLong",function)
+			case 5:log_to_file(settings,"%s SV_ConnectClient",function)
+			case 6:log_to_file(settings,"%s SV_RejectConnection",function)
+			case 7:log_to_file(settings,"%s Con_Printf",function)
+			case 8:log_to_file(settings,"%s SV_ConnectionlessPacket",function)
+			case 9:log_to_file(settings,"%s Set_ValueForKey",function)
+			case 10:log_to_file(settings,"%s SV_DropClient",function)
+			case 11:log_to_file(settings,"%s COM_UnMunge",function)
+			case 12:log_to_file(settings,"%s IsSafeFileToDownload",function)
+			case 13:log_to_file(settings,"%s Netchan_CheckForCompletion",function)
+			case 14:log_to_file(settings,"%s SV_ProcessFile",function)
+			case 15:log_to_file(settings,"%s FS_Open",function)
+			case 16:log_to_file(settings,"%s COM_FileWrite",function)
+			case 17:log_to_file(settings,"%s SV_RunCmd",function)
+			case 18:log_to_file(settings,"%s SV_New_f",function)
+			case 19:log_to_file(settings,"%s SV_Addip_f",function)
+			case 20:log_to_file(settings,"%s SV_Rcon",function)
+			case 21:log_to_file(settings,"%s SV_ParseResourceList",function)
+			case 22:log_to_file(settings,"%s SV_ParseVoiceData",function)
+			case 23:log_to_file(settings,"%s SV_ParseStringCommand",function)
+			case 24:log_to_file(settings,"%s Cmd_ExecuteString",function)
+			case 25:log_to_file(settings,"%s Host_Kill_f hooked with fakemeta",PrefixProtection)
+			case 26:log_to_file(settings,"%s SV_CheckForDuplicateNames",function)
+			case 27:log_to_file(settings,"%s SV_SendBan",function)
+			case 28:log_to_file(settings,"%s Host_Users_f",function)
+			case 29:log_to_file(settings,"%s Host_Status_f",function)
 		}
 }
 stock RconRandom()
@@ -1031,35 +1048,100 @@ public Register_Settings()
 		//server_print("%s I loaded file (%s)",PrefixProtection,loc)
 	if(file_exists(loc2)){
 		server_cmd("exec %s",loc2)
-		//server_print("%s I loaded file (%s)",PrefixProtection,loc2)
+		server_print("%s I loaded file (%s)",PrefixProtection,loc2)
 	}
 	else{
-		new filecacat = fopen(loc2,"wb")
+		new FileVar = fopen(loc2,"wb")
 		server_print("%s I created file (%s)",PrefixProtection,loc2)
-		fprintf(filecacat,"//shield_replace_string ^"status^" ^"statu3^"")
-		fprintf(filecacat,"//shield_remove_string ^"rcon^"")
-		fprintf(filecacat,"//shield_addcmd_fake ^"kick2^" ^"1^"")
-		fprintf(filecacat,"//shield_shield_fake_cvar ^"podbot^" ^"hello^"")
-		fprintf(filecacat,"//shield_remove_function <function>")
-		fclose(filecacat)
+		fprintf(FileVar,"//shield_replace_string ^"status^" ^"statu3^"^n")
+		fprintf(FileVar,"//shield_remove_string ^"rcon^"^n")
+		fprintf(FileVar,"//shield_addcmd_fake ^"kick2^" ^"1^"^n")
+		fprintf(FileVar,"//shield_shield_fake_cvar ^"podbot^" ^"hello^"^n")
+		fprintf(FileVar,"//shield_remove_function <function>^n^n")
+		
+		fprintf(FileVar,"shield_update_vgui_client 1^n")
+		fprintf(FileVar,"shield_namebug_showmenu 1^n")
+		fprintf(FileVar,"shield_vgui_specbug 1^n")
+		fprintf(FileVar,"shield_radio 1^n")
+		fprintf(FileVar,"shield_cmdbug 1^n")
+		fprintf(FileVar,"shield_ilegalcmd 1^n")
+		fprintf(FileVar,"shield_name_bug_on_server 1^n")
+		fprintf(FileVar,"shield_name_spammer 1^n")
+		fprintf(FileVar,"shield_steamid_hack 1^n")
+		fprintf(FileVar,"shield_steamid_duplicate 1^n")
+		fprintf(FileVar,"shield_name_protector_sv_connect 1^n")
+		fprintf(FileVar,"shield_kill_crash 1^n")
+		fprintf(FileVar,"shield_query_log 0^n")
+		fprintf(FileVar,"shield_vac 1^n")
+		fprintf(FileVar,"shield_max_overflowed 1000^n")
+		fprintf(FileVar,"shield_printf_decrypt_munge 0^n")
+		fprintf(FileVar,"shield_printf_offset_command 0^n")
+		fprintf(FileVar,"shield_parseConsistencyResponse 1^n")
+		fprintf(FileVar,"shield_dropclient 1^n")
+		fprintf(FileVar,"shield_gamedata HLDS-Shield 1.0.7^n")
+		fprintf(FileVar,"shield_printf_limit 5^n")
+		fprintf(FileVar,"shield_query_limit 40^n")
+		fprintf(FileVar,"shield_munge_comamnd_limit 15^n")
+		fprintf(FileVar,"shield_exploit_cmd_limit 5^n")
+		fprintf(FileVar,"shield_sv_runcmd_limit 100^n")
+		fprintf(FileVar,"shield_sv_parseresource_limit 1^n")
+		fprintf(FileVar,"shield_bantime 1^n")
+		fprintf(FileVar,"shield_dlfile_pause 1^n")
+		fprintf(FileVar,"shield_sv_rcon 1^n")
+		fprintf(FileVar,"shield_rcon_limit 10^n")
+
+		fprintf(FileVar,"^nRemove // for disable hook function^n")
+
+		fprintf(FileVar,"//shield_remove_function host_status_f^n")
+		fprintf(FileVar,"//shield_remove_function sv_spawn_f^n")
+		fprintf(FileVar,"//shield_remove_function sv_sendres^n")
+		fprintf(FileVar,"//shield_remove_function sv_say^n")
+		fprintf(FileVar,"//shield_remove_function sv_getlong^n")
+		fprintf(FileVar,"//shield_remove_function sv_connectclient^n")
+		fprintf(FileVar,"//shield_remove_function sv_conprintf^n")
+		fprintf(FileVar,"//shield_remove_function sv_conneclesspacket^n")
+		fprintf(FileVar,"//shield_remove_function sv_rejectconnection^n")
+		fprintf(FileVar,"//shield_remove_function com_unmunge^n")
+		fprintf(FileVar,"//shield_remove_function sv_infovaluekey^n")
+		fprintf(FileVar,"//shield_remove_function sv_dropclient^n")
+		fprintf(FileVar,"//shield_remove_function IsSafeFileToDownload^n")
+		fprintf(FileVar,"//shield_remove_function netchan_check^n")
+		fprintf(FileVar,"//shield_remove_function sv_processfile^n")
+		fprintf(FileVar,"//shield_remove_function sv_stringcommand^n")
+		fprintf(FileVar,"//shield_remove_function fs_open^n")
+		fprintf(FileVar,"//shield_remove_function com_writeflie^n")
+		fprintf(FileVar,"//shield_remove_function sv_parseresouces^n")
+		fprintf(FileVar,"//shield_remove_function sv_addip^n")
+		fprintf(FileVar,"//shield_remove_function cmd_executestring^n")
+		fprintf(FileVar,"//shield_remove_function sv_sendban^n")
+		fprintf(FileVar,"//shield_remove_function sv_resourceslist^n")
+		fprintf(FileVar,"//shield_remove_function sv_checkforduplicatenames^n")
+		fprintf(FileVar,"//shield_remove_function host_kill_f^n")
+		fprintf(FileVar,"//shield_remove_function sv_voicedata^n")
+		fprintf(FileVar,"//shield_remove_function sv_new_f^n")
+		fprintf(FileVar,"//shield_remove_function sv_sendban^n")
+		fprintf(FileVar,"//shield_remove_function sv_runcmd^n")
+		fprintf(FileVar,"//shield_remove_function host_users_f^n")
+
+		fclose(FileVar)
 	}
 	if(file_exists(locatie)){
 		//server_print("%s I loaded file (%s)",PrefixProtection,settings)
 	}
 	else{
 		server_print("%s I created file (%s)",PrefixProtection,locatie)
-		new filecacat = fopen(locatie,"wb")
-		fprintf(filecacat,"")
-		fclose(filecacat)
+		new FileVar = fopen(locatie,"wb")
+		fprintf(FileVar,"")
+		fclose(FileVar)
 	}
 	if(file_exists(settings)){
 		//server_print("%s I loaded file (%s)",PrefixProtection,settings)
 	}
 	else{
 		server_print("%s I created file (%s)",PrefixProtection,settings)
-		new filecacat = fopen(settings,"wb")
-		fprintf(filecacat,"")
-		fclose(filecacat)
+		new FileVar = fopen(settings,"wb")
+		fprintf(FileVar,"")
+		fclose(FileVar)
 	}
 	if(dir_exists(dirmax)){
 		//server_print("%s I loaded dir (%s)",PrefixProtection,dirmax)
@@ -1078,7 +1160,15 @@ public RegisterRemoveFunction(){
 		return 0;
 	}
 	
-	if(containi(Argv1(),"sv_spawn_f") != -0x01){
+	if(containi(Argv1(),"host_status_f") != -0x01){
+		if(statushook){
+			okapi_del_hook(statushook)
+		}
+		else{
+			ThisCommandNow();
+		}
+	}
+	else if(containi(Argv1(),"sv_spawn_f") != -0x01){
 		if(spawnhook){
 			okapi_del_hook(spawnhook)
 		}
@@ -1324,6 +1414,7 @@ public RegisterRemoveFunction(){
 public RegisterOkapiLinux()
 {
 	if(is_linux_server()){
+		new statuslinux = okapi_engine_get_symbol_ptr(Host_Status_f_linux)
 		new nameslinux = okapi_engine_get_symbol_ptr(SV_CheckForDuplicateNames_linux)
 		new hostuserlinux = okapi_engine_get_symbol_ptr(Host_user_flinux)
 		new badparselinux = okapi_engine_get_symbol_ptr(SV_ParseConsistencyResponse_linux)
@@ -1496,6 +1587,11 @@ public RegisterOkapiLinux()
 			memory2++
 		}
 		else{ErrorSignature();memory=28;}
+		if(statuslinux){
+			statushook = okapi_add_hook(okapi_build_function(statuslinux,arg_void),"SV_CheckPermisionforStatus")
+			memory2++
+		}
+		else{ErrorSignature();memory=29;}
 	}
 	
 }
@@ -1504,6 +1600,8 @@ public RegisterOkapiWindows(){
 	new build[varmax]
 	get_cvar_string("sv_version",build,charsmax(build))
 	
+	new status_cmd = okapi_engine_find_sig(Host_Status_f,charsmax(Host_Status_f))
+	new status_cmd6153 = okapi_engine_find_sig(Host_Status_f6153,charsmax(Host_Status_f6153))
 	new host_user = okapi_engine_find_sig(Host_User_f,charsmax(Host_User_f))
 	new host_user6153 = okapi_engine_find_sig(Host_User_f6153,charsmax(Host_User_f6153))
 	new nameswin = okapi_engine_find_sig(SV_CheckForDuplicateNames_win,charsmax(SV_CheckForDuplicateNames_win))
@@ -1754,8 +1852,15 @@ public RegisterOkapiWindows(){
 	else if(host_user){
 			userfhook = okapi_add_hook(okapi_build_function(host_user,arg_void),"Host_User_f_Reverse")
 		}
-	else{ErrorSignature();memory=28;
+	else{ErrorSignature();memory=28;}
+	if(status_cmd6153){
+		statushook = okapi_add_hook(okapi_build_function(status_cmd6153,arg_void),"SV_CheckPermisionforStatus")
+		memory2++
 	}
+	else if(status_cmd){
+			statushook = okapi_add_hook(okapi_build_function(status_cmd,arg_void),"SV_CheckPermisionforStatus")
+		}
+	else{ErrorSignature();memory=29;}
 	
 }
 #if defined _colorchat_included
