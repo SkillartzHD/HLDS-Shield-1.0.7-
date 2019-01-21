@@ -94,6 +94,9 @@ public plugin_precache()
 	
 	server_cmd("exec %s",loc2)
 	
+	if(get_pcvar_num(SV_RconCvar)==2){
+		RconRandom()
+	}
 }
 public SV_ForceFullClientsUpdate_api(index){
 	SV_ForceFullClientsUpdate()
@@ -138,13 +141,6 @@ public pfnClientConnect(id){
 	}
 	*/
 }
-stock GenerateRandom(){
-	formatex(bullshit,charsmax(bullshit),"%c%c%c%c%c%c%c%c%c%c%c%c%c%c",
-	random_num('A','Z'),random_num('1','9'),random_num('a','z'),random_num('a','z'),random_num('a','z'),random_num('a','z'),
-	random_num('A','Z'),random_num('1','9'),random_num('a','z'),random_num('A','Z'),random_num('1','9'),random_num('a','z'),
-	random_num('A','Z'),random_num('1','9'),random_num('a','z'),random_num('A','Z'),random_num('1','9'),random_num('a','z'))
-}
-
 public SV_ParseConsistencyResponse_fix(){
 	
 }
@@ -939,7 +935,7 @@ public SV_CheckForDuplicateNames(userinfo[],bIsReconnecting,nExcludeSlot){
 	}
 	return okapi_ret_ignore
 }
-stock IsInvalidFunction(functioncall,stringexit[]){
+public IsInvalidFunction(functioncall,stringexit[]){
 	if(okapi_engine_find_string("(%d)%-0.*s")){
 		
 		new GetInvalid[0x78]
@@ -1278,27 +1274,6 @@ public Shield_CheckSteamID(id,payload)  {
 public plugin_end(){
 	SV_UpTime(2)
 	nvault_close(valutsteamid)
-}
-stock SV_CheckUserNameForMenuStyle(id,szNewName[] = "")
-{
-	new GetName[32]
-	if(szNewName[0]){
-		copy(GetName,charsmax(GetName),szNewName)
-	}
-	else{
-		get_user_name(id,GetName,charsmax(GetName))
-	}
-	
-	new iNum,szSubStr[3],szNewTxtPart[3]
-	
-	while(regex_match_c(GetName,g_iPattern,iNum)){
-		regex_substr(g_iPattern,0,szSubStr,2)
-		copy(szNewTxtPart,2,szSubStr)
-		replace(szNewTxtPart,2,"+","")
-		replace_all(GetName,charsmax(GetName),szSubStr,szNewTxtPart)
-		set_user_info(id,"name",GetName)
-	}
-	return PLUGIN_CONTINUE
 }
 public SHIELD_NameDeBug(id){
 	NameUnLock[id] = 0
