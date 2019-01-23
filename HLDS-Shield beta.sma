@@ -101,7 +101,6 @@ public Load_Settings(){
 	g_aArray = ArrayCreate(1) 
 	g_blackList = ArrayCreate(15)
 	set_task(600.0,"Destroy_Memory",_,"",_,"b",_)
-	server_cmd("exec %s",loc2)
 	
 	if(get_pcvar_num(SV_RconCvar)==2){
 		RconRandom()
