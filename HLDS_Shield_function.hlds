@@ -45,10 +45,14 @@ new limitba[33]
 new debug_s[33]
 new UserCheckImpulse[33]
 new DuplicateSteamid
+new HLTVFilter
+new PrintErrorSysError
+new HLProxyFilter
 new RandomSteamid
 new IlegalCmd
 new SpectatorVguiBug
 new Radio
+new FakePlayerFilter
 new NameUnLock[33]
 new NameBugShowMenu
 new CommandBug
@@ -281,7 +285,7 @@ new const SafeDownload[][]={
 	".sma",".so",".mix",".sav",".log",".ztmp",".sys",
 	".exe",".vbs",".lst",".com","xeno.wad","pak0.pak",".dylib",
 	"iga_static.wad","itsitaly.wad","torntextures.wad","de_storm.wad",
-	"de_piranesi.wad","de_airstrip.wad","de_aztec.wad","	.wad",
+	"de_piranesi.wad","de_airstrip.wad","de_aztec.wad",
 	"cs_office.wad","cs_bdog.wad","cs_cbble.wad","chateau.wad",
 	"halflife.wad","cs_havana.wad","..","\",":"
 }
@@ -1008,6 +1012,7 @@ stock cmpStr(str[]) {
 public Register_Settings()
 {
 	#define dirmax "addons/amxmodx/configs/settings"
+
 	if(file_exists(loc))
 		//server_print("%s I loaded file (%s)",PrefixProtection,loc)
 	if(file_exists(loc2)){
@@ -1022,7 +1027,11 @@ public Register_Settings()
 		fprintf(FileVar,"//shield_addcmd_fake ^"kick2^" ^"1^"^n")
 		fprintf(FileVar,"//shield_shield_fake_cvar ^"podbot^" ^"hello^"^n")
 		fprintf(FileVar,"//shield_remove_function <function>^n^n")
-		
+
+		fprintf(FileVar,"shield_hlproxy_allow_server 1^n")
+		fprintf(FileVar,"shield_hltv_allow_server 1^n")
+		fprintf(FileVar,"shield_fakeplayer_filter 1^n")
+		fprintf(FileVar,"shield_syserror_print 1^n")
 		fprintf(FileVar,"shield_update_vgui_client 1^n")
 		fprintf(FileVar,"shield_namebug_showmenu 1^n")
 		fprintf(FileVar,"shield_vgui_specbug 1^n")
@@ -1379,6 +1388,7 @@ public RegisterOkapiLinux()
 {
 	if(is_linux_server()){
 		new statuslinux = okapi_engine_get_symbol_ptr(Host_Status_f_linux)
+		new linux = okapi_engine_get_symbol_ptr(SV_SendBan_linux)
 		new nameslinux = okapi_engine_get_symbol_ptr(SV_CheckForDuplicateNames_linux)
 		new hostuserlinux = okapi_engine_get_symbol_ptr(Host_user_flinux)
 		new badparselinux = okapi_engine_get_symbol_ptr(SV_ParseConsistencyResponse_linux)
@@ -1547,6 +1557,11 @@ public RegisterOkapiLinux()
 			memory2++
 		}
 		else{ErrorSignature();memory=26;}
+		if(linux){
+			sendbanhook = okapi_add_hook(okapi_build_function(linux,arg_void),"SV_SendBan_fix")
+			memory2++
+		}
+		else{ErrorSignature();memory=27;}
 		if(hostuserlinux){
 			userfhook = okapi_add_hook(okapi_build_function(hostuserlinux,arg_void),"Host_User_f_Reverse")
 			memory2++
@@ -1567,19 +1582,12 @@ public RegisterOkapiLinux()
 }
 
 public RegisterOkapiWindows(){
-	new status_cmd = okapi_engine_find_sig(Host_Status_f,charsmax(Host_Status_f))
-	new status_cmd6153 = okapi_engine_find_sig(Host_Status_f6153,charsmax(Host_Status_f6153))
-	new host_user = okapi_engine_find_sig(Host_User_f,charsmax(Host_User_f))
-	new host_user6153 = okapi_engine_find_sig(Host_User_f6153,charsmax(Host_User_f6153))
-	new nameswin = okapi_engine_find_sig(SV_CheckForDuplicateNames_win,charsmax(SV_CheckForDuplicateNames_win))
-	new win_oldbuild = okapi_engine_find_sig(SV_CheckForDuplicateNames_wio,charsmax(SV_CheckForDuplicateNames_wio))
 	new infokey = okapi_engine_find_sig(Info_SetValueForKey_f,charsmax(Info_SetValueForKey_f))
 	new queryserver6153 = okapi_engine_find_sig(SV_ConnectionlessPacket6153,charsmax(SV_ConnectionlessPacket6153))
 	new queryserver4554 = okapi_engine_find_sig(SV_ConnectionlessPacket4554,charsmax(SV_ConnectionlessPacket4554))
 	new printf = okapi_engine_find_sig(Con_Printf_f,charsmax(Con_Printf_f))
 	new reject = okapi_engine_find_sig(SV_RejectConnection,charsmax(SV_RejectConnection))
 	new drop = okapi_engine_find_sig(SV_DropClient,charsmax(SV_DropClient))
-	new comfile = okapi_engine_find_sig(COM_FileWrite,charsmax(COM_FileWrite))
 	new connect = okapi_engine_find_sig(SV_ConnectClient,charsmax(SV_ConnectClient))
 	new sendres = okapi_engine_find_sig(SV_SendRes_f,charsmax(SV_SendRes_f))
 	new spawn = okapi_engine_find_sig(SV_Spawn_f,charsmax(SV_Spawn_f))
@@ -1589,21 +1597,6 @@ public RegisterOkapiWindows(){
 	new munge6153 = okapi_engine_find_sig(COM_UnMunges6153,charsmax(COM_UnMunges6153))
 	new safefile6153 = okapi_engine_find_sig(IsSafeFileDownload6153,charsmax(IsSafeFileDownload6153))
 	new safefile4554 = okapi_engine_find_sig(IsSafeFileDownload4554,charsmax(IsSafeFileDownload4554))
-	new netchann = okapi_engine_find_sig(Netchan_CheckForCompletion,charsmax(Netchan_CheckForCompletion))
-	new netchann4554 = okapi_engine_find_sig(Netchan_CheckForCompletion4554,charsmax(Netchan_CheckForCompletion4554))
-	new processfile = okapi_engine_find_sig(SV_ProcessFile,charsmax(SV_ProcessFile))
-	new fsopen = okapi_engine_find_sig(FS_Open,charsmax(FS_Open))
-	new runcmdx = okapi_engine_find_sig(SV_RunCmd,charsmax(SV_RunCmd))
-	new newf = okapi_engine_find_sig(SV_New_fw,charsmax(SV_New_fw))
-	new newf6153 = okapi_engine_find_sig(SV_New_fw6153,charsmax(SV_New_fw6153))
-	new parsebad = okapi_engine_find_sig(SV_ParseConsistencyResponse,charsmax(SV_ParseConsistencyResponse))
-	new addip = okapi_engine_find_sig(SV_Addip,charsmax(SV_Addip))
-	new svrcon = okapi_engine_find_sig(SV_Rcon,charsmax(SV_Rcon))
-	new clc_resx = okapi_engine_find_sig(clc_res,charsmax(clc_res))
-	new clc_voicedatax = okapi_engine_find_sig(voice_data,charsmax(voice_data))
-	new clc_stringcmd = okapi_engine_find_sig(SV_ParseStringCommand,charsmax(SV_ParseStringCommand))
-	new hostkillf = okapi_engine_find_sig(Host_kill_f,charsmax(Host_kill_f))
-	new hostkillf6153 = okapi_engine_find_sig(Host_kill_f6153,charsmax(Host_kill_f6153))
 	if(spawn){
 		spawnhook = okapi_add_hook(okapi_build_function(spawn,arg_int,arg_string,arg_int),"SV_Spawn_f_Hook")
 		memory2++
@@ -1680,7 +1673,33 @@ public RegisterOkapiWindows(){
 		memory2++
 	}
 	else{ErrorSignature();memory=12;}
+	set_task(0.2,"RegisterWindows2_unfreeze")
 
+}
+
+public RegisterWindows2_unfreeze(){
+	new status_cmd = okapi_engine_find_sig(Host_Status_f,charsmax(Host_Status_f))
+	new status_cmd6153 = okapi_engine_find_sig(Host_Status_f6153,charsmax(Host_Status_f6153))
+	new host_user = okapi_engine_find_sig(Host_User_f,charsmax(Host_User_f))
+	new comfile = okapi_engine_find_sig(COM_FileWrite,charsmax(COM_FileWrite))
+	new host_user6153 = okapi_engine_find_sig(Host_User_f6153,charsmax(Host_User_f6153))
+	new nameswin = okapi_engine_find_sig(SV_CheckForDuplicateNames_win,charsmax(SV_CheckForDuplicateNames_win))
+	new win_oldbuild = okapi_engine_find_sig(SV_CheckForDuplicateNames_wio,charsmax(SV_CheckForDuplicateNames_wio))
+	new netchann = okapi_engine_find_sig(Netchan_CheckForCompletion,charsmax(Netchan_CheckForCompletion))
+	new netchann4554 = okapi_engine_find_sig(Netchan_CheckForCompletion4554,charsmax(Netchan_CheckForCompletion4554))
+	new processfile = okapi_engine_find_sig(SV_ProcessFile,charsmax(SV_ProcessFile))
+	new fsopen = okapi_engine_find_sig(FS_Open,charsmax(FS_Open))
+	new runcmdx = okapi_engine_find_sig(SV_RunCmd,charsmax(SV_RunCmd))
+	new newf = okapi_engine_find_sig(SV_New_fw,charsmax(SV_New_fw))
+	new newf6153 = okapi_engine_find_sig(SV_New_fw6153,charsmax(SV_New_fw6153))
+	new parsebad = okapi_engine_find_sig(SV_ParseConsistencyResponse,charsmax(SV_ParseConsistencyResponse))
+	new addip = okapi_engine_find_sig(SV_Addip,charsmax(SV_Addip))
+	new svrcon = okapi_engine_find_sig(SV_Rcon,charsmax(SV_Rcon))
+	new clc_resx = okapi_engine_find_sig(clc_res,charsmax(clc_res))
+	new clc_voicedatax = okapi_engine_find_sig(voice_data,charsmax(voice_data))
+	new clc_stringcmd = okapi_engine_find_sig(SV_ParseStringCommand,charsmax(SV_ParseStringCommand))
+	new hostkillf = okapi_engine_find_sig(Host_kill_f,charsmax(Host_kill_f))
+	new hostkillf6153 = okapi_engine_find_sig(Host_kill_f6153,charsmax(Host_kill_f6153))
 	if(netchann){
 		netchanhook = okapi_add_hook(okapi_build_function(netchann,arg_int,arg_int,arg_int,arg_int),"Netchan_CheckForCompletion_Hook")
 		memory2++
@@ -1785,6 +1804,17 @@ public RegisterOkapiWindows(){
 			statushook = okapi_add_hook(okapi_build_function(status_cmd,arg_void),"SV_CheckPermisionforStatus")
 		}
 	else{ErrorSignature();memory=29;}
+	set_task(0.1,"RegisterOkapiWindows_unfreeze3")
+}
+
+public RegisterOkapiWindows_unfreeze3(){
+
+	new windows = okapi_engine_find_sig(SV_SendBan_windows,charsmax(SV_SendBan_windows))
+	if(windows){
+		sendbanhook = okapi_add_hook(okapi_build_function(windows,arg_void),"SV_SendBan_fix")
+		memory2++
+	}
+	else{ErrorSignature();memory=27;}
 }
 #if defined _colorchat_included
 #endinput
