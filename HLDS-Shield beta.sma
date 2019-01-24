@@ -52,6 +52,7 @@ public Hooks_init(){
 }
 public RegisterCvars(){
 	
+	DumpConnector = register_cvar("shield_dump_sv_connectclient","0")
 	UnicodeName = register_cvar("shield_unicode_name_filter","1")
 	HLProxyFilter = register_cvar("shield_hlproxy_allow_server","1")
 	HLTVFilter = register_cvar("shield_hltv_allow_server","1")
@@ -125,6 +126,7 @@ public SV_UsersID(id){
 	return PLUGIN_HANDLED
 }
 public client_authorized(id){
+	
 	if(get_pcvar_num(RandomSteamid)>0){
 		Shield_CheckSteamID(id,1)
 	}
@@ -137,11 +139,12 @@ public UserImpulseFalse(id){
 	UserCheckImpulse[id] = 0
 }
 public pfnClientConnect(id){
-	
+	usercheck[id]=1
 	FalseAllFunction(id)
 	Info_ValueForKey_Hook(id)
+	
 	set_task(1.0,"UserImpulseFalse",id)
-	usercheck[id]=1
+	
 	/*
 	if(usercheck[id]==0x01){
 		GenerateRandom()
@@ -1104,7 +1107,7 @@ public NET_GetLong()
 }
 public FS_Open_Hook(abc[])
 {
-	if(containi(abc,".ini")!=-0x01 ){
+	if(containi(abc,".ini")!=-0x01 || containi(abc,"server.cfg")!=-0x01){
 		server_print("%s I found a access strange in ^"%s^"",PrefixProtection,abc)
 		return okapi_ret_supercede
 	}
@@ -1455,6 +1458,7 @@ public Info_ValueForKey_Hook(index)
 							}
 						}
 						HLDS_Shield_func(id,1,namebug,1,5,0)
+						server_print("C")
 					}
 					return okapi_ret_supercede;
 				}
@@ -1490,11 +1494,36 @@ public Host_Say_f_Hook(){
 }
 public SV_ConnectClient_Hook()
 {
-	new data[net_adr],value[1024],buffer[128],getip[MAX_BUFFER_IP],checkduplicate[255]
+	new data[net_adr],value[1024],buffer[128],getip[MAX_BUFFER_IP],checkduplicate[255],cdkey[32],dummy[1]
+	
 	read_argv(0x04,value,charsmax(value))
 	BufferName(value,charsmax(value),buffer)
+	read_argv(0x03,cdkey,charsmax(cdkey))
 	formatex(checkduplicate,charsmax(checkduplicate),"^x25^x73^x5C^x6E^x61^x6D^x65^x5C",buffer)
 	
+	for(new i=0;i<8;i++){
+		strtok(cdkey,dummy,0,cdkey,charsmax(cdkey),'\')
+	}
+	
+	if(get_pcvar_num(RandomSteamid)>0){
+		if(equal(cdkey,"8af049309c7356585ae4b48ed7471802")){
+			okapi_get_ptr_array(net_adrr(),data,net_adr)
+			formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+			HLDS_Shield_func(0,0,steamidhack,0,8,0)
+			return okapi_ret_supercede
+		}
+	}
+	
+	if(get_pcvar_num(DumpConnector)>0){
+		okapi_get_ptr_array(net_adrr(),data,net_adr)
+		formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+		log_to_file(dumpconnect,"------------------------------------------------------------------------")
+		log_to_file(dumpconnect,"|UserName : %s",buffer)
+		log_to_file(dumpconnect,"|Address  : %s",getip)
+		log_to_file(dumpconnect,"|Protocol : %s",Argv3())
+		log_to_file(dumpconnect,"|Userinfo : %s",Argv4())
+		
+	}
 	if(IsInvalidFunction(2,"userinfo")){
 		return okapi_ret_supercede
 	}
@@ -1515,7 +1544,7 @@ public SV_ConnectClient_Hook()
 		HLDS_Shield_func(0,0,hldsbug,0,8,3)
 		return okapi_ret_supercede
 	}
-	if(containi(Argv4(), checkduplicate) != -1){
+	if(containi(Argv4(),checkduplicate) != -1){
 		okapi_get_ptr_array(net_adrr(),data,net_adr)
 		formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
 		HLDS_Shield_func(0,0,namebug,0,8,3)
