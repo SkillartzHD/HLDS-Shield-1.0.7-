@@ -37,6 +37,7 @@ public Hooks_init(){
 		RegisterOkapiWindows()
 	}
 	set_task(1.0,"RegisterOrpheu")
+	
 	register_forward(FM_ClientConnect,"pfnClientConnect")
 	register_forward(FM_ClientUserInfoChanged,"pfnClientUserInfoChanged")
 	register_forward(FM_GetGameDescription,"pfnGetGameDescription") 
@@ -48,6 +49,7 @@ public Hooks_init(){
 }
 public RegisterCvars(){
 	
+	UnicodeName = register_cvar("shield_unicode_name_filter","1")
 	HLProxyFilter = register_cvar("shield_hlproxy_allow_server","1")
 	HLTVFilter = register_cvar("shield_hltv_allow_server","1")
 	FakePlayerFilter = register_cvar("shield_fakeplayer_filter","1")
@@ -248,29 +250,8 @@ public Cmd_ExecuteString_Fix()
 	return okapi_ret_ignore
 }
 
-public plugin_cfg() 
-{
-	if(file_exists(loc)){
-		//server_print("%s I loaded file ^"%s^"",PrefixProtection,loc)
-	}
-	else{
-		server_print("%s I created file ^"%s^"",PrefixProtection,loc)
-		new filecacat = fopen(loc,"wb")
-		fprintf(filecacat,loc)
-		fclose(filecacat)
-	}
-	cslBlock = ArrayCreate(142, 1)
-	new Data[37], File = fopen(loc, "rt")
-	while (!feof(File)) {
-		fgets(File, Data, charsmax(Data))
-		trim(Data)
-		if (Data[0] == ';' || !Data[0]) 
-			continue;
-		remove_quotes(Data)
-		ArrayPushString(cslBlock,Data)
-		g_ConsoleStr++
-	}
-	fclose(File)
+public plugin_cfg(){
+	RegisterConfigPlugin()
 }
 public SV_Addip_f_Hook()
 {
@@ -286,14 +267,6 @@ public SV_Addip_f_Hook()
 	}
 	return okapi_ret_ignore
 }
-
-public destroy_holax(){holax=0x00;}
-public destroy_fuck(){fuck=0x00;}
-public destroy_memhack(){memhack=0x00;}
-public debug_orpheu(){server_cmd("reload");}
-public Destroy_Memory(){hola = 0x00;}
-public Shield_ProtectionSpam(id){limita[id] = 0x00;}
-public LevFunction(id){mungelimit[id]=0x00;local=0x00;}
 
 public Host_Kill_f_fix()
 {
@@ -328,12 +301,48 @@ public IsSafeDownloadFile_Hook()
 		set_task(0.1,"Shield_ProtectionSpam",id)
 	}
 	
+	if(!is_linux_server()){ // only windows
+		for (new i = 0x00; i < sizeof (SafeDownloadWindows); i++){
+			if(containi(Args(),SafeDownloadWindows[i]) != -0x01){
+				locala[id]++
+				
+				if(locala[id] >=get_pcvar_num(LimitExploit)){
+					if(id){
+						server_cmd("addip %d %s",get_pcvar_num(PauseDlfile),PlayerIP(id)) // mini pause
+					}
+					else{
+						HLDS_Shield_func(id,2,safefile,1,4,1)
+					}
+					return okapi_ret_supercede
+				}
+				else{
+					if(get_pcvar_num(SendBadDropClient)>0){
+						if(locala[id] >=get_pcvar_num(LimitExploit)){
+							SV_Drop_function(id)
+						}
+					}
+					if(id){
+						HLDS_Shield_func(id,2,safefile,1,5,1)
+					}
+					else{
+						HLDS_Shield_func(id,2,safefile,1,4,1)
+					}
+				}
+				return okapi_ret_supercede
+			}
+		}
+	}
 	for (new i = 0x00; i < sizeof (SafeDownload); i++){
 		if(containi(Args(),SafeDownload[i]) != -0x01){
 			locala[id]++
 			
 			if(locala[id] >=get_pcvar_num(LimitExploit)){
-				server_cmd("addip %d %s",get_pcvar_num(PauseDlfile),PlayerIP(id)) // mini pause
+				if(id){
+					server_cmd("addip %d %s",get_pcvar_num(PauseDlfile),PlayerIP(id)) // mini pause
+				}
+				else{
+					HLDS_Shield_func(id,2,safefile,1,4,1)
+				}
 				return okapi_ret_supercede
 			}
 			else{
@@ -342,7 +351,12 @@ public IsSafeDownloadFile_Hook()
 						SV_Drop_function(id)
 					}
 				}
-				HLDS_Shield_func(id,2,safefile,1,5,1)
+				if(id){
+					HLDS_Shield_func(id,2,safefile,1,5,1)
+				}
+				else{
+					HLDS_Shield_func(id,2,safefile,1,4,1)
+				}
 			}
 			return okapi_ret_supercede
 		}
@@ -353,14 +367,24 @@ public IsSafeDownloadFile_Hook()
 	if(is_user_connected(id) && is_user_connecting(id))
 	{
 		if(locala[id] >=get_pcvar_num(LimitExploit)){
-			server_cmd("addip %d %s",get_pcvar_num(PauseDlfile),PlayerIP(id)) // mini pause
+			if(id){
+				server_cmd("addip %d %s",get_pcvar_num(PauseDlfile),PlayerIP(id)) // mini pause
+			}
+			else{
+				HLDS_Shield_func(id,2,safefile,1,4,1)
+			}
 			return okapi_ret_supercede;
 		}
 		else{
 			if(get_pcvar_num(SendBadDropClient)>0){
 				SV_Drop_function(id)
 			}
-			HLDS_Shield_func(id,2,safefile,1,5,1)
+			if(id){
+				HLDS_Shield_func(id,2,safefile,1,5,1)
+			}
+			else{
+				HLDS_Shield_func(id,2,safefile,1,4,1)
+			}
 		}
 		return okapi_ret_supercede
 		
@@ -546,9 +570,9 @@ public inconsistent_file(id,const filename[], reason[64]){
 }
 
 public SV_SendBan_fix(){
-	//if(SV_CheckProtocolSpamming(2)){
-	//	return okapi_ret_supercede
-	//}
+	if(SV_CheckProtocolSpamming(2)){
+		return okapi_ret_supercede
+	}
 	if(SV_FilterAddress(1)){
 		return okapi_ret_supercede
 	}
@@ -667,8 +691,8 @@ public PfnClientCommand(id)
 	if(get_pcvar_num(CommandBug)>0){
 		if(containi(Argv(),"say")!= -0x01 || containi(Argv(),"say_team")!= -0x01){
 			read_argv(1,StringBuffer,charsmax(StringBuffer))
-			replace_all(StringBuffer,charsmax(StringBuffer),"%","?")
-			//replace_all(StringBuffer,charsmax(StringBuffer),"#","*")
+			replace_all(StringBuffer,charsmax(StringBuffer),"%","â€°")
+			replace_all(StringBuffer,charsmax(StringBuffer),"#","ï¼ƒ")
 			engclient_cmd(id,Argv(),StringBuffer)
 			
 		}
@@ -1277,7 +1301,26 @@ public pfnClientUserInfoChanged(id,buffer){
 	pev(id,pev_netname,szOldName,charsmax(szOldName)) 
 	formatex(longformate,charsmax(longformate),"%s",szOldName)
 	get_user_info(id,"name",szNewName,charsmax(szNewName))
-	
+	if(get_pcvar_num(UnicodeName)>0){
+		if(cmpStr(Args())){
+			locala[id]++
+			if(locala[id] >=get_pcvar_num(LimitPrintf)){
+				set_user_info(id,"name",longformate)
+				return FMRES_SUPERCEDE
+			}
+			else{
+				if(debug_s[id]==0){
+					if(locala[id] == 3){
+						locala[id]=1
+						debug_s[id]=1
+					}
+				}
+				HLDS_Shield_func(id,1,namebug,1,5,0)
+				set_user_info(id,"name",longformate) 
+				return FMRES_SUPERCEDE
+			}
+		}
+	}
 	if(get_pcvar_num(NameBug)>0){
 		if(is_linux_server()){
 			if(is_user_connected(id)){
