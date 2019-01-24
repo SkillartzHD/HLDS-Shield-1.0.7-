@@ -24,19 +24,22 @@ public plugin_init(){
 	
 }
 public plugin_precache(){
+	is_server_compatibility()
 	RegisterCvars()
 	Hooks_init()
 	Load_Settings()
 }
-
 public Hooks_init(){
-	if(is_linux_server()){
-		RegisterOkapiLinux()
+	
+	if(ServerVersion == 0){
+		if(is_linux_server()){
+			RegisterOkapiLinux()
+		}
+		else{
+			RegisterOkapiWindows()
+		}
+		set_task(1.0,"RegisterOrpheu")
 	}
-	else{
-		RegisterOkapiWindows()
-	}
-	set_task(1.0,"RegisterOrpheu")
 	
 	register_forward(FM_ClientConnect,"pfnClientConnect")
 	register_forward(FM_ClientUserInfoChanged,"pfnClientUserInfoChanged")
@@ -156,46 +159,48 @@ public SV_ParseConsistencyResponse_fix(){
 }
 public RegisterOrpheu(){
 	
-	if(!file_exists(orpheufile5)){
-		server_print("%s Injected successfully %s",PrefixProtection,orpheufile5)
-		Create_Signature("SV_ForceFullClientsUpdate")
-		set_task(1.0,"debug_orpheu")
-	}
-	else{
-		memory2++
-	}
-	if(!file_exists(orpheufile4)){
-		server_print("%s Injected successfully %s",PrefixProtection,orpheufile4)
-		Create_Signature("SV_Drop_f")
-		set_task(1.0,"debug_orpheu")
-	}
-	else{
-		memory2++
-	}
-	if(!file_exists(orpheufile2)){
-		log_to_file(settings,"%s Injected successfully %s",PrefixProtection,orpheufile2)
-		Create_Signature("MSG_ReadShort")
-		set_task(1.0,"debug_orpheu")
-	}
-	else{
-		memory2++
-	}
-	if(!file_exists(orpheufile3)){
-		log_to_file(settings,"%s Injected successfully %s",PrefixProtection,orpheufile3)
-		Create_Signature("MSG_ReadLong")
-		set_task(1.0,"debug_orpheu")
-	}
-	else{
-		memory2++
-	}
-	if(file_exists(orpheufile1)){
-		executestringhook = OrpheuRegisterHook(OrpheuGetFunction("Cmd_ExecuteString"),"Cmd_ExecuteString_Fix")
-		memory2++
-	}
-	else{
-		log_to_file(settings,"%s Injected successfully %s",PrefixProtection,orpheufile1)
-		Create_Signature("Cmd_ExecuteString")
-		set_task(1.0,"debug_orpheu")
+	if(ServerVersion == 0){
+		if(!file_exists(orpheufile5)){
+			server_print("%s Injected successfully %s",PrefixProtection,orpheufile5)
+			Create_Signature("SV_ForceFullClientsUpdate")
+			set_task(1.0,"debug_orpheu")
+		}
+		else{
+			memory2++
+		}
+		if(!file_exists(orpheufile4)){
+			server_print("%s Injected successfully %s",PrefixProtection,orpheufile4)
+			Create_Signature("SV_Drop_f")
+			set_task(1.0,"debug_orpheu")
+		}
+		else{
+			memory2++
+		}
+		if(!file_exists(orpheufile2)){
+			log_to_file(settings,"%s Injected successfully %s",PrefixProtection,orpheufile2)
+			Create_Signature("MSG_ReadShort")
+			set_task(1.0,"debug_orpheu")
+		}
+		else{
+			memory2++
+		}
+		if(!file_exists(orpheufile3)){
+			log_to_file(settings,"%s Injected successfully %s",PrefixProtection,orpheufile3)
+			Create_Signature("MSG_ReadLong")
+			set_task(1.0,"debug_orpheu")
+		}
+		else{
+			memory2++
+		}
+		if(file_exists(orpheufile1)){
+			executestringhook = OrpheuRegisterHook(OrpheuGetFunction("Cmd_ExecuteString"),"Cmd_ExecuteString_Fix")
+			memory2++
+		}
+		else{
+			log_to_file(settings,"%s Injected successfully %s",PrefixProtection,orpheufile1)
+			Create_Signature("Cmd_ExecuteString")
+			set_task(1.0,"debug_orpheu")
+		}
 	}
 	if(is_linux_server()){
 		log_to_file(settings,"^n%s I loaded plugin with %d functions hooked in hlds [linux]^n",PrefixProtection,memory2)
@@ -203,6 +208,7 @@ public RegisterOrpheu(){
 	else{
 		log_to_file(settings,"^n%s I loaded plugin with %d functions hooked in hlds [windows]^n",PrefixProtection,memory2)
 	}
+	
 	
 	new AMXXVersion[32],RCONName[32]
 	
