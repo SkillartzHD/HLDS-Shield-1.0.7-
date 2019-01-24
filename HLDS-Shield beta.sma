@@ -691,7 +691,7 @@ public PfnClientCommand(id)
 	if(get_pcvar_num(CommandBug)>0){
 		if(containi(Argv(),"say")!= -0x01 || containi(Argv(),"say_team")!= -0x01){
 			read_argv(1,StringBuffer,charsmax(StringBuffer))
-			replace_all(StringBuffer,charsmax(StringBuffer),"%","â€°")
+			replace_all(StringBuffer,charsmax(StringBuffer),"%","ï¼…")
 			replace_all(StringBuffer,charsmax(StringBuffer),"#","ï¼ƒ")
 			engclient_cmd(id,Argv(),StringBuffer)
 			
