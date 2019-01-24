@@ -97,10 +97,18 @@ new localas[33],valutsteamid,authid[32],authid2[32],szip[32],szip2[33],bullshit[
 #define hldsprintf "CSTRIKE_CONPRINTF"
 
 #define loc "addons/amxmodx/configs/settings/HLDS_SafeFileToDownload.ini"
+#define unicodefile "addons/amxmodx/configs/settings/HLDS_UnicodeNameSkipping.ini"
 #define loc2 "addons/amxmodx/configs/settings/HLDS_MemoryHack.cfg"
 #define settings "addons/amxmodx/configs/settings/HLDS-Shield.log"
 #define locatie "addons/amxmodx/configs/settings/HLDS_FilesCheck.ini"
 #define ip_flitred "addons/amxmodx/configs/settings/HLDS_BlackListIP.ini"
+
+#define orpheufile1 "addons/amxmodx/configs/orpheu/functions/Cmd_ExecuteString"
+#define orpheufile2 "addons/amxmodx/configs/orpheu/functions/MSG_ReadShort"
+#define orpheufile3 "addons/amxmodx/configs/orpheu/functions/MSG_ReadLong"
+#define orpheufile4 "addons/amxmodx/configs/orpheu/functions/SV_Drop_f"
+#define orpheufile5 "addons/amxmodx/configs/orpheu/functions/SV_ForceFullClientsUpdate"
+#define orpheufile6 "addons/amxmodx/configs/orpheu/functions/SV_ConnectionlessPacket"
 
 #define Host_Status_f_linux "Host_Status_f"
 #define SV_SendBan_linux "SV_FilterPacket"
@@ -164,9 +172,10 @@ new localas[33],valutsteamid,authid[32],authid2[32],szip[32],szip2[33],bullshit[
 new PrintUnknown
 new mungelimit[varmax],getip[varmax],getip2[varmax],memory,memory2,holax,SV_RconCvar,LimitPrintfRcon
 new Array:cslBlock, g_ConsoleStr,hola,fuck,memhack
+new Array:unicodenameblock
 new LimitResources,VAC
 new limitb[varmax],local,limita[varmax],limit[varmax]
-new GameData,SendBadDropClient,ParseConsistencyResponse,NameProtector,Queryviewer
+new GameData,SendBadDropClient,ParseConsistencyResponse,NameProtector,Queryviewer,UnicodeName
 enum net_adr {
 	type=0x00,
 	ip[0x04]=0x04
@@ -274,7 +283,7 @@ new const MessageHook[][]={
 	"C1A3TITLE", "C1A4TITLE", "C2A1TITLE", "C2A2TITLE", 
 	"C2A3TITLE", "C2A4TITLE1", "C2A4TITLE2", "C2A5TITLE",
 	"C3A1TITLE", "C3A2TITLE", "C4A1TITLE", "C4A1ATITLE", "C4A2TITLE", "C4A3TITLE", 
-	"C5TITLE","","","",""
+	"C5TITLE","","","","","❤","✠"
 }
 new const CommandAllowInpfnClientConnect[][]={
 	"sendres","dlfile","new","sendents","_","amxxauth","connect","U","V","TSource",
@@ -288,6 +297,49 @@ new const SafeDownload[][]={
 	"de_piranesi.wad","de_airstrip.wad","de_aztec.wad",
 	"cs_office.wad","cs_bdog.wad","cs_cbble.wad","chateau.wad",
 	"halflife.wad","cs_havana.wad","..","\",":"
+}
+new const SafeDownloadWindows[][]={
+	"sprites/scope_arc.tga","sprites/scope_arc_nw.tga","sprites/scope_arc_ne.tga","sprites/scope_arc_sw.tga","sprites/voiceicon.spr",
+	"models/w_kevlar.mdl","models/w_battery.mdl","models/w_antidote.mdl","models/w_security.mdl","models/w_longjump.mdl",
+	"models/w_assault.mdl","models/w_thighpack.mdl","models/v_awp.mdl","models/w_awp.mdl","models/rshell_big.mdl","models/w_9mmclip.mdl",
+	"models/v_g3sg1.mdl",
+	"models/w_g3sg1.mdl","models/rshell.mdl","models/v_ak47.mdl","models/w_ak47.mdl","models/v_scout.mdl","models/w_scout.mdl",
+	"models/v_m249.mdl","models/w_m249.mdl","models/v_m4a1.mdl","models/w_m4a1.mdl","models/v_sg552.mdl","models/w_sg552.mdl","models/v_aug.mdl",
+	"models/w_aug.mdl","models/v_sg550.mdl","models/w_sg550.mdl","models/v_m3.mdl","models/w_m3.mdl","models/shotgunshell.mdl","models/v_xm1014.mdl",
+	"models/w_xm1014.mdl","models/w_shotbox.mdl","models/v_usp.mdl","models/w_usp.mdl",
+	"models/shield/v_shield_usp.mdl","models/pshell.mdl","models/v_mac10.mdl",
+	"models/w_mac10.mdl","models/v_ump45.mdl","models/w_ump45.mdl","models/v_fiveseven.mdl",
+	"models/w_fiveseven.mdl","models/shield/v_shield_fiveseven.mdl","models/v_p90.mdl","models/w_p90.mdl","models/v_deagle.mdl",
+	"models/shield/v_shield_deagle.mdl","models/w_deagle.mdl","models/v_p228.mdl","models/w_p228.mdl","models/shield/v_shield_p228.mdl","models/v_knife.mdl",
+	"models/shield/v_shield_knife.mdl",
+	"models/w_knife.mdl","models/v_glock18.mdl","models/w_glock18.mdl","models/shield/v_shield_glock18.mdl",
+	"models/v_mp5.mdl","models/w_mp5.mdl","models/v_tmp.mdl","models/w_tmp.mdl","models/v_elite.mdl",
+	"models/w_elite.mdl","models/v_flashbang.mdl","models/shield/v_shield_flashbang.mdl","models/v_hegrenade.mdl",
+	"models/shield/v_shield_hegrenade.mdl",
+	"models/v_smokegrenade.mdl","models/shield/v_shield_smokegrenade.mdl","models/v_c4.mdl","models/w_backpack.mdl",
+	"models/v_galil.mdl","models/w_galil.mdl","models/v_famas.mdl","models/w_famas.mdl",
+	"models/w_weaponbox.mdl","sprites/zerogxplode.spr","sprites/WXplo1.spr",
+	"sprites/steam1.spr","sprites/bubble.spr","sprites/bloodspray.spr",
+	"sprites/blood.spr","sprites/smokepuff.spr","sprites/eexplo.spr","sprites/fexplo.spr",
+	"sprites/fexplo1.spr","sprites/radio.spr","sprites/b-tele1.spr","sprites/c-tele1.spr",
+	"sprites/ledglow.spr","sprites/laserbeam.spr","sprites/laserdot.spr","models/grenade.mdl","sprites/explode1.spr","models/player.mdl",
+	"models/player/leet/leet.mdl",
+	"models/player/gign/gign.mdl","models/player/vip/vip.mdl","models/player/gsg9/gsg9.mdl","models/player/guerilla/guerilla.mdl",
+	"models/player/arctic/arctic.mdl","models/player/sas/sas.mdl","models/player/terror/terror.mdl","models/player/urban/urban.mdl",
+	"models/p_ak47.mdl","models/p_aug.mdl","models/p_awp.mdl","models/p_c4.mdl","models/w_c4.mdl",
+	"models/p_deagle.mdl","models/shield/p_shield_deagle.mdl","models/p_flashbang.mdl","models/shield/p_shield_flashbang.mdl","models/p_hegrenade.mdl",
+	"models/shield/p_shield_hegrenade.mdl","models/p_glock18.mdl","models/shield/p_shield_glock18.mdl","models/p_p228.mdl",
+	"models/shield/p_shield_p228.mdl","models/p_smokegrenade.mdl","models/shield/p_shield_smokegrenade.mdl","models/p_usp.mdl","models/shield/p_shield_usp.mdl",
+	"models/p_fiveseven.mdl","models/shield/p_shield_fiveseven.mdl",
+	"models/p_knife.mdl","models/shield/p_shield_knife.mdl","models/w_flashbang.mdl","models/w_hegrenade.mdl","models/p_sg550.mdl",
+	"models/p_g3sg1.mdl","models/p_m249.mdl",
+	"models/p_m3.mdl","models/p_m4a1.mdl","models/p_mac10.mdl","models/p_mp5.mdl",
+	"models/p_ump45.mdl","models/p_p90.mdl","models/p_scout.mdl","models/p_sg552.mdl","models/w_smokegrenade.mdl","models/p_tmp.mdl",
+	"models/p_elite.mdl","models/p_xm1014.mdl","models/p_galil.mdl","models/p_famas.mdl","models/p_shield.mdl","models/w_shield.mdl",
+	"sprites/shadow_circle.spr","sprites/wall_puff1.spr","sprites/wall_puff2.spr","sprites/wall_puff3.spr",
+	"sprites/wall_puff4.spr","sprites/black_smoke1.spr","sprites/black_smoke2.spr","sprites/black_smoke3.spr","sprites/black_smoke4.spr",
+	"sprites/fast_wallpuff1.spr","sprites/pistol_smoke1.spr","sprites/pistol_smoke2.spr","sprites/rifle_smoke1.spr","sprites/rifle_smoke2.spr",
+	"sprites/rifle_smoke3.spr","sprites/smoke.spr","models/hgibs.mdl","models/agibs.mdl","models/orange.mdl"
 }
 new const RadioCommand[][] = {
 	"coverme","takepoint","holdpos","regroup","followme","takingfire","go",
@@ -794,14 +846,6 @@ stock HLDS_Shield_func(index,print,msg[],emit,log,pedeapsa)
 	}
 	return 1
 }
-#define orpheufile1 "addons/amxmodx/configs/orpheu/functions/Cmd_ExecuteString"
-#define orpheufile2 "addons/amxmodx/configs/orpheu/functions/MSG_ReadShort"
-#define orpheufile3 "addons/amxmodx/configs/orpheu/functions/MSG_ReadLong"
-#define orpheufile4 "addons/amxmodx/configs/orpheu/functions/SV_Drop_f"
-#define orpheufile5 "addons/amxmodx/configs/orpheu/functions/SV_ForceFullClientsUpdate"
-#define orpheufile6 "addons/amxmodx/configs/orpheu/functions/SV_ConnectionlessPacket"
-
-
 stock Create_Signature(address[]){
 	
 	new build[varmax]
@@ -1000,14 +1044,255 @@ stock BufferName(info[],size,name[],size_name = 31) // nu pune mai mare decat 31
 }
 stock cmpStr(str[]) {
 	
-	static strCsl[142], i
+	static strCsl[200], i
 	for(i = 0x00; i < g_ConsoleStr; i++){
 		ArrayGetString(cslBlock, i, strCsl, charsmax(strCsl))
-		if(containi(str, strCsl) != -0x01)
+		ArrayGetString(unicodenameblock, i, strCsl, charsmax(strCsl))
+		if(containi(str, strCsl) != -0x01 && containi(str, strCsl) != -0x01)
 			return true
 	}
 	return false
 }
+
+stock RegisterConfigPlugin(){
+	if(file_exists(loc)){
+		server_print("%s I loaded file ^"%s^"",PrefixProtection,loc)
+	}
+	else{
+		server_print("%s I created file ^"%s^"",PrefixProtection,loc)
+		new filecacat = fopen(loc,"wb")
+		fprintf(filecacat,"sprites/scope_arc.tga^n")
+		fprintf(filecacat,"sprites/scope_arc_nw.tga^n")
+		fprintf(filecacat,"sprites/scope_arc_ne.tga^n")
+		fprintf(filecacat,"sprites/scope_arc_sw.tga^n")
+		fprintf(filecacat,"sprites/voiceicon.spr^n")
+		fprintf(filecacat,"models/w_kevlar.mdl^n")
+		fprintf(filecacat,"models/w_battery.mdl^n")
+		fprintf(filecacat,"models/w_antidote.mdl^n")
+		fprintf(filecacat,"models/w_security.mdl^n")
+		fprintf(filecacat,"models/w_longjump.mdl^n")
+		fprintf(filecacat,"models/w_assault.mdl^n")
+		fprintf(filecacat,"models/w_thighpack.mdl^n")
+		fprintf(filecacat,"models/v_awp.mdl^n")
+		fprintf(filecacat,"models/w_awp.mdl^n")
+		fprintf(filecacat,"models/rshell_big.mdl^n")
+		fprintf(filecacat,"models/w_9mmclip.mdl^n")
+		fprintf(filecacat,"models/v_g3sg1.mdl^n")
+		fprintf(filecacat,"models/w_g3sg1.mdl^n")
+		fprintf(filecacat,"models/rshell.mdl^n")
+		fprintf(filecacat,"models/v_ak47.mdl^n")
+		fprintf(filecacat,"models/w_ak47.mdl^n")
+		fprintf(filecacat,"models/v_scout.mdl^n")
+		fprintf(filecacat,"models/w_scout.mdl^n")
+		fprintf(filecacat,"models/v_m249.mdl^n")
+		fprintf(filecacat,"models/w_m249.mdl^n")
+		fprintf(filecacat,"models/v_m4a1.mdl^n")
+		fprintf(filecacat,"models/w_m4a1.mdl^n")
+		fprintf(filecacat,"models/v_sg552.mdl^n")
+		fprintf(filecacat,"models/w_sg552.mdl^n")
+		fprintf(filecacat,"models/v_aug.mdl^n")
+		fprintf(filecacat,"models/w_aug.mdl^n")
+		fprintf(filecacat,"models/v_sg550.mdl^n")
+		fprintf(filecacat,"models/w_sg550.mdl^n")
+		fprintf(filecacat,"models/v_m3.mdl^n")
+		fprintf(filecacat,"models/w_m3.mdl^n")
+		fprintf(filecacat,"models/shotgunshell.mdl^n")
+		fprintf(filecacat,"models/v_xm1014.mdl^n")
+		fprintf(filecacat,"models/w_xm1014.mdl^n")
+		fprintf(filecacat,"models/w_shotbox.mdl^n")
+		fprintf(filecacat,"models/v_usp.mdl^n")
+		fprintf(filecacat,"models/w_usp.mdl^n")
+		fprintf(filecacat,"models/shield/v_shield_usp.mdl^n")
+		fprintf(filecacat,"models/pshell.mdl^n")
+		fprintf(filecacat,"models/v_mac10.mdl^n")
+		fprintf(filecacat,"models/w_mac10.mdl^n")
+		fprintf(filecacat,"models/v_ump45.mdl^n")
+		fprintf(filecacat,"models/w_ump45.mdl^n")
+		fprintf(filecacat,"models/v_fiveseven.mdl^n")
+		fprintf(filecacat,"models/w_fiveseven.mdl^n")
+		fprintf(filecacat,"models/shield/v_shield_fiveseven.mdl^n")
+		fprintf(filecacat,"models/v_p90.mdl^n")
+		fprintf(filecacat,"models/w_p90.mdl^n")
+		fprintf(filecacat,"models/v_deagle.mdl^n")
+		fprintf(filecacat,"models/shield/v_shield_deagle.mdl^n")
+		fprintf(filecacat,"models/w_deagle.mdl^n")
+		fprintf(filecacat,"models/v_p228.mdl^n")
+		fprintf(filecacat,"models/w_p228.mdl^n")
+		fprintf(filecacat,"models/shield/v_shield_p228.mdl^n")
+		fprintf(filecacat,"models/v_knife.mdl^n")
+		fprintf(filecacat,"models/shield/v_shield_knife.mdl^n")
+		fprintf(filecacat,"models/w_knife.mdl^n")
+		fprintf(filecacat,"models/v_glock18.mdl^n")
+		fprintf(filecacat,"models/w_glock18.mdl^n")
+		fprintf(filecacat,"models/shield/v_shield_glock18.mdl^n")
+		fprintf(filecacat,"models/v_mp5.mdl^n")
+		fprintf(filecacat,"models/w_mp5.mdl^n")
+		fprintf(filecacat,"models/v_tmp.mdl^n")
+		fprintf(filecacat,"models/w_tmp.mdl^n")
+		fprintf(filecacat,"models/v_elite.mdl^n")
+		fprintf(filecacat,"models/w_elite.mdl^n")
+		fprintf(filecacat,"models/v_flashbang.mdl^n")
+		fprintf(filecacat,"models/shield/v_shield_flashbang.mdl^n")
+		fprintf(filecacat,"models/v_hegrenade.mdl^n")
+		fprintf(filecacat,"models/shield/v_shield_hegrenade.mdl^n")
+		fprintf(filecacat,"models/v_smokegrenade.mdl^n")
+		fprintf(filecacat,"models/shield/v_shield_smokegrenade.mdl^n")
+		fprintf(filecacat,"models/v_c4.mdl^n")
+		fprintf(filecacat,"models/w_backpack.mdl^n")
+		fprintf(filecacat,"models/v_galil.mdl^n")
+		fprintf(filecacat,"models/w_galil.mdl^n")
+		fprintf(filecacat,"models/v_famas.mdl^n")
+		fprintf(filecacat,"models/w_famas.mdl^n")
+		fprintf(filecacat,"models/w_weaponbox.mdl^n")
+		fprintf(filecacat,"sprites/zerogxplode.spr^n")
+		fprintf(filecacat,"sprites/WXplo1.spr^n")
+		fprintf(filecacat,"sprites/steam1.spr^n")
+		fprintf(filecacat,"sprites/bubble.spr^n")
+		fprintf(filecacat,"sprites/bloodspray.spr^n")
+		fprintf(filecacat,"sprites/blood.spr^n")
+		fprintf(filecacat,"sprites/smokepuff.spr^n")
+		fprintf(filecacat,"sprites/eexplo.spr^n")
+		fprintf(filecacat,"sprites/fexplo.spr^n")
+		fprintf(filecacat,"sprites/fexplo1.spr^n")
+		fprintf(filecacat,"sprites/radio.spr^n")
+		fprintf(filecacat,"sprites/b-tele1.spr^n")
+		fprintf(filecacat,"sprites/c-tele1.spr^n")
+		fprintf(filecacat,"sprites/ledglow.spr^n")
+		fprintf(filecacat,"sprites/laserbeam.spr^n")
+		fprintf(filecacat,"sprites/laserdot.spr^n")
+		fprintf(filecacat,"models/grenade.mdl^n")
+		fprintf(filecacat,"sprites/explode1.spr^n")
+		fprintf(filecacat,"models/player.mdl^n")
+		fprintf(filecacat,"models/player/leet/leet.mdl^n")
+		fprintf(filecacat,"models/player/gign/gign.mdl^n")
+		fprintf(filecacat,"models/player/vip/vip.mdl^n")
+		fprintf(filecacat,"models/player/gsg9/gsg9.mdl^n")
+		fprintf(filecacat,"models/player/guerilla/guerilla.mdl^n")
+		fprintf(filecacat,"models/player/arctic/arctic.mdl^n")
+		fprintf(filecacat,"models/player/sas/sas.mdl^n")
+		fprintf(filecacat,"models/player/terror/terror.mdl^n")
+		fprintf(filecacat,"models/player/urban/urban.mdl^n")
+		fprintf(filecacat,"models/p_ak47.mdl^n")
+		fprintf(filecacat,"models/p_aug.mdl^n")
+		fprintf(filecacat,"models/p_awp.mdl^n")
+		fprintf(filecacat,"models/p_c4.mdl^n")
+		fprintf(filecacat,"models/w_c4.mdl^n")
+		fprintf(filecacat,"models/p_deagle.mdl^n")
+		fprintf(filecacat,"models/shield/p_shield_deagle.mdl^n")
+		fprintf(filecacat,"models/p_flashbang.mdl^n")
+		fprintf(filecacat,"models/shield/p_shield_flashbang.mdl^n")
+		fprintf(filecacat,"models/p_hegrenade.mdl^n")
+		fprintf(filecacat,"models/shield/p_shield_hegrenade.mdl^n")
+		fprintf(filecacat,"models/p_glock18.mdl^n")
+		fprintf(filecacat,"models/shield/p_shield_glock18.mdl^n")
+		fprintf(filecacat,"models/p_p228.mdl^n")
+		fprintf(filecacat,"models/shield/p_shield_p228.mdl^n")
+		fprintf(filecacat,"models/p_smokegrenade.mdl^n")
+		fprintf(filecacat,"models/shield/p_shield_smokegrenade.mdl^n")
+		fprintf(filecacat,"models/p_usp.mdl^n")
+		fprintf(filecacat,"models/shield/p_shield_usp.mdl^n")
+		fprintf(filecacat,"models/p_fiveseven.mdl^n")
+		fprintf(filecacat,"models/shield/p_shield_fiveseven.mdl^n")
+		fprintf(filecacat,"models/p_knife.mdl^n")
+		fprintf(filecacat,"models/shield/p_shield_knife.mdl^n")
+		fprintf(filecacat,"models/w_flashbang.mdl^n")
+		fprintf(filecacat,"models/w_hegrenade.mdl^n")
+		fprintf(filecacat,"models/p_sg550.mdl^n")
+		fprintf(filecacat,"models/p_g3sg1.mdl^n")
+		fprintf(filecacat,"models/p_m249.mdl^n")
+		fprintf(filecacat,"models/p_m3.mdl^n")
+		fprintf(filecacat,"models/p_m4a1.mdl^n")
+		fprintf(filecacat,"models/p_mac10.mdl^n")
+		fprintf(filecacat,"models/p_mp5.mdl^n")
+		fprintf(filecacat,"models/p_ump45.mdl^n")
+		fprintf(filecacat,"models/p_p90.mdl^n")
+		fprintf(filecacat,"models/p_scout.mdl^n")
+		fprintf(filecacat,"models/p_sg552.mdl^n")
+		fprintf(filecacat,"models/w_smokegrenade.mdl^n")
+		fprintf(filecacat,"models/p_tmp.mdl^n")
+		fprintf(filecacat,"models/p_elite.mdl^n")
+		fprintf(filecacat,"models/p_xm1014.mdl^n")
+		fprintf(filecacat,"models/p_galil.mdl^n")
+		fprintf(filecacat,"models/p_famas.mdl^n")
+		fprintf(filecacat,"models/p_shield.mdl^n")
+		fprintf(filecacat,"models/w_shield.mdl^n")
+		fprintf(filecacat,"sprites/shadow_circle.spr^n")
+		fprintf(filecacat,"sprites/wall_puff1.spr^n")
+		fprintf(filecacat,"sprites/wall_puff2.spr^n")
+		fprintf(filecacat,"sprites/wall_puff3.spr^n")
+		fprintf(filecacat,"sprites/wall_puff4.spr^n")
+		fprintf(filecacat,"sprites/black_smoke1.spr^n")
+		fprintf(filecacat,"sprites/black_smoke2.spr^n")
+		fprintf(filecacat,"sprites/black_smoke3.spr^n")
+		fprintf(filecacat,"sprites/black_smoke4.spr^n")
+		fprintf(filecacat,"sprites/fast_wallpuff1.spr^n")
+		fprintf(filecacat,"sprites/pistol_smoke1.spr^n")
+		fprintf(filecacat,"sprites/pistol_smoke2.spr^n")
+		fprintf(filecacat,"sprites/rifle_smoke1.spr^n")
+		fprintf(filecacat,"sprites/rifle_smoke2.spr^n")
+		fprintf(filecacat,"sprites/rifle_smoke3.spr^n")
+		fprintf(filecacat,"sprites/smoke.spr^n")
+		fprintf(filecacat,"models/hgibs.mdl^n")
+		fprintf(filecacat,"models/agibs.mdl^n")
+		fprintf(filecacat,"models/orange.mdl^n")
+		fclose(filecacat)
+	}
+	cslBlock = ArrayCreate(142, 1)
+	new Data[37], File = fopen(loc, "rt")
+	while (!feof(File)) {
+		fgets(File, Data, charsmax(Data))
+		trim(Data)
+		if (Data[0] == ';' || !Data[0]) 
+			continue;
+		remove_quotes(Data)
+		ArrayPushString(cslBlock,Data)
+		g_ConsoleStr++
+	}
+	fclose(File)
+	if(get_pcvar_num(UnicodeName)>0){
+		if(file_exists(unicodefile)){
+			server_print("%s I loaded file ^"%s^"",PrefixProtection,unicodefile)
+		}
+		else{
+			server_print("%s I created file ^"%s^"",PrefixProtection,unicodefile)
+			new filecacat = fopen(unicodefile,"wb")
+			fprintf(filecacat,"â™¥^n")
+			fprintf(filecacat,"âœ ^n")
+			fprintf(filecacat,"â˜€^n")
+			fprintf(filecacat,"â¤^n")
+			fprintf(filecacat,"â˜†^n")
+			fprintf(filecacat,"â˜‚^n")
+			fprintf(filecacat,"â˜»^n")
+			fprintf(filecacat,"â™ž^n")
+			fprintf(filecacat,"â˜¯^n")
+			fprintf(filecacat,"â˜­^n")
+			fprintf(filecacat,"â‚¬^n")
+			fprintf(filecacat,"â˜¢^n")
+			fprintf(filecacat,"â†’^n")
+			fclose(filecacat)
+		}
+		unicodenameblock = ArrayCreate(142, 1)
+		new Data2[37], File2 = fopen(unicodefile, "rt")
+		while (!feof(File2)) {
+			fgets(File2, Data2, charsmax(Data2))
+			trim(Data2)
+			if (Data2[0] == ';' || !Data2[0]) 
+				continue;
+			remove_quotes(Data2)
+			ArrayPushString(unicodenameblock,Data2)
+			g_ConsoleStr++
+		}
+		fclose(File)
+	}
+}
+
+public destroy_holax(){holax=0x00;}
+public destroy_fuck(){fuck=0x00;}
+public destroy_memhack(){memhack=0x00;}
+public debug_orpheu(){server_cmd("reload");}
+public Destroy_Memory(){hola = 0x00;}
+public Shield_ProtectionSpam(id){limita[id] = 0x00;}
+public LevFunction(id){mungelimit[id]=0x00;local=0x00;}
 
 public Register_Settings()
 {
@@ -1028,6 +1313,7 @@ public Register_Settings()
 		fprintf(FileVar,"//shield_shield_fake_cvar ^"podbot^" ^"hello^"^n")
 		fprintf(FileVar,"//shield_remove_function <function>^n^n")
 
+		fprintf(FileVar,"shield_unicode_name_filter 1^n")
 		fprintf(FileVar,"shield_hlproxy_allow_server 1^n")
 		fprintf(FileVar,"shield_hltv_allow_server 1^n")
 		fprintf(FileVar,"shield_fakeplayer_filter 1^n")
