@@ -1301,26 +1301,7 @@ public pfnClientUserInfoChanged(id,buffer){
 	pev(id,pev_netname,szOldName,charsmax(szOldName)) 
 	formatex(longformate,charsmax(longformate),"%s",szOldName)
 	get_user_info(id,"name",szNewName,charsmax(szNewName))
-	if(get_pcvar_num(UnicodeName)>0){
-		if(cmpStr(Args())){
-			locala[id]++
-			if(locala[id] >=get_pcvar_num(LimitPrintf)){
-				set_user_info(id,"name",longformate)
-				return FMRES_SUPERCEDE
-			}
-			else{
-				if(debug_s[id]==0){
-					if(locala[id] == 3){
-						locala[id]=1
-						debug_s[id]=1
-					}
-				}
-				HLDS_Shield_func(id,1,namebug,1,5,0)
-				set_user_info(id,"name",longformate) 
-				return FMRES_SUPERCEDE
-			}
-		}
-	}
+	
 	if(get_pcvar_num(NameBug)>0){
 		if(is_linux_server()){
 			if(is_user_connected(id)){
@@ -1400,6 +1381,26 @@ public pfnClientUserInfoChanged(id,buffer){
 				}
 				NameUnLock[id] = 1
 				set_task(timp.0,"SHIELD_NameDeBug",id)
+			}
+		}
+	}
+	if(get_pcvar_num(UnicodeName)>0){
+		if(cmpStr(Args())){
+			locala[id]++
+			if(locala[id] >=get_pcvar_num(LimitPrintf)){
+				set_user_info(id,"name",longformate)
+				return FMRES_SUPERCEDE
+			}
+			else{
+				if(debug_s[id]==0){
+					if(locala[id] == 3){
+						locala[id]=1
+						debug_s[id]=1
+					}
+				}
+				HLDS_Shield_func(id,1,namebug,1,5,0)
+				set_user_info(id,"name",longformate) 
+				return FMRES_SUPERCEDE
 			}
 		}
 	}
