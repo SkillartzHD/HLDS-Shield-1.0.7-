@@ -55,6 +55,7 @@ new SpectatorVguiBug
 new Radio
 new FakePlayerFilter
 new NameUnLock[33]
+new DumpConnector
 new NameBugShowMenu
 new CommandBug
 new UpdateClient
@@ -102,6 +103,7 @@ new localas[33],valutsteamid,authid[32],authid2[32],szip[32],szip2[33],bullshit[
 #define loc2 "addons/amxmodx/configs/settings/HLDS_MemoryHack.cfg"
 #define settings "addons/amxmodx/configs/settings/HLDS-Shield.log"
 #define locatie "addons/amxmodx/configs/settings/HLDS_FilesCheck.ini"
+#define dumpconnect "addons/amxmodx/configs/settings/HLDS_DumpConnections.ini"
 #define ip_flitred "addons/amxmodx/configs/settings/HLDS_BlackListIP.ini"
 
 #define orpheufile1 "addons/amxmodx/configs/orpheu/functions/Cmd_ExecuteString"
@@ -1319,6 +1321,7 @@ public Register_Settings()
 		fprintf(FileVar,"//shield_shield_fake_cvar ^"podbot^" ^"hello^"^n")
 		fprintf(FileVar,"//shield_remove_function <function>^n^n")
 
+		fprintf(FileVar,"shield_dump_sv_connectclient 1^n")
 		fprintf(FileVar,"shield_unicode_name_filter 1^n")
 		fprintf(FileVar,"shield_hlproxy_allow_server 1^n")
 		fprintf(FileVar,"shield_hltv_allow_server 1^n")
