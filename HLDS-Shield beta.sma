@@ -764,10 +764,10 @@ public FakeFunction(){return PLUGIN_HANDLED;}
 public RegisterFakeCvar()
 {
 	if(!strlen(Argv1())){
-		server_print("shield_fake_cvar <cvar name> <value>")
+		server_print("%s shield_fake_cvar <cvar name> <value>",PrefixProtection)
 		return PLUGIN_HANDLED
 	}
-	server_print("Cvar ^"%s^" with value ^"%s^" registred",Argv1(),Argv2())
+	server_print("%s Cvar ^"%s^" with value ^"%s^" registred",PrefixProtection,Argv1(),Argv2())
 	register_cvar(Argv1(),Argv2())
 	return PLUGIN_CONTINUE
 }
@@ -777,21 +777,21 @@ public RegisterRemoveString()
 	new deletestring[32]
 	formatex(deletestring,charsmax(deletestring),"^n",Argv1())
 	if(!strlen(Argv1()) ){
-		server_print("shield_remove_string <string>")
+		server_print("%s shield_remove_string <string>",PrefixProtection)
 		return PLUGIN_HANDLED
 	}
 	okapi_engine_replace_string(Argv1(),deletestring)
-	server_print("String ^"%s^" has been removed",Argv1())
+	server_print("%s String ^"%s^" has been removed",PrefixProtection,Argv1())
 	return PLUGIN_CONTINUE
 }
 
 public RegisterReplaceString()
 {
 	if(!strlen(Argv1())){
-		server_print("shield_replace_string <old string> <new string>")
+		server_print("%s shield_replace_string <old string> <new string>",PrefixProtection)
 		return PLUGIN_HANDLED
 	}
-	server_print("Replaced : ^"%s^" --> ^"%s^"",Argv1(),Argv2())
+	server_print("%s Replaced : ^"%s^" --> ^"%s^"",PrefixProtection,Argv1(),Argv2())
 	okapi_engine_replace_string(Argv1(),Argv2())
 	return PLUGIN_CONTINUE
 }
@@ -1458,7 +1458,6 @@ public Info_ValueForKey_Hook(index)
 							}
 						}
 						HLDS_Shield_func(id,1,namebug,1,5,0)
-						server_print("C")
 					}
 					return okapi_ret_supercede;
 				}
