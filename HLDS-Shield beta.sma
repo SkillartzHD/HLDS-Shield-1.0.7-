@@ -51,16 +51,8 @@ public Hooks_init(){
 	register_forward(FM_GameShutdown,"pfnSys_Error")
 }
 public RegisterCvars(){
-	
-	ShutdownServer = register_cvar("shield_lost_connection","0") // warning but is 1 plugin returned host_servershutdown but is possbily not work correctly server
-	LostConnectionSeconds = register_cvar("shield_lost_connection_seconds","15")
-	DumpConnector = register_cvar("shield_dump_sv_connectclient","0")
-	UnicodeName = register_cvar("shield_unicode_name_filter","1")
-	HLProxyFilter = register_cvar("shield_hlproxy_allow_server","1")
-	HLTVFilter = register_cvar("shield_hltv_allow_server","1")
-	FakePlayerFilter = register_cvar("shield_fakeplayer_filter","1")
-	PrintErrorSysError = register_cvar("shield_syserror_print","1")
-	UpdateClient = register_cvar("shield_update_vgui_client","1")
+	GameData=register_cvar("shield_gamedata","HLDS-Shield 1.0.7")
+	KillBug=register_cvar("shield_kill_crash","1")
 	NameBugShowMenu = register_cvar("shield_namebug_showmenu","1")
 	SpectatorVguiBug = register_cvar("shield_vgui_specbug","1")
 	Radio = register_cvar("shield_radio","1")
@@ -70,8 +62,19 @@ public RegisterCvars(){
 	NameSpammer=register_cvar("shield_name_spammer","1")
 	RandomSteamid=register_cvar("shield_steamid_hack","1")
 	DuplicateSteamid=register_cvar("shield_steamid_duplicate","1")
+	BanTime=register_cvar("shield_bantime","1")
+	UnicodeName = register_cvar("shield_unicode_name_filter","1")
+	
+	SV_RconCvar=register_cvar("shield_sv_rcon","1")
+	ShutdownServer = register_cvar("shield_lost_connection","0") // warning but is 1 plugin returned host_servershutdown but is possbily not work correctly server
+	LostConnectionSeconds = register_cvar("shield_lost_connection_seconds","15")
+	DumpConnector = register_cvar("shield_dump_sv_connectclient","0")
+	HLProxyFilter = register_cvar("shield_hlproxy_allow_server","1")
+	HLTVFilter = register_cvar("shield_hltv_allow_server","1")
+	FakePlayerFilter = register_cvar("shield_fakeplayer_filter","1")
+	PrintErrorSysError = register_cvar("shield_syserror_print","1")
+	UpdateClient = register_cvar("shield_update_vgui_client","1")
 	NameProtector=register_cvar("shield_name_protector_sv_connect ","1")
-	KillBug=register_cvar("shield_kill_crash","1")
 	Queryviewer=register_cvar("shield_query_log","0")
 	VAC=register_cvar("shield_vac","1")
 	MaxOverflowed=register_cvar("shield_max_overflowed","1000")
@@ -79,23 +82,22 @@ public RegisterCvars(){
 	PrintUnknown=register_cvar("shield_printf_offset_command","0")
 	ParseConsistencyResponse=register_cvar("shield_parseConsistencyResponse","1")
 	SendBadDropClient=register_cvar("shield_dropclient","1")
-	GameData=register_cvar("shield_gamedata","HLDS-Shield 1.0.7")
 	LimitPrintf=register_cvar("shield_printf_limit","5")
 	LimitQuery=register_cvar("shield_query_limit","80")
 	LimitMunge=register_cvar("shield_munge_comamnd_limit","30")
 	LimitExploit=register_cvar("shield_exploit_cmd_limit","5")
 	LimitImpulse=register_cvar("shield_sv_runcmd_limit","100")
 	LimitResources=register_cvar("shield_sv_parseresource_limit","1")
-	BanTime=register_cvar("shield_bantime","1")
 	PauseDlfile=register_cvar("shield_dlfile_pause","1")
-	SV_RconCvar=register_cvar("shield_sv_rcon","1")
 	LimitPrintfRcon=register_cvar("shield_rcon_limit","10")
 	
+	if(ServerVersion == 0){
+		register_srvcmd("shield_remove_function","RegisterRemoveFunction")
+	}
 	register_srvcmd("shield_replace_string","RegisterReplaceString")
 	register_srvcmd("shield_remove_string","RegisterRemoveString")
-	register_srvcmd("shield_addcmd_fake","RegisterCmdFake")
-	register_srvcmd("shield_remove_function","RegisterRemoveFunction")
 	register_srvcmd("shield_fake_cvar","RegisterFakeCvar")
+	register_srvcmd("shield_addcmd_fake","RegisterCmdFake")
 	
 	register_clcmd("usersid","SV_UsersID")
 }
@@ -225,14 +227,20 @@ public RegisterOrpheu(){
 	}
 	
 	
-	new AMXXVersion[32],RCONName[32]
+	new AMXXVersion[32],RCONName[32],ServerInfo[32],Metamodinfo[32]
 	
 	get_amxx_verstring(AMXXVersion,charsmax(AMXXVersion))
 	get_cvar_string("rcon_password",RCONName,charsmax(RCONName))
+	get_cvar_string("sv_version",ServerInfo,charsmax(ServerInfo))
+	get_cvar_string("metamod_version",Metamodinfo,charsmax(Metamodinfo))
 	
+	server_print("--------------------------------------------------------------------------------------")
 	server_print("%s Amxx : %s",PrefixProtection,AMXXVersion)
 	server_print("%s Rcon : %s",PrefixProtection,RCONName)
+	server_print("%s Engine : %s",PrefixProtection,ServerInfo)
+	server_print("%s MetaMod : %s",PrefixProtection,Metamodinfo)
 	SV_UpTime(1)
+	server_print("--------------------------------------------------------------------------------------")
 }
 
 public Cmd_ExecuteString_Fix()
