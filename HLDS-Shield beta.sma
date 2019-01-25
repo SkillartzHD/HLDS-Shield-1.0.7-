@@ -38,8 +38,8 @@ public Hooks_init(){
 		else{
 			RegisterOkapiWindows()
 		}
-		set_task(1.0,"RegisterOrpheu")
 	}
+	set_task(1.0,"RegisterOrpheu")
 	
 	register_forward(FM_ClientConnect,"pfnClientConnect")
 	register_forward(FM_ClientUserInfoChanged,"pfnClientUserInfoChanged")
@@ -52,6 +52,8 @@ public Hooks_init(){
 }
 public RegisterCvars(){
 	
+	ShutdownServer = register_cvar("shield_lost_connection","0") // warning but is 1 plugin returned host_servershutdown but is possbily not work correctly server
+	LostConnectionSeconds = register_cvar("shield_lost_connection_seconds","15")
 	DumpConnector = register_cvar("shield_dump_sv_connectclient","0")
 	UnicodeName = register_cvar("shield_unicode_name_filter","1")
 	HLProxyFilter = register_cvar("shield_hlproxy_allow_server","1")
@@ -79,7 +81,7 @@ public RegisterCvars(){
 	SendBadDropClient=register_cvar("shield_dropclient","1")
 	GameData=register_cvar("shield_gamedata","HLDS-Shield 1.0.7")
 	LimitPrintf=register_cvar("shield_printf_limit","5")
-	LimitQuery=register_cvar("shield_query_limit","40")
+	LimitQuery=register_cvar("shield_query_limit","80")
 	LimitMunge=register_cvar("shield_munge_comamnd_limit","30")
 	LimitExploit=register_cvar("shield_exploit_cmd_limit","5")
 	LimitImpulse=register_cvar("shield_sv_runcmd_limit","100")
@@ -143,6 +145,16 @@ public pfnClientConnect(id){
 	FalseAllFunction(id)
 	Info_ValueForKey_Hook(id)
 	
+	if(ServerVersion == 1){ // rehlds
+		if(get_pcvar_num(NameProtector)>0){
+			for (new i = 0x00; i < sizeof (MessageHook); i++){
+				if(containi(UserName(id),MessageHook[i]) != -0x01){
+					HLDS_Shield_func(0,0,namebug,0,9,1)
+					SV_RejectConnection_user(id,"Rejected")
+				}
+			}
+		}
+	}
 	set_task(1.0,"UserImpulseFalse",id)
 	
 	/*
@@ -579,8 +591,10 @@ public inconsistent_file(id,const filename[], reason[64]){
 }
 
 public SV_SendBan_fix(){
-	if(SV_CheckProtocolSpamming(2)){
-		return okapi_ret_supercede
+	if(!is_linux_server()){
+		if(SV_CheckProtocolSpamming(2)){
+			return okapi_ret_supercede
+		}
 	}
 	if(SV_FilterAddress(1)){
 		return okapi_ret_supercede
@@ -987,7 +1001,7 @@ public IsInvalidFunction(functioncall,stringexit[]){
 			new checkduplicate[255]
 			formatex(checkduplicate,charsmax(checkduplicate),"^x25^x73^x5C^x6E^x61^x6D^x65^x5C",GetInvalid)
 			if(containi(Argv4(), checkduplicate) != -1){
-				log_amx("%s : user ^"%s^" used many string ^"\name\^"",me[0x02],GetInvalid)
+				log_amx("%s : user ^"%s^" used many string ^"\name\^"",PrefixProtection,GetInvalid)
 				return 1
 			}
 		}
@@ -1250,7 +1264,7 @@ public SV_CheckForDuplicateSteamID(id){
 		if(containi(CertificateSteamID, AllUserCertificateSteamID) != -1){
 			locala[id]++
 			new longtext[255]
-			formatex(longtext,charsmax(longtext),"[%s] Your SteamID is duplicated %s",me[0x02],CertificateSteamID)
+			formatex(longtext,charsmax(longtext),"[%s] Your SteamID is duplicated %s",PrefixProtection,CertificateSteamID)
 			SV_RejectConnection_user(id,longtext)
 			if(debug_s[id]==0){
 				if(locala[id] == 3){
@@ -1393,23 +1407,25 @@ public pfnClientUserInfoChanged(id,buffer){
 			}
 		}
 	}
-	if(get_pcvar_num(UnicodeName)>0){
-		if(cmpStr(Args())){
-			locala[id]++
-			if(locala[id] >=get_pcvar_num(LimitPrintf)){
-				set_user_info(id,"name",longformate)
-				return FMRES_SUPERCEDE
-			}
-			else{
-				if(debug_s[id]==0){
-					if(locala[id] == 3){
-						locala[id]=1
-						debug_s[id]=1
-					}
+	if(ServerVersion == 0){
+		if(get_pcvar_num(UnicodeName)>0){
+			if(cmpStr(Args())){
+				locala[id]++
+				if(locala[id] >=get_pcvar_num(LimitPrintf)){
+					set_user_info(id,"name",longformate)
+					return FMRES_SUPERCEDE
 				}
-				HLDS_Shield_func(id,1,namebug,1,5,0)
-				set_user_info(id,"name",longformate) 
-				return FMRES_SUPERCEDE
+				else{
+					if(debug_s[id]==0){
+						if(locala[id] == 3){
+							locala[id]=1
+							debug_s[id]=1
+						}
+					}
+					HLDS_Shield_func(id,1,namebug,1,5,0)
+					set_user_info(id,"name",longformate) 
+					return FMRES_SUPERCEDE
+				}
 			}
 		}
 	}
@@ -1626,7 +1642,37 @@ public SV_SendRes_f_Hook(){
 	}
 	return okapi_ret_ignore
 }
-
+public Host_ShutDown_Hook(){
+	if(get_pcvar_num(ShutdownServer)>0){
+		return okapi_ret_supercede
+	}
+	else{
+		set_task(1.0,"SV_LostConnectionDelay",0,"",0,"b")
+		return okapi_ret_supercede
+	}
+	return okapi_ret_ignore
+}
+public SV_LostConnectionDelay(){
+	if(lostconnection==get_pcvar_num(LostConnectionSeconds)){
+		for(new i = 1; i <= g_MaxClients; i++){
+			if(is_user_connected(i)){
+				SV_RejectConnection_user(i,"Server lost connection")
+				lostconnection=0
+				log_to_file(settings,"%s Server lost connection",PrefixProtection)
+			}
+			set_task(0.5,"force_exit")
+		}
+	}
+	else{
+		for(new i = 1; i <= g_MaxClients; i++){
+			if(is_user_connected(i)){
+				set_hudmessage(255, 0, 0, -1.0, 0.22, 0, 6.0, 0.8)
+				show_hudmessage(i, "Warrning : Server lost connection in %d/%d",lostconnection,get_pcvar_num(LostConnectionSeconds))
+			}
+		}
+	}
+	lostconnection++	
+}
 public Con_Printf_Hook(pfnprint[])
 {
 	if(get_pcvar_num(SV_RconCvar)==3){
@@ -1740,7 +1786,7 @@ public SV_DropClient_Hook(int,int2,string[],index)
 			if(is_user_connected(id)){
 				new longtext[255]
 				overflowed[id]++
-				formatex(longtext,charsmax(longtext),"[%s] Reliable channel overflowed of %d",me[0x02],overflowed[id])
+				formatex(longtext,charsmax(longtext),"[%s] Reliable channel overflowed of %d",PrefixProtection,overflowed[id])
 				SV_RejectConnection_user(id,longtext)
 			}
 			return okapi_ret_supercede
