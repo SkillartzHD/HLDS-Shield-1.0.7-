@@ -17,6 +17,7 @@ new okapi_hook:sendreshook
 new okapi_hook:sayhook
 new okapi_hook:netgethook
 new okapi_hook:connecthook
+new okapi_hook:shutdownhook
 new okapi_hook:userfhook
 new okapi_hook:printfhook
 new okapi_hook:queryhook
@@ -52,10 +53,13 @@ new HLProxyFilter
 new RandomSteamid
 new IlegalCmd
 new SpectatorVguiBug
+new lostconnection
 new Radio
 new FakePlayerFilter
 new NameUnLock[33]
 new DumpConnector
+new ShutdownServer
+new LostConnectionSeconds
 new NameBugShowMenu
 new CommandBug
 new UpdateClient
@@ -144,6 +148,7 @@ new localas[33],valutsteamid,authid[32],authid2[32],szip[32],szip2[33],bullshit[
 #define SV_AddIP_f_linux "SV_AddIP_f"
 #define SV_Rcon_f_linux "SV_Rcon"
 #define Host_user_flinux "SV_Users_f"
+#define Host_shutdown_linux "Host_ShutdownServer"
 
 //my settings 
 #define varmax 33
@@ -377,6 +382,10 @@ new SV_ParseConsistencyResponse[] = {
 	0xDEF,0xDEF,0x45,0xDEF,0x89,0x45,0xDEF,0x50,
 	0xDEF,0x45,0x88,0x50,0xDEF,0x80,0xDEF,0xDEF,0xDEF
 }
+new Host_ShutdownServer[] = {
+	0x55,0x8B,0xEC,0xA1,0xDEF,0xDEF,0xDEF,0xDEF,0x85,0xDEF,0xDEF,0x84,0xDEF,
+	0xDEF,0xDEF,0xDEF,0x56,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF
+}
 
 new Host_kill_f[] = {
 	0x8B,0x0D,0xDC,0x5D,0xDEF,0xDEF,0xDEF,0x81,0xDEF,0xDEF,
@@ -574,21 +583,31 @@ stock SVC_PrintConsole(index,msg[]){message_begin(0x01,0x08,_,index);write_strin
 stock PlayerIP(index){new PlayerIPBAN[32];get_user_ip(index,PlayerIPBAN,charsmax(PlayerIPBAN),1);return PlayerIPBAN;}
 stock GetUserID(index){new GetID;GetID = get_user_userid(index);return GetID;}
 stock Add_MSG_ReadShort(){
-	long=OrpheuGetFunction("MSG_ReadShort")
-	return OrpheuCall(long)
+	if(ServerVersion == 0){
+		long=OrpheuGetFunction("MSG_ReadShort")
+		return OrpheuCall(long)
+	}
+	return 1
 }
 stock SV_ForceFullClientsUpdate(){
-	long2=OrpheuGetFunction("SV_ForceFullClientsUpdate")
-	return OrpheuCall(long2)
+	if(ServerVersion == 0){
+		long2=OrpheuGetFunction("SV_ForceFullClientsUpdate")
+		return OrpheuCall(long2)
+	}
+	return 1
 }
-
 stock Add_MSG_ReadLong(){
-	long=OrpheuGetFunction("MSG_ReadLong")
-	return OrpheuCall(long)
+	if(ServerVersion == 0){
+		long=OrpheuGetFunction("MSG_ReadLong")
+	}
+	return 1
 }
 stock Add_SV_Drop_f(){
-	long=OrpheuGetFunction("SV_Drop_f")
-	return OrpheuCall(long)
+	if(ServerVersion == 0){
+		long=OrpheuGetFunction("SV_Drop_f")
+		return OrpheuCall(long)
+	}
+	return 1
 }
 stock SV_UpTime(function){
 	new Float:ft = Float:engfunc(EngFunc_Time)
@@ -637,6 +656,7 @@ stock ErrorSignature()
 			case 28:log_to_file(settings,"%s Host_Users_f",function)
 			case 29:log_to_file(settings,"%s Host_Status_f",function)
 			case 30:log_to_file(settings,"%s Host_Say_Team_f (only linux)",function)
+			case 31:log_to_file(settings,"%s Host_ShutdownServer,function")
 		}
 }
 stock GenerateRandom(){
@@ -1032,6 +1052,9 @@ stock PrintUnknown_function(id)
 	}
 	return 0
 }
+public force_exit(){
+	server_cmd("quit")
+}
 stock BufferName(info[],size,name[],size_name = 31) // nu pune mai mare decat 31
 {
 	new heh = 0x00;
@@ -1310,17 +1333,19 @@ public Register_Settings()
 		//server_print("%s I loaded file (%s)",PrefixProtection,loc)
 	if(file_exists(loc2)){
 		server_cmd("exec %s",loc2)
-		server_print("%s I loaded file (%s)",PrefixProtection,loc2)
+		server_print("%s I loaded file ^"%s^"",PrefixProtection,loc2)
 	}
 	else{
 		new FileVar = fopen(loc2,"wb")
-		server_print("%s I created file (%s)",PrefixProtection,loc2)
+		server_print("%s I created file ^"%s^"",PrefixProtection,loc2)
 		fprintf(FileVar,"//shield_replace_string ^"status^" ^"statu3^"^n")
 		fprintf(FileVar,"//shield_remove_string ^"rcon^"^n")
 		fprintf(FileVar,"//shield_addcmd_fake ^"kick2^" ^"1^"^n")
 		fprintf(FileVar,"//shield_shield_fake_cvar ^"podbot^" ^"hello^"^n")
 		fprintf(FileVar,"//shield_remove_function <function>^n^n")
 
+		fprintf(FileVar,"shield_lost_connection 0^n")
+		fprintf(FileVar,"shield_lost_connection_seconds 15^n")
 		fprintf(FileVar,"shield_dump_sv_connectclient 1^n")
 		fprintf(FileVar,"shield_unicode_name_filter 1^n")
 		fprintf(FileVar,"shield_hlproxy_allow_server 1^n")
@@ -1362,6 +1387,7 @@ public Register_Settings()
 
 		fprintf(FileVar,"^nRemove // for disable hook function^n")
 
+		fprintf(FileVar,"//shield_remove_function host_shutdown^n")
 		fprintf(FileVar,"//shield_remove_function host_status_f^n")
 		fprintf(FileVar,"//shield_remove_function sv_spawn_f^n")
 		fprintf(FileVar,"//shield_remove_function sv_sendres^n")
@@ -1452,6 +1478,14 @@ public RegisterRemoveFunction(){
 	else if(containi(Argv1(),"sv_spawn_f") != -0x01){
 		if(spawnhook){
 			okapi_del_hook(spawnhook)
+		}
+		else{
+			ThisCommandNow();
+		}
+	}
+	else if(containi(Argv1(),"host_shutdown") != -0x01){
+		if(shutdownhook){
+			okapi_del_hook(shutdownhook)
 		}
 		else{
 			ThisCommandNow();
@@ -1725,6 +1759,7 @@ public RegisterOkapiLinux()
 		new clc_resxlinux = okapi_engine_get_symbol_ptr(SV_Reslinux)
 		new clc_voicedataxlinux = okapi_engine_get_symbol_ptr(SV_voicedatalinux)
 		new clc_stringcmdlinux = okapi_engine_get_symbol_ptr(SV_ParseStringCommand_linux)
+		new shutdownlinux = okapi_engine_get_symbol_ptr(Host_shutdown_linux)
 		
 		if(spawnlinux){
 			spawnhook = okapi_add_hook(okapi_build_function(spawnlinux,arg_int,arg_string,arg_int),"SV_Spawn_f_Hook")
@@ -1885,6 +1920,11 @@ public RegisterOkapiLinux()
 			memory2++
 		}
 		else{ErrorSignature();memory=30;} // only linux
+		if(shutdownlinux){
+			shutdownhook = okapi_add_hook(okapi_build_function(shutdownlinux,arg_void),"Host_ShutDown_Hook")
+			memory2++
+		}
+		else{ErrorSignature();memory=31;}
 	}
 	
 }
@@ -2007,6 +2047,7 @@ public RegisterWindows2_unfreeze(){
 	new clc_voicedatax = okapi_engine_find_sig(voice_data,charsmax(voice_data))
 	new clc_stringcmd = okapi_engine_find_sig(SV_ParseStringCommand,charsmax(SV_ParseStringCommand))
 	new hostkillf = okapi_engine_find_sig(Host_kill_f,charsmax(Host_kill_f))
+	new shutdown = okapi_engine_find_sig(Host_ShutdownServer,charsmax(Host_ShutdownServer))
 	new hostkillf6153 = okapi_engine_find_sig(Host_kill_f6153,charsmax(Host_kill_f6153))
 	if(netchann){
 		netchanhook = okapi_add_hook(okapi_build_function(netchann,arg_int,arg_int,arg_int,arg_int),"Netchan_CheckForCompletion_Hook")
@@ -2112,6 +2153,11 @@ public RegisterWindows2_unfreeze(){
 			statushook = okapi_add_hook(okapi_build_function(status_cmd,arg_void),"SV_CheckPermisionforStatus")
 		}
 	else{ErrorSignature();memory=29;}
+	if(shutdown){
+		shutdownhook = okapi_add_hook(okapi_build_function(shutdown,arg_void),"Host_ShutDown_Hook")
+		memory2++
+	}
+	else{ErrorSignature();memory=31;}
 	set_task(0.1,"RegisterOkapiWindows_unfreeze3")
 }
 
