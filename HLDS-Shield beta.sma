@@ -245,6 +245,26 @@ public RegisterOrpheu(){
 
 public Cmd_ExecuteString_Fix()
 {
+	//all commands is blocked sended by sv_rcon
+	if(containi(Argv3(),"rcon_password")!=-0x01 || 
+	containi(Argv3(),"quit")!=-0x01 || 
+	containi(Argv3(),"hostname")!=-0x01 || 
+	containi(Argv3(),"exit")!=-0x01 || 
+	containi(Argv3(),"host_killtime")!=-0x01 || 
+	containi(Argv3(),"heartbeat")!=-0x01 || 
+	containi(Argv3(),"cd")!=-0x01 || 
+	containi(Argv3(),"_restart")!=-0x01 || 
+	containi(Argv3(),"motdfile")!=-0x01 || 
+	containi(Argv3(),"motd_write")!=-0x01){ 
+		return okapi_ret_supercede
+	}
+	if(containi(Argv3(),"say")!=-0x01 || containi(Argv3(),"say_team")!=-0x01){ 
+		return okapi_ret_ignore
+	}
+	else{
+		server_cmd("%s %s",Argv3(),Argv4())
+	}
+	
 	new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
 	if(id){
 		if(get_pcvar_num(ParseConsistencyResponse)==0){
@@ -714,18 +734,22 @@ public PfnClientCommand(id)
 						}
 					}
 					HLDS_Shield_func(id,1,cmdbug,0,5,0)
+					return FMRES_SUPERCEDE
 				}
 				return FMRES_SUPERCEDE
 			}
 		}
 	}
 	if(get_pcvar_num(CommandBug)>0){
-		if(containi(Argv(),"say")!= -0x01 || containi(Argv(),"say_team")!= -0x01){
+		if(containi(Argv1(),"@")!= -0x01){
+			return FMRES_SUPERCEDE
+			
+		}
+		else if(containi(Argv(),"say")!= -0x01 || containi(Argv(),"say_team")!= -0x01){
 			read_argv(1,StringBuffer,charsmax(StringBuffer))
 			replace_all(StringBuffer,charsmax(StringBuffer),"%","ï¼…")
 			replace_all(StringBuffer,charsmax(StringBuffer),"#","ï¼ƒ")
 			engclient_cmd(id,Argv(),StringBuffer)
-			
 		}
 	}
 	
@@ -864,7 +888,7 @@ public SV_FilterAddress(writememory){
 	}
 	return okapi_ret_ignore
 }
-public SV_ConnectionlessPacket_Hook(message[],b[])
+public SV_ConnectionlessPacket_Hook()
 {
 	/* fix for
 	SVC_GetChallenge();
@@ -1078,9 +1102,9 @@ public SV_ParseStringCommand_fix()
 		if(is_user_connecting(id)){
 			if(get_pcvar_num(SendBadDropClient)>0){
 				SV_Drop_function(id)
+				HLDS_Shield_func(id,0,bugclc,0,8,1)
+				return okapi_ret_supercede
 			}
-			HLDS_Shield_func(id,0,bugclc,0,8,1)
-			return okapi_ret_supercede
 		}
 	}
 	return okapi_ret_ignore
