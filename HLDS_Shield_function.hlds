@@ -294,7 +294,7 @@ new const MessageHook[][]={
 	"C5TITLE","","","","","❤","✠"
 }
 new const CommandAllowInpfnClientConnect[][]={
-	"sendres","dlfile","new","sendents","_","amxxauth","connect","U","V","TSource",
+	"sendres","dlfile","new","sendents","_","amxxauth","connect","U","V","TSource","amx_pausecfg",
 	"rcon","getchallenge","challenge","dropclient","setinfo","Vwóµ9","specmode","unpause","vban","VModEnable","Uwóµ9","Uwóµ9"
 }
 new const SafeDownload[][]={
@@ -878,35 +878,32 @@ stock Create_Signature(address[]){
 	
 	if(equali(address,"Cmd_ExecuteString")){
 		new cmdexecutestrinfile = fopen(orpheufile1,"wb")
-		fprintf(cmdexecutestrinfile,"{")
-		fprintf(cmdexecutestrinfile,"^"name^"       : ^"Cmd_ExecuteString^",")
-		fprintf(cmdexecutestrinfile,"^"library^"    : ^"engine^",")
-		fprintf(cmdexecutestrinfile,"^"arguments^"  :")
-		fprintf(cmdexecutestrinfile,"[")
-		fprintf(cmdexecutestrinfile,"{")
-		fprintf(cmdexecutestrinfile,"^"type^" : ^"int^"")
-		fprintf(cmdexecutestrinfile,"},")
-		fprintf(cmdexecutestrinfile,"{")
-		fprintf(cmdexecutestrinfile,"^"type^" : ^"int^"")
-		fprintf(cmdexecutestrinfile,"}")
-		fprintf(cmdexecutestrinfile,"],") // 1
-		fprintf(cmdexecutestrinfile,"^"identifiers^":")
-		fprintf(cmdexecutestrinfile,"[")
-		fprintf(cmdexecutestrinfile,"{")
-		fprintf(cmdexecutestrinfile,"^"os^"    : ^"windows^",")
+		fprintf(cmdexecutestrinfile,"{^n")
+		fprintf(cmdexecutestrinfile,"^"name^"       : ^"Cmd_ExecuteString^",^n")
+		fprintf(cmdexecutestrinfile,"^"library^"    : ^"engine^",^n")
+		fprintf(cmdexecutestrinfile,"^"arguments^"  :^n")
+		fprintf(cmdexecutestrinfile,"[^n")
+		fprintf(cmdexecutestrinfile,"{^n")
+		fprintf(cmdexecutestrinfile,"^"type^" : ^"char *^"^n")
+		fprintf(cmdexecutestrinfile,"}^n")
+		fprintf(cmdexecutestrinfile,"],^n") // 1
+		fprintf(cmdexecutestrinfile,"^"identifiers^":^n")
+		fprintf(cmdexecutestrinfile,"[^n")
+		fprintf(cmdexecutestrinfile,"{^n")
+		fprintf(cmdexecutestrinfile,"^"os^"    : ^"windows^",^n")
 		if(equali(build,"1.1.2.7,48,6153")){
-			fprintf(cmdexecutestrinfile,"^"value^" : [0x55,0x8B,0xEC,0x8B,^"*^",^"*^",^"*^",0x45,^"*^",0x56,0x51,^"*^",^"*^",^"*^",0x69,^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",0x83,^"*^",^"*^",^"*^",0x23,^"*^",^"*^",^"*^",0x85,^"*^",^"*^"]")
+			fprintf(cmdexecutestrinfile,"^"value^" : [0x55,0x8B,0xEC,0x8B,^"*^",^"*^",^"*^",0x45,^"*^",0x56,0x51,^"*^",^"*^",^"*^",0x69,^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",0x83,^"*^",^"*^",^"*^",0x23,^"*^",^"*^",^"*^",0x85,^"*^",^"*^"]^n")
 		}
 		else{
-			fprintf(cmdexecutestrinfile,"^"value^" : [0x55,0x8B,0xEC,0x8B,0x4D,^"*^",0x8B,0x45,^"*^",0x56,0x51,^"*^",^"*^",0x34,^"*^",^"*^",^"*^",0x6B,^"*^",^"*^",^"*^",^"*^",^"*^",^"*^"]")
+			fprintf(cmdexecutestrinfile,"^"value^" : [0x55,0x8B,0xEC,0x8B,0x4D,^"*^",0x8B,0x45,^"*^",0x56,0x51,^"*^",^"*^",0x34,^"*^",^"*^",^"*^",0x6B,^"*^",^"*^",^"*^",^"*^",^"*^",^"*^"]^n")
 		}
-		fprintf(cmdexecutestrinfile,"},")
-		fprintf(cmdexecutestrinfile,"{")
-		fprintf(cmdexecutestrinfile,"^"os^"    : ^"linux^",")
-		fprintf(cmdexecutestrinfile,"^"value^" : ^"Cmd_ExecuteString^"")
-		fprintf(cmdexecutestrinfile,"}")
-		fprintf(cmdexecutestrinfile,"]")
-		fprintf(cmdexecutestrinfile,"}")
+		fprintf(cmdexecutestrinfile,"},^n")
+		fprintf(cmdexecutestrinfile,"{^n")
+		fprintf(cmdexecutestrinfile,"^"os^"    : ^"linux^",^n")
+		fprintf(cmdexecutestrinfile,"^"value^" : ^"Cmd_ExecuteString^"^n")
+		fprintf(cmdexecutestrinfile,"}^n")
+		fprintf(cmdexecutestrinfile,"]^n")
+		fprintf(cmdexecutestrinfile,"}^n")
 		fclose(cmdexecutestrinfile)
 	}
 	if(equali(address,"MSG_ReadShort")){
@@ -1008,27 +1005,21 @@ stock Create_Signature(address[]){
 		}
 	if(equali(address,"SV_ConnectionslessPacket")){
 		new queryserver = fopen(orpheufile6,"wb")
-		fprintf(queryserver,"{")
-		fprintf(queryserver,"^"name^"       : ^"SV_ConnectionlessPacket^",")
-		fprintf(queryserver,"^"library^"    : ^"engine^",")
-		fprintf(queryserver,"^"arguments^"  :")
-		fprintf(queryserver,"[")
-		fprintf(queryserver,"{")
-		fprintf(queryserver,"^"type^" : ^"char *^"")
-		fprintf(queryserver,"}")
-		fprintf(queryserver,"],")
-		fprintf(queryserver,"^"identifiers^":")
-		fprintf(queryserver,"[")
-		fprintf(queryserver,"{")
-		fprintf(queryserver,"^"os^"    : ^"windows^",")
-		fprintf(queryserver,"^"value^" : [0x56,0x57,^"*^",0x39,^"*^",^"*^",^"*^",^"*^",0x64,^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^"]")
-		fprintf(queryserver,"},")
-		fprintf(queryserver,"{")
-		fprintf(queryserver,"^"os^"    : ^"linux^",")
-		fprintf(queryserver,"^"value^" : ^"SV_ConnectionlessPacket^"")
-		fprintf(queryserver,"}")
-		fprintf(queryserver,"]")
-		fprintf(queryserver,"}")
+		fprintf(queryserver,"{^n")
+		fprintf(queryserver,"^"name^"       : ^"SV_ConnectionlessPacket^",^n")
+		fprintf(queryserver,"^"library^"    : ^"engine^",^n")
+		fprintf(queryserver,"^"identifiers^":^n")
+		fprintf(queryserver,"[^n")
+		fprintf(queryserver,"{^n")
+		fprintf(queryserver,"^"os^"    : ^"windows^",^n")
+		fprintf(queryserver,"^"value^" : [0x56,0x57,^"*^",0x39,^"*^",^"*^",^"*^",^"*^",0x64,^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^"]^n")
+		fprintf(queryserver,"},^n")
+		fprintf(queryserver,"{^n")
+		fprintf(queryserver,"^"os^"    : ^"linux^",^n")
+		fprintf(queryserver,"^"value^" : ^"SV_ConnectionlessPacket^"^n")
+		fprintf(queryserver,"}^n")
+		fprintf(queryserver,"]^n")
+		fprintf(queryserver,"}^n")
 		fclose(queryserver)
 	}
 
@@ -1796,9 +1787,10 @@ public RegisterOkapiLinux()
 			memory2++
 		}
 		else{ErrorSignature();memory=7;}
+
 		if(queryserver6153linux){
 			//nu stiu de da crash in 6153 linux dupa changelevel/reload 
-			//queryhook = okapi_add_hook(okapi_build_function(queryserver6153linux,arg_string,arg_string),"SV_ConnectionlessPacket_Hook")
+			//queryhook = okapi_add_hook(okapi_build_function(queryserver6153linux,arg_void),"SV_ConnectionlessPacket_Hook")
 			if(file_exists(orpheufile6)){
 				queryhook2 = OrpheuRegisterHook(OrpheuGetFunction("SV_ConnectionlessPacket"),"SV_ConnectionlessPacket_Hook")
 				memory2++
