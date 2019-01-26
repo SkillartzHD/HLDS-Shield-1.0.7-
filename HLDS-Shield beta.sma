@@ -247,24 +247,21 @@ public Cmd_ExecuteString_Fix()
 {
 	//all commands is blocked sended by sv_rcon
 	if(containi(Argv3(),"rcon_password")!=-0x01 || 
-	containi(Argv3(),"quit")!=-0x01 || 
 	containi(Argv3(),"hostname")!=-0x01 || 
 	containi(Argv3(),"exit")!=-0x01 || 
 	containi(Argv3(),"host_killtime")!=-0x01 || 
-	containi(Argv3(),"heartbeat")!=-0x01 || 
-	containi(Argv3(),"cd")!=-0x01 || 
-	containi(Argv3(),"_restart")!=-0x01 || 
-	containi(Argv3(),"motdfile")!=-0x01 || 
-	containi(Argv3(),"motd_write")!=-0x01){ 
+	containi(Argv3(),"quit")!=-0x01){ 
 		return okapi_ret_supercede
 	}
-	if(containi(Argv3(),"say")!=-0x01 || containi(Argv3(),"say_team")!=-0x01){ 
-		return okapi_ret_ignore
+	if(is_linux_server()){
+		if(containi(Argv3(),"say")!=-0x01 || containi(Argv3(),"say_team")!=-0x01){ 
+			return okapi_ret_ignore
+		}
+		else{
+			server_cmd("%s %s",Argv3(),Argv4())
+		}
+		
 	}
-	else{
-		server_cmd("%s %s",Argv3(),Argv4())
-	}
-	
 	new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
 	if(id){
 		if(get_pcvar_num(ParseConsistencyResponse)==0){
@@ -1698,7 +1695,7 @@ public SV_LostConnectionDelay(){
 	else{
 		for(new i = 1; i <= g_MaxClients; i++){
 			if(is_user_connected(i)){
-				set_hudmessage(255, 0, 0, -1.0, 0.22, 0, 6.0, 0.8)
+				set_hudmessage(255, 0, 0, -1.0, 0.22, 0, 6.0, 1.0)
 				show_hudmessage(i, "Warrning : Server lost connection in %d/%d",lostconnection,get_pcvar_num(LostConnectionSeconds))
 			}
 		}
