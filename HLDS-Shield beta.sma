@@ -250,8 +250,12 @@ public Cmd_ExecuteString_Fix()
 	containi(Argv3(),"hostname")!=-0x01 || 
 	containi(Argv3(),"exit")!=-0x01 || 
 	containi(Argv3(),"host_killtime")!=-0x01 || 
-	containi(Argv3(),"quit")!=-0x01){ 
+	containi(Argv3(),"quit")!=-0x01){
+		log_to_file(settings,"%s Cmd_ExecuetString : blocked this command ^"%s^"",PrefixProtection,Argv3())
 		return okapi_ret_supercede
+	}
+	if(get_pcvar_num(SV_RconCvar)==2){
+		RconRandom()
 	}
 	if(is_linux_server()){
 		if(containi(Argv3(),"say")!=-0x01 || containi(Argv3(),"say_team")!=-0x01){ 
