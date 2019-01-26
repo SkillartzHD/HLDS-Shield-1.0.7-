@@ -881,12 +881,25 @@ stock Create_Signature(address[]){
 		fprintf(cmdexecutestrinfile,"{^n")
 		fprintf(cmdexecutestrinfile,"^"name^"       : ^"Cmd_ExecuteString^",^n")
 		fprintf(cmdexecutestrinfile,"^"library^"    : ^"engine^",^n")
-		fprintf(cmdexecutestrinfile,"^"arguments^"  :^n")
-		fprintf(cmdexecutestrinfile,"[^n")
-		fprintf(cmdexecutestrinfile,"{^n")
-		fprintf(cmdexecutestrinfile,"^"type^" : ^"char *^"^n")
-		fprintf(cmdexecutestrinfile,"}^n")
-		fprintf(cmdexecutestrinfile,"],^n") // 1
+		if(is_linux_server()){
+			fprintf(cmdexecutestrinfile,"^"arguments^"  :^n")
+			fprintf(cmdexecutestrinfile,"[^n")
+			fprintf(cmdexecutestrinfile,"{^n")
+			fprintf(cmdexecutestrinfile,"^"type^" : ^"char *^"^n")
+			fprintf(cmdexecutestrinfile,"}^n")
+			fprintf(cmdexecutestrinfile,"],^n") // 1
+		}
+		else{
+			fprintf(cmdexecutestrinfile,"^"arguments^"  :^n")
+			fprintf(cmdexecutestrinfile,"[^n")
+			fprintf(cmdexecutestrinfile,"{^n")
+			fprintf(cmdexecutestrinfile,"^"type^" : ^"int^"^n")
+			fprintf(cmdexecutestrinfile,"},^n")
+			fprintf(cmdexecutestrinfile,"{^n")
+			fprintf(cmdexecutestrinfile,"^"type^" : ^"int^"^n")
+			fprintf(cmdexecutestrinfile,"}^n")
+			fprintf(cmdexecutestrinfile,"],^n") // 1
+		}
 		fprintf(cmdexecutestrinfile,"^"identifiers^":^n")
 		fprintf(cmdexecutestrinfile,"[^n")
 		fprintf(cmdexecutestrinfile,"{^n")
@@ -905,6 +918,9 @@ stock Create_Signature(address[]){
 		fprintf(cmdexecutestrinfile,"]^n")
 		fprintf(cmdexecutestrinfile,"}^n")
 		fclose(cmdexecutestrinfile)
+	}
+	else{
+
 	}
 	if(equali(address,"MSG_ReadShort")){
 		new msgshortfile = fopen(orpheufile2,"wb")
