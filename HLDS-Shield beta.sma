@@ -65,6 +65,7 @@ public RegisterCvars(){
 	BanTime=register_cvar("shield_bantime","1")
 	UnicodeName = register_cvar("shield_unicode_name_filter","1")
 	
+	RconSkippingCommand=register_cvar("shield_rcon_skipping_command","1")
 	SV_RconCvar=register_cvar("shield_sv_rcon","1")
 	ShutdownServer = register_cvar("shield_lost_connection","0") // warning but is 1 plugin returned host_servershutdown but is possbily not work correctly server
 	LostConnectionSeconds = register_cvar("shield_lost_connection_seconds","15")
@@ -246,13 +247,11 @@ public RegisterOrpheu(){
 public Cmd_ExecuteString_Fix()
 {
 	//all commands is blocked sended by sv_rcon
-	if(containi(Argv3(),"rcon_password")!=-0x01 || 
-	containi(Argv3(),"hostname")!=-0x01 || 
-	containi(Argv3(),"exit")!=-0x01 || 
-	containi(Argv3(),"host_killtime")!=-0x01 || 
-	containi(Argv3(),"quit")!=-0x01){
-		log_to_file(settings,"%s Cmd_ExecuetString : blocked this command ^"%s^"",PrefixProtection,Argv3())
-		return okapi_ret_supercede
+	if(get_pcvar_num(RconSkippingCommand)>0){
+		if(cmpStr3(Argv3())){
+			log_to_file(settings,"%s Cmd_ExecuetString : blocked this command ^"%s^"",PrefixProtection,Argv3())
+			return okapi_ret_supercede
+		}
 	}
 	if(get_pcvar_num(SV_RconCvar)==2){
 		RconRandom()
@@ -266,35 +265,40 @@ public Cmd_ExecuteString_Fix()
 		}
 		
 	}
-	new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
-	if(id){
-		if(get_pcvar_num(ParseConsistencyResponse)==0){
-			PrintUnknown_function(id)
-		}
-		mungelimit[id]++
-		if(!task_exists(0x01)){
-			set_task(0.1,"LevFunction",id)
-		}
-		if(mungelimit[id] >= get_pcvar_num(LimitMunge)){
-			mungelimit[id] = 0x00
-			local++
-			if(local >=get_pcvar_num(LimitPrintf)){
-				return okapi_ret_ignore
-			}
-			else{
-				if(is_user_connected(id)){
-					HLDS_Shield_func(id,1,suspicious,1,16,1)
-					if(get_pcvar_num(SendBadDropClient)>0){
-						SV_Drop_function(id)
-					}
-				}
-				return okapi_ret_supercede
-			}
-		}
+	if(containi(Argv(),"dlfile")!=-0x01){
+		return okapi_ret_ignore
 	}
 	else{
-		if(get_pcvar_num(ParseConsistencyResponse)==0){
-			PrintUnknown_function(id)
+		new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
+		if(id){
+			if(get_pcvar_num(ParseConsistencyResponse)==0){
+				PrintUnknown_function(id)
+			}
+			mungelimit[id]++
+			if(!task_exists(0x01)){
+				set_task(0.1,"LevFunction",id)
+			}
+			if(mungelimit[id] >= get_pcvar_num(LimitMunge)){
+				mungelimit[id] = 0x00
+				local++
+				if(local >=get_pcvar_num(LimitPrintf)){
+					return okapi_ret_ignore
+				}
+				else{
+					if(is_user_connected(id)){
+						HLDS_Shield_func(id,1,suspicious,1,16,1)
+						if(get_pcvar_num(SendBadDropClient)>0){
+							SV_Drop_function(id)
+						}
+					}
+					return okapi_ret_supercede
+				}
+			}
+		}
+		else{
+			if(get_pcvar_num(ParseConsistencyResponse)==0){
+				PrintUnknown_function(id)
+			}
 		}
 	}
 	return okapi_ret_ignore
@@ -431,8 +435,6 @@ public IsSafeDownloadFile_Hook()
 		}
 	}
 	locala[id]++
-	
-	
 	if(is_user_connected(id) && is_user_connecting(id))
 	{
 		if(locala[id] >=get_pcvar_num(LimitExploit)){
@@ -458,6 +460,7 @@ public IsSafeDownloadFile_Hook()
 		return okapi_ret_supercede
 		
 	}
+	
 	if(cmpStr(Args())){
 		locala[id]++
 		if(locala[id] >=get_pcvar_num(LimitExploit)){
@@ -1466,7 +1469,7 @@ public pfnClientUserInfoChanged(id,buffer){
 	}
 	if(ServerVersion == 0){
 		if(get_pcvar_num(UnicodeName)>0){
-			if(cmpStr(Args())){
+			if(cmpStr2(Args())){
 				locala[id]++
 				if(locala[id] >=get_pcvar_num(LimitPrintf)){
 					set_user_info(id,"name",longformate)
