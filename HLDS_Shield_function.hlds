@@ -299,7 +299,7 @@ new const CommandAllowInpfnClientConnect[][]={
 }
 new const SafeDownload[][]={
 	".cfg",".dll",".asi",".ini",".amxx",
-	".sma",".so",".mix",".sav",".log",".ztmp",".sys",
+	".sma",".so",".mix",".sav",".log",".ztmp",".sys","sprites/scope_arc.tga",
 	".exe",".vbs",".lst",".com","xeno.wad","pak0.pak",".dylib",
 	"iga_static.wad","itsitaly.wad","torntextures.wad","de_storm.wad",
 	"de_piranesi.wad","de_airstrip.wad","de_aztec.wad",
