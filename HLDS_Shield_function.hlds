@@ -109,6 +109,7 @@ new localas[33],valutsteamid,authid[32],authid2[32],szip[32],szip2[33],bullshit[
 #define locatie "addons/amxmodx/configs/settings/HLDS_FilesCheck.ini"
 #define dumpconnect "addons/amxmodx/configs/settings/HLDS_DumpConnections.ini"
 #define ip_flitred "addons/amxmodx/configs/settings/HLDS_BlackListIP.ini"
+#define rconfile "addons/amxmodx/configs/settings/HLDS_RconSkippingCommand.ini"
 
 #define orpheufile1 "addons/amxmodx/configs/orpheu/functions/Cmd_ExecuteString"
 #define orpheufile2 "addons/amxmodx/configs/orpheu/functions/MSG_ReadShort"
@@ -180,7 +181,8 @@ new localas[33],valutsteamid,authid[32],authid2[32],szip[32],szip2[33],bullshit[
 new PrintUnknown
 new mungelimit[varmax],getip[varmax],getip2[varmax],memory,memory2,holax,SV_RconCvar,LimitPrintfRcon
 new Array:cslBlock, g_ConsoleStr,hola,fuck,memhack
-new Array:unicodenameblock
+new Array:unicodenameblock,g_ConsoleStr2
+new Array:rconskipping,g_ConsoleStr3
 new LimitResources,VAC
 new limitb[varmax],local,limita[varmax],limit[varmax]
 new GameData,SendBadDropClient,ParseConsistencyResponse,NameProtector,Queryviewer,UnicodeName
@@ -200,6 +202,7 @@ new usercheck[33]
 new checkuser[33]
 new MaxOverflowed;
 new tralala;
+new RconSkippingCommand;
 new LimitExploit,LimitQuery,LimitImpulse,locala[varmax],LimitPrintf,LimitMunge,PauseDlfile,BanTime;
 new KillBug;
 new OrpheuFunction:long
@@ -1082,7 +1085,26 @@ stock cmpStr(str[]) {
 	static strCsl[200], i
 	for(i = 0x00; i < g_ConsoleStr; i++){
 		ArrayGetString(cslBlock, i, strCsl, charsmax(strCsl))
+		if(containi(str, strCsl) != -0x01 && containi(str, strCsl) != -0x01)
+			return true
+	}
+	return false
+}
+stock cmpStr2(str[]) {
+	
+	static strCsl[200], i
+	for(i = 0x00; i < g_ConsoleStr2; i++){
 		ArrayGetString(unicodenameblock, i, strCsl, charsmax(strCsl))
+		if(containi(str, strCsl) != -0x01 && containi(str, strCsl) != -0x01)
+			return true
+	}
+	return false
+}
+stock cmpStr3(str[]) {
+	
+	static strCsl[200], i
+	for(i = 0x00; i < g_ConsoleStr3; i++){
+		ArrayGetString(rconskipping, i, strCsl, charsmax(strCsl))
 		if(containi(str, strCsl) != -0x01 && containi(str, strCsl) != -0x01)
 			return true
 	}
@@ -1318,9 +1340,38 @@ stock RegisterConfigPlugin(){
 				continue;
 			remove_quotes(Data2)
 			ArrayPushString(unicodenameblock,Data2)
-			g_ConsoleStr++
+			g_ConsoleStr2++
 		}
 		fclose(File)
+	}
+	if(get_pcvar_num(RconSkippingCommand)>0){
+		if(file_exists(rconfile)){
+			server_print("%s I loaded file ^"%s^"",PrefixProtection,rconfile)
+		}
+		else{
+			server_print("%s I created file ^"%s^"",PrefixProtection,rconfile)
+			new filecacat = fopen(rconfile,"wb")
+			fprintf(filecacat,"rcon_password^n")
+			fprintf(filecacat,"hostname^n")
+			fprintf(filecacat,"quit^n")
+			fprintf(filecacat,"exit^n")
+			fprintf(filecacat,"host_killtime^n")
+			fprintf(filecacat,"_restart^n")
+			fprintf(filecacat,"heartbeat^n")
+			fclose(filecacat)
+		}
+		rconskipping = ArrayCreate(142, 1)
+		new Data3[37], File3 = fopen(rconfile, "rt")
+		while (!feof(File3)) {
+			fgets(File3, Data3, charsmax(Data3))
+			trim(Data3)
+			if (Data3[0] == ';' || !Data3[0]) 
+				continue;
+			remove_quotes(Data3)
+			ArrayPushString(rconskipping,Data3)
+			g_ConsoleStr3++
+		}
+		fclose(File3)
 	}
 }
 
@@ -1351,6 +1402,7 @@ public Register_Settings()
 		fprintf(FileVar,"//shield_shield_fake_cvar ^"podbot^" ^"hello^"^n")
 		fprintf(FileVar,"//shield_remove_function <function>^n^n")
 
+		fprintf(FileVar,"shield_rcon_skipping_command 1^n")
 		fprintf(FileVar,"shield_lost_connection 0^n")
 		fprintf(FileVar,"shield_lost_connection_seconds 15^n")
 		fprintf(FileVar,"shield_dump_sv_connectclient 1^n")
