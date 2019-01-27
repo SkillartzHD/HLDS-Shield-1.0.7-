@@ -1402,6 +1402,12 @@ public Register_Settings()
 		fprintf(FileVar,"//shield_shield_fake_cvar ^"podbot^" ^"hello^"^n")
 		fprintf(FileVar,"//shield_remove_function <function>^n^n")
 
+		fprintf(FileVar,"shield_remove_string ^"motd_write^"^n")
+		fprintf(FileVar,"shield_remove_string ^"heartbeat^"^n")
+		fprintf(FileVar,"shield_remove_string ^"_restart^"^n")
+		fprintf(FileVar,"shield_remove_string ^"_setgamedir^"^n^n")
+
+
 		fprintf(FileVar,"shield_rcon_skipping_command 1^n")
 		fprintf(FileVar,"shield_lost_connection 0^n")
 		fprintf(FileVar,"shield_lost_connection_seconds 15^n")
