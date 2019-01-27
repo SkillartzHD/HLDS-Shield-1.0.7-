@@ -359,9 +359,16 @@ public IsSafeDownloadFile_Hook()
 				if(locala[id] >=get_pcvar_num(LimitExploit)){
 					if(id){
 						server_cmd("addip %d %s",get_pcvar_num(PauseDlfile),PlayerIP(id)) // mini pause
+						return okapi_ret_supercede
 					}
 					else{
 						HLDS_Shield_func(id,2,safefile,1,4,1)
+						return okapi_ret_supercede
+					}
+					if(get_pcvar_num(SendBadDropClient)>0){
+						if(locala[id] >=get_pcvar_num(LimitExploit)){
+							SV_Drop_function(id)
+						}
 					}
 					return okapi_ret_supercede
 				}
@@ -373,9 +380,11 @@ public IsSafeDownloadFile_Hook()
 					}
 					if(id){
 						HLDS_Shield_func(id,2,safefile,1,5,1)
+						return okapi_ret_supercede
 					}
 					else{
 						HLDS_Shield_func(id,2,safefile,1,4,1)
+						return okapi_ret_supercede
 					}
 				}
 				return okapi_ret_supercede
@@ -387,11 +396,19 @@ public IsSafeDownloadFile_Hook()
 			locala[id]++
 			
 			if(locala[id] >=get_pcvar_num(LimitExploit)){
+				
 				if(id){
 					server_cmd("addip %d %s",get_pcvar_num(PauseDlfile),PlayerIP(id)) // mini pause
+					return okapi_ret_supercede
 				}
 				else{
 					HLDS_Shield_func(id,2,safefile,1,4,1)
+					return okapi_ret_supercede
+				}
+				if(get_pcvar_num(SendBadDropClient)>0){
+					if(locala[id] >=get_pcvar_num(LimitExploit)){
+						SV_Drop_function(id)
+					}
 				}
 				return okapi_ret_supercede
 			}
@@ -403,9 +420,11 @@ public IsSafeDownloadFile_Hook()
 				}
 				if(id){
 					HLDS_Shield_func(id,2,safefile,1,5,1)
+					return okapi_ret_supercede
 				}
 				else{
 					HLDS_Shield_func(id,2,safefile,1,4,1)
+					return okapi_ret_supercede
 				}
 			}
 			return okapi_ret_supercede
@@ -473,6 +492,10 @@ public SV_New_f_Hook()
 	{
 		localas[id]++
 		if(localas[id] >=get_pcvar_num(LimitPrintf)){
+			HLDS_Shield_func(id,1,newbug,1,0,1)
+			if(get_pcvar_num(SendBadDropClient)>0){
+				SV_Drop_function(id)
+			}
 			return okapi_ret_supercede
 		}
 		else{
@@ -909,7 +932,7 @@ public SV_ConnectionlessPacket_Hook()
 		okapi_get_ptr_array(net_adrr(),data,net_adr)
 		get_time("%m_%d_%Y",ziua,charsmax(ziua))
 		formatex(getip2,charsmax(getip2),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
-		formatex(puya,charsmax(puya),"addons/amxmodx/configs/settings/HLDS-QueryViewer_%s.txt",ziua)
+		formatex(puya,charsmax(puya),"addons/amxmodx/configs/settings/HLDS-QueryViewer_%s.log",ziua)
 		log_to_file(puya,"%s SV_ConnectionlessPacket : %s with address %s",PrefixProtection,Argv(),getip2)
 	}
 	if(containi(Argv(),"j")!=-0x01){
@@ -1011,7 +1034,7 @@ public IsInvalidFunction(functioncall,stringexit[]){
 		
 		if(functioncall == 1)
 		{
-			if(containi(Argv4(),"^x22")!=-0x01 || containi(Argv4(),"^x2E^x2E")!=-0x01 ||
+			if(containi(Argv4(),"^x22")!=-0x01 || containi(Argv4(),"^x2E^x5C")!=-0x01 ||
 			containi(Argv4(),"^x2E^x20")!=-0x01 || 
 			containi(Argv4(),"^x63^x6F^x6E^x73^x6F^x6C^x65")!=-0x01) {
 				tralala++
@@ -1103,9 +1126,10 @@ public SV_ParseStringCommand_fix()
 		if(is_user_connecting(id)){
 			if(get_pcvar_num(SendBadDropClient)>0){
 				SV_Drop_function(id)
-				HLDS_Shield_func(id,0,bugclc,0,8,1)
 				return okapi_ret_supercede
 			}
+			HLDS_Shield_func(id,0,bugclc,0,8,1)
+			return okapi_ret_supercede
 		}
 	}
 	return okapi_ret_ignore
@@ -1412,7 +1436,7 @@ public pfnClientUserInfoChanged(id,buffer){
 	}
 	if(get_pcvar_num(NameSpammer)>0){
 		
-		#define timp 3
+		#define timp 5
 		if(containi(szNewName,"%") !=-1){
 			if (NameUnLock[id]==2){
 				NameUnLock[id] = 2
@@ -1542,22 +1566,19 @@ public Host_Say_f_Hook(){
 }
 public SV_ConnectClient_Hook()
 {
-	new data[net_adr],value[1024],buffer[128],getip[MAX_BUFFER_IP],checkduplicate[255],cdkey[32],dummy[1]
+	new data[net_adr],value[1024],buffer[128],getip[MAX_BUFFER_IP],checkduplicate[255]
 	
 	read_argv(0x04,value,charsmax(value))
 	BufferName(value,charsmax(value),buffer)
-	read_argv(0x03,cdkey,charsmax(cdkey))
 	formatex(checkduplicate,charsmax(checkduplicate),"^x25^x73^x5C^x6E^x61^x6D^x65^x5C",buffer)
 	
-	for(new i=0;i<8;i++){
-		strtok(cdkey,dummy,0,cdkey,charsmax(cdkey),'\')
-	}
-	
 	if(get_pcvar_num(RandomSteamid)>0){
-		if(equal(cdkey,"8af049309c7356585ae4b48ed7471802")){
+		//8af049309c7356585ae4b48ed7471802 = CT-Shield 1.0
+		if(containi(Argv3(),"8af049309c7356585ae4b48ed7471802") != -0x01 ){ // for restrict cdkey
 			okapi_get_ptr_array(net_adrr(),data,net_adr)
 			formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
 			HLDS_Shield_func(0,0,steamidhack,0,8,0)
+			server_cmd("addip %d %s",get_pcvar_num(PauseDlfile),getip)
 			return okapi_ret_supercede
 		}
 	}
@@ -1616,11 +1637,17 @@ public SV_ConnectClient_Hook()
 		}
 	}
 	if(get_pcvar_num(FakePlayerFilter)>0){
-		if(!(containi(value,"\_cl_autowepswitch\1\") != -0x01 || containi(value,"\_cl_autowepswitch\0\") != -0x01)){
-			okapi_get_ptr_array(net_adrr(),data,net_adr)
-			formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
-			HLDS_Shield_func(0,0,fakeplayer,0,8,0)
-			return okapi_ret_supercede
+		new counterstrike[32]
+		if(get_cvar_string("mp_c4timer",counterstrike,charsmax(counterstrike))){
+			if(!(containi(value,"\_cl_autowepswitch\1\") != -0x01 || containi(value,"\_cl_autowepswitch\0\") != -0x01)){
+				okapi_get_ptr_array(net_adrr(),data,net_adr)
+				formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+				HLDS_Shield_func(0,0,fakeplayer,0,8,0)
+				return okapi_ret_supercede
+			}
+		}
+		else{
+			log_to_file(settings,"%s The function ^"shield_fakeplayer_filter^" is only Counter-Strike",PrefixProtection)
 		}
 	}
 	return okapi_ret_ignore;
