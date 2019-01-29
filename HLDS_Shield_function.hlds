@@ -96,7 +96,6 @@ new localas[33],valutsteamid,authid[32],authid2[32],szip[32],szip2[33],bullshit[
 #define hltvbug "CSTRIKE_HLTV"
 #define adminbug "CSTRIKE_ADMINBUG"
 #define safefile "CSTRIKE_SAFEFILEDOWNLOAD"
-#define exploit "CSTRIKE_EXPLOIT"
 #define hldsbug "CSTRIKE_HLDSBUG"
 #define hldspawn "CSTRIKE_SPAWN"
 #define hldsres "CSTRIKE_SENDRES"
@@ -110,6 +109,8 @@ new localas[33],valutsteamid,authid[32],authid2[32],szip[32],szip2[33],bullshit[
 #define dumpconnect "addons/amxmodx/configs/settings/HLDS_DumpConnections.ini"
 #define ip_flitred "addons/amxmodx/configs/settings/HLDS_BlackListIP.ini"
 #define rconfile "addons/amxmodx/configs/settings/HLDS_RconSkippingCommand.ini"
+#define limitfilecmd "addons/amxmodx/configs/settings/HLDS_CommandLimitList.ini"
+#define ip_flitredcmd "addons/amxmodx/configs/settings/HLDS_IPRestrictCommand.ini"
 
 #define orpheufile1 "addons/amxmodx/configs/orpheu/functions/Cmd_ExecuteString"
 #define orpheufile2 "addons/amxmodx/configs/orpheu/functions/MSG_ReadShort"
@@ -151,6 +152,10 @@ new localas[33],valutsteamid,authid[32],authid2[32],szip[32],szip2[33],bullshit[
 #define Host_user_flinux "SV_Users_f"
 #define Host_shutdown_linux "Host_ShutdownServer"
 
+#define TASK_ONE 574397
+#define TASK_ONE2 574393
+#define TASK_ONE3 574392
+#define TASK_ONE4 574391
 //my settings 
 #define varmax 33
 #define a_max 32
@@ -193,16 +198,21 @@ enum net_adr {
 enum {
 	BUFFER_MAXIM = 64
 }
-new overflowed[33];
+new overflowed[varmax];
 new savefilename[100],savedata[100]
 new Array: g_aArray,Array: g_blackList;
 new messagelong[102]
 new PrintUnMunge
-new usercheck[33]
-new checkuser[33]
+new usercheck[varmax]
+new checkuser[varmax]
 new MaxOverflowed;
+new limitexecute[varmax]
 new tralala;
+new TimeNameChange;
 new RconSkippingCommand;
+new CmdLimitVar;
+new CmdlimitDestroy;
+new CmdLimitMax;
 new LimitExploit,LimitQuery,LimitImpulse,locala[varmax],LimitPrintf,LimitMunge,PauseDlfile,BanTime;
 new KillBug;
 new OrpheuFunction:long
@@ -1110,7 +1120,6 @@ stock cmpStr3(str[]) {
 	}
 	return false
 }
-
 stock RegisterConfigPlugin(){
 	if(ServerVersion == 0){
 		if(file_exists(loc)){
@@ -1358,6 +1367,7 @@ stock RegisterConfigPlugin(){
 			fprintf(filecacat,"host_killtime^n")
 			fprintf(filecacat,"_restart^n")
 			fprintf(filecacat,"heartbeat^n")
+			fprintf(filecacat,"sv_timeout^n")
 			fclose(filecacat)
 		}
 		rconskipping = ArrayCreate(142, 1)
@@ -1373,6 +1383,32 @@ stock RegisterConfigPlugin(){
 		}
 		fclose(File3)
 	}
+	if(get_pcvar_num(CmdLimitVar)>0){
+		if(file_exists(limitfilecmd)){
+			server_print("%s I loaded file ^"%s^"",PrefixProtection,limitfilecmd)
+		}
+		else{
+			server_print("%s I created file ^"%s^"",PrefixProtection,limitfilecmd)
+			new filecacat = fopen(limitfilecmd,"wb")
+			fprintf(filecacat,"amx_ban^n")
+			fprintf(filecacat,"amx_destroy^n")
+			fprintf(filecacat,"amx_addban^n")
+			fprintf(filecacat,"amx_banip^n")
+			fprintf(filecacat,"amx_pika^n")
+			fprintf(filecacat,"amx_exterminate^n")
+			fprintf(filecacat,"amx_minne^n")
+			fclose(filecacat)
+		}
+		if(file_exists(ip_flitredcmd)){
+			server_print("%s I loaded file ^"%s^"",PrefixProtection,ip_flitredcmd)
+		}
+		else{
+			server_print("%s I created file ^"%s^"",PrefixProtection,ip_flitredcmd)
+			new filecacat = fopen(ip_flitredcmd,"wb")
+			fprintf(filecacat,"^x00")
+			fclose(filecacat)
+		}
+	}
 }
 
 public destroy_holax(){holax=0x00;}
@@ -1380,8 +1416,20 @@ public destroy_fuck(){fuck=0x00;}
 public destroy_memhack(){memhack=0x00;}
 public debug_orpheu(){server_cmd("reload");}
 public Destroy_Memory(){hola = 0x00;}
-public Shield_ProtectionSpam(id){limita[id] = 0x00;}
-public LevFunction(id){mungelimit[id]=0x00;local=0x00;}
+public Destroy_Fileiplist(){
+	new fileid = fopen(ip_flitredcmd,"wb")
+	if(fileid){
+		fprintf(fileid,"^x00")
+	}
+	fclose(fileid)	
+}
+public sv_new_f_debug(id){
+	if(limitba[id-TASK_ONE4] <= 1/2){
+		limitba[id-TASK_ONE4]=0x00	
+	}
+}
+public Shield_ProtectionSpam(id){limita[id-TASK_ONE3] = 0x00;}
+public LevFunction(id){mungelimit[id-TASK_ONE]=0x00;local=0x00;}
 
 public Register_Settings()
 {
@@ -1408,6 +1456,10 @@ public Register_Settings()
 		fprintf(FileVar,"shield_remove_string ^"_setgamedir^"^n^n")
 
 
+		fprintf(FileVar,"shield_commandlimit_filter 1^n")
+		fprintf(FileVar,"shield_commandlimit_destory_file 1^n")
+		fprintf(FileVar,"shield_commandlimit_execute 1^n")
+		fprintf(FileVar,"shield_namechange_delay_seconds 1^n")
 		fprintf(FileVar,"shield_rcon_skipping_command 1^n")
 		fprintf(FileVar,"shield_lost_connection 0^n")
 		fprintf(FileVar,"shield_lost_connection_seconds 15^n")
