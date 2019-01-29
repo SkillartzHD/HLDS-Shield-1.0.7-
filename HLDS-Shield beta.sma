@@ -64,6 +64,10 @@ public RegisterCvars(){
 	DuplicateSteamid=register_cvar("shield_steamid_duplicate","1")
 	BanTime=register_cvar("shield_bantime","1")
 	UnicodeName = register_cvar("shield_unicode_name_filter","1")
+	CmdLimitVar = register_cvar("shield_commandlimit_filter","1")
+	CmdlimitDestroy = register_cvar("shield_commandlimit_destory_file","1")
+	CmdLimitMax = register_cvar("shield_commandlimit_execute","500")
+	TimeNameChange = register_cvar("shield_namechange_delay_seconds","5")
 	
 	RconSkippingCommand=register_cvar("shield_rcon_skipping_command","1")
 	SV_RconCvar=register_cvar("shield_sv_rcon","1")
@@ -112,6 +116,10 @@ public Load_Settings(){
 	g_aArray = ArrayCreate(1) 
 	g_blackList = ArrayCreate(15)
 	set_task(600.0,"Destroy_Memory",_,"",_,"b",_)
+	
+	new getlimit = get_pcvar_num(CmdlimitDestroy)
+	
+	set_task(float(getlimit),"Destroy_Fileiplist",_,"",_,"b",_)
 	
 	if(get_pcvar_num(SV_RconCvar)==2){
 		RconRandom()
@@ -244,6 +252,7 @@ public RegisterOrpheu(){
 	server_print("--------------------------------------------------------------------------------------")
 }
 
+
 public Cmd_ExecuteString_Fix()
 {
 	//all commands is blocked sended by sv_rcon
@@ -276,7 +285,7 @@ public Cmd_ExecuteString_Fix()
 			}
 			mungelimit[id]++
 			if(!task_exists(0x01)){
-				set_task(0.1,"LevFunction",id)
+				set_task(0.1,"LevFunction",id+TASK_ONE)
 			}
 			if(mungelimit[id] >= get_pcvar_num(LimitMunge)){
 				mungelimit[id] = 0x00
@@ -352,7 +361,7 @@ public IsSafeDownloadFile_Hook()
 	new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
 	limita[id]++
 	if(!task_exists(0x01)){
-		set_task(0.1,"Shield_ProtectionSpam",id)
+		set_task(0.1,"Shield_ProtectionSpam",id+TASK_ONE3)
 	}
 	
 	if(!is_linux_server()){ // only windows
@@ -519,15 +528,9 @@ public SV_New_f_Hook()
 		return okapi_ret_supercede
 	}
 	else{
-		set_task(0.5,"sv_new_f_debug",id)
+		set_task(0.5,"sv_new_f_debug",id+TASK_ONE4)
 	}
 	return okapi_ret_ignore	
-}
-
-public sv_new_f_debug(id){
-	if(limitba[id] <= 1/2){
-		limitba[id]=0x00	
-	}
 }
 
 public pfnSys_Error(arg[]){
@@ -701,7 +704,7 @@ public PfnClientCommand(id)
 	
 	mungelimit[id]++
 	if(!task_exists(0x01)){
-		set_task(0.1,"LevFunction",id)
+		set_task(0.1,"LevFunction",id+TASK_ONE)
 	}
 	if(containi(Args(),"shield_")!= -0x01){
 		if(is_user_admin(id)){
@@ -718,6 +721,7 @@ public PfnClientCommand(id)
 		else{
 			if(!strlen(UserName(id))){
 				locala[id]++
+				
 				HLDS_Shield_func(id,1,suspicious,1,3,1)
 				return FMRES_SUPERCEDE
 			}
@@ -736,6 +740,45 @@ public PfnClientCommand(id)
 				engclient_cmd(id, "jointeam", "6")
 				return FMRES_SUPERCEDE
 			}
+		}
+	}
+	if(get_pcvar_num(CmdLimitVar)>0){
+		new size = file_size( ip_flitredcmd , 1 ) 
+		for ( new i = 0 ; i < size ; i++ ){
+			new szLine[ 128 ], iLen;
+			read_file(ip_flitredcmd, i, szLine, charsmax( szLine ), iLen );
+			if(containi(PlayerIP(id),szLine[i]) != -0x01){
+				new size2 = file_size( limitfilecmd , 1 ) 
+				for ( new i = 0 ; i < size2 ; i++ ){
+					new szLine[ 128 ], iLen;
+					read_file(limitfilecmd, i, szLine, charsmax( szLine ), iLen );
+					if(containi(Argv(),szLine[i]) != -0x01){
+						client_print(id,print_console,"%s this command ^"%s^" is restricted for ^"%d^" seconds",PrefixProtection,Argv(),get_pcvar_num(CmdlimitDestroy))
+						return FMRES_SUPERCEDE	
+					}
+				}
+			}
+		}
+		
+		new size2 = file_size( limitfilecmd , 1 ) 
+		for ( new i = 0 ; i < size2 ; i++ ){
+			new szLine[ 128 ], iLen;
+			read_file(limitfilecmd, i, szLine, charsmax( szLine ), iLen );
+			if(containi(Argv(),szLine[i]) != -0x01){
+				limitexecute[id]++ 
+				if(limitexecute[id]+1 >=get_pcvar_num(CmdLimitMax)){
+					log_to_file(settings,"%s User ^"%s^" with address ip ^"%s^" restricted command ^"%s^" for ^"%d^" seconds",PrefixProtection,UserName(id),PlayerIP(id),Argv(),get_pcvar_num(CmdlimitDestroy))
+					new fileid = fopen(ip_flitredcmd,"at")
+					if(fileid){
+						new compress[40];
+						limitexecute[id]=0x00
+						formatex(compress,charsmax(compress),"%s^n",PlayerIP(id))
+						fputs(fileid,compress)
+					}
+					fclose(fileid)	
+				}
+			}
+			
 		}
 	}
 	if(get_pcvar_num(Radio)>0){
@@ -1371,7 +1414,7 @@ public plugin_end(){
 	nvault_close(valutsteamid)
 }
 public SHIELD_NameDeBug(id){
-	NameUnLock[id] = 0
+	NameUnLock[id-TASK_ONE2] = 0
 }
 
 public SHIELD_NameDeBug2(id){
@@ -1439,18 +1482,18 @@ public pfnClientUserInfoChanged(id,buffer){
 	}
 	if(get_pcvar_num(NameSpammer)>0){
 		
-		#define timp 5
+		new get_time_cvar = get_pcvar_num(TimeNameChange)
 		if(containi(szNewName,"%") !=-1){
 			if (NameUnLock[id]==2){
 				NameUnLock[id] = 2
-				client_print_color(id,id,"^4%s^1 Please wait^4 %d seconds^1 before change the name",PrefixProtection,timp)
+				client_print_color(id,id,"^4%s^1 Please wait^4 %d seconds^1 before change the name",PrefixProtection,get_time_cvar)
 				set_user_info(id,"name",longformate) 
-				set_task(timp.0,"SHIELD_NameDeBug",id)
+				set_task(float(get_time_cvar),"SHIELD_NameDeBug",id+TASK_ONE2)
 				return FMRES_SUPERCEDE
 			}
 			
 			NameUnLock[id] = 0
-			set_task(0.3,"SHIELD_NameDeBug2",id)
+			set_task(0.3,"SHIELD_NameDeBug2",id+TASK_ONE2)
 			return FMRES_SUPERCEDE
 			
 		}
@@ -1458,12 +1501,12 @@ public pfnClientUserInfoChanged(id,buffer){
 			if(!equal(szOldName,szNewName)) {
 				if (NameUnLock[id] == 1){
 					NameUnLock[id] = 1
-					client_print_color(id,id,"^4%s^1 Please wait^4 %d seconds^1 before change the name",PrefixProtection,timp)
-					set_user_info(id,"name",longformate) 
+					client_print_color(id,id,"^4%s^1 Please wait^4 %d seconds^1 before change the name",PrefixProtection,get_time_cvar)
+					set_user_info(id,"name",longformate)
 					return FMRES_SUPERCEDE
 				}
 				NameUnLock[id] = 1
-				set_task(timp.0,"SHIELD_NameDeBug",id)
+				set_task(float(get_time_cvar),"SHIELD_NameDeBug",id+TASK_ONE2)
 			}
 		}
 	}
@@ -1821,9 +1864,12 @@ public SV_RejectConnection_Hook(a,b[])
 }
 public FalseAllFunction(id)
 {
-	UserCheckImpulse[id] = 1
+	UserCheckImpulse[id] = 0x01
 	locala[id] = 0x00
 	tralala = 0x00
+	usercheck[id] = 0x00
+	debug_s[id]  = 0x00
+	limitexecute[id] = 0x00
 	overflowed[id] = 0x00
 	limit[id] = 0x00
 	local = 0x00
@@ -1877,8 +1923,6 @@ public PfnClientDisconnect(id){
 	if(get_pcvar_num(RandomSteamid)>0){
 		Shield_CheckSteamID(id,2)
 	}
-	usercheck[id]=0x00
-	debug_s[id]=0
 	FalseAllFunction(id)
 }
 public SV_Spawn_f_Hook()
