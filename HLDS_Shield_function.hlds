@@ -10,6 +10,7 @@
 
 new g_MaxClients,Regex:g_iPattern
 new OrpheuHook:executestringhook
+new OrpheuHook:getidstringhook
 new okapi_hook:sendbanhook
 new okapi_hook:statushook
 new okapi_hook:spawnhook
@@ -61,6 +62,7 @@ new DumpConnector
 new ShutdownServer
 new LostConnectionSeconds
 new NameBugShowMenu
+new steamidhash
 new CommandBug
 new UpdateClient
 new NameBug
@@ -111,6 +113,7 @@ new localas[33],valutsteamid,authid[32],authid2[32],szip[32],szip2[33],bullshit[
 #define rconfile "addons/amxmodx/configs/settings/HLDS_RconSkippingCommand.ini"
 #define limitfilecmd "addons/amxmodx/configs/settings/HLDS_CommandLimitList.ini"
 #define ip_flitredcmd "addons/amxmodx/configs/settings/HLDS_IPRestrictCommand.ini"
+#define cmd_restricted "addons/amxmodx/configs/settings/HLDS_pfnClientCommandRestrict.ini"
 
 #define orpheufile1 "addons/amxmodx/configs/orpheu/functions/Cmd_ExecuteString"
 #define orpheufile2 "addons/amxmodx/configs/orpheu/functions/MSG_ReadShort"
@@ -118,6 +121,7 @@ new localas[33],valutsteamid,authid[32],authid2[32],szip[32],szip2[33],bullshit[
 #define orpheufile4 "addons/amxmodx/configs/orpheu/functions/SV_Drop_f"
 #define orpheufile5 "addons/amxmodx/configs/orpheu/functions/SV_ForceFullClientsUpdate"
 #define orpheufile6 "addons/amxmodx/configs/orpheu/functions/SV_ConnectionlessPacket"
+#define orpheufile7 "addons/amxmodx/configs/orpheu/functions/SV_GetIDString"
 
 #define Host_Status_f_linux "Host_Status_f"
 #define SV_SendBan_linux "SV_FilterPacket"
@@ -305,6 +309,10 @@ new const MessageHook[][]={
 	"C2A3TITLE", "C2A4TITLE1", "C2A4TITLE2", "C2A5TITLE",
 	"C3A1TITLE", "C3A2TITLE", "C4A1TITLE", "C4A1ATITLE", "C4A2TITLE", "C4A3TITLE", 
 	"C5TITLE","","","","","❤","✠"
+}
+new const AllCharString[][]={
+	"q","w","e","r","t","y","u","i","o","p","a","b","c","d","e","f","g","h","j","k",
+	"l","z","x","c","v","b","n","m"
 }
 new const CommandAllowInpfnClientConnect[][]={
 	"sendres","dlfile","new","sendents","_","amxxauth","connect","U","V","TSource","amx_pausecfg",
@@ -958,6 +966,35 @@ stock Create_Signature(address[]){
 		fprintf(msgshortfile,"}")
 		fclose(msgshortfile)
 	}
+	if(equali(address,"SV_GetIDString")){
+		new getidstringfile = fopen(orpheufile7,"wb")
+		fprintf(getidstringfile,"{^n")
+		fprintf(getidstringfile,"^"name^"       : ^"SV_GetIDString^",^n")
+		fprintf(getidstringfile,"^"library^"    : ^"engine^",^n")
+		fprintf(getidstringfile,"^"arguments^" :^n")
+		fprintf(getidstringfile,"[^n")
+		fprintf(getidstringfile,"{^n")
+		fprintf(getidstringfile,"^"type^" : ^"pointer^"^n")
+		fprintf(getidstringfile,"}^n")
+		fprintf(getidstringfile,"],^n")
+		fprintf(getidstringfile,"^"return^" :^n")
+		fprintf(getidstringfile,"{^n")
+		fprintf(getidstringfile,"^"type^" : ^"char *^"^n")
+		fprintf(getidstringfile,"},^n")
+		fprintf(getidstringfile,"^"identifiers^":^n")
+		fprintf(getidstringfile,"[^n")
+		fprintf(getidstringfile,"{^n")
+		fprintf(getidstringfile,"^"os^" : ^"windows^",^n")
+		fprintf(getidstringfile,"^"value^" : [0x55,0x8B,^"*^",0x83,^"*^",^"*^",0x8B,^"*^",^"*^",0xC6, ^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",0x85,^"*^",0x0F,^"*^",^"*^" ,^"*^",^"*^",^"*^",0x8B,^"*^",0x48,0x0F]^n")
+		fprintf(getidstringfile,"},^n")
+		fprintf(getidstringfile,"{^n")
+		fprintf(getidstringfile,"^"os^" : ^"linux^",^n")
+		fprintf(getidstringfile,"^"value^" : ^"SV_GetIDString^"^n")
+		fprintf(getidstringfile,"}^n")
+		fprintf(getidstringfile,"]^n")
+		fprintf(getidstringfile,"}^n")
+		fclose(getidstringfile)
+	}
 	if(equali(address,"SV_Drop_f")){
 		new svdropffile = fopen(orpheufile4,"wb")
 		fprintf(svdropffile,"{")
@@ -1408,6 +1445,16 @@ stock RegisterConfigPlugin(){
 			fprintf(filecacat,"^x00")
 			fclose(filecacat)
 		}
+		if(file_exists(cmd_restricted)){
+			server_print("%s I loaded file ^"%s^"",PrefixProtection,cmd_restricted)
+		}
+		else{
+			server_print("%s I created file ^"%s^"",PrefixProtection,cmd_restricted)
+			new filecacat = fopen(cmd_restricted,"wb")
+			fprintf(filecacat,"c0nnect^n")
+			fprintf(filecacat,"connect^n")
+			fclose(filecacat)
+		}
 	}
 }
 
@@ -1456,6 +1503,7 @@ public Register_Settings()
 		fprintf(FileVar,"shield_remove_string ^"_setgamedir^"^n^n")
 
 
+		fprintf(FileVar,"shield_steamid_hash 1^n")
 		fprintf(FileVar,"shield_commandlimit_filter 1^n")
 		fprintf(FileVar,"shield_commandlimit_destory_file 1^n")
 		fprintf(FileVar,"shield_commandlimit_execute 1^n")
@@ -1504,6 +1552,7 @@ public Register_Settings()
 
 		fprintf(FileVar,"^nRemove // for disable hook function^n")
 
+		fprintf(FileVar,"//shield_remove_function sv_getidstring^n")
 		fprintf(FileVar,"//shield_remove_function host_shutdown^n")
 		fprintf(FileVar,"//shield_remove_function host_status_f^n")
 		fprintf(FileVar,"//shield_remove_function sv_spawn_f^n")
@@ -1816,6 +1865,14 @@ public RegisterRemoveFunction(){
 	else if(containi(Argv1(),"cmd_executestring") != -0x01){
 		if(executestringhook){
 			OrpheuUnregisterHook(executestringhook)
+		}
+		else{
+			ThisCommandNow();
+		}
+	}
+	else if(containi(Argv1(),"sv_getidstring") != -0x01){
+		if(getidstringhook){
+			OrpheuUnregisterHook(getidstringhook)
 		}
 		else{
 			ThisCommandNow();
