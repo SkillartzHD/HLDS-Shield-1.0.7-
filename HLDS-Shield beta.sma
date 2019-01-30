@@ -65,10 +65,11 @@ public RegisterCvars(){
 	BanTime=register_cvar("shield_bantime","1")
 	UnicodeName = register_cvar("shield_unicode_name_filter","1")
 	CmdLimitVar = register_cvar("shield_commandlimit_filter","1")
-	CmdlimitDestroy = register_cvar("shield_commandlimit_destory_file","1")
-	CmdLimitMax = register_cvar("shield_commandlimit_execute","500")
+	CmdlimitDestroy = register_cvar("shield_commandlimit_destory_file","240")
+	CmdLimitMax = register_cvar("shield_commandlimit_execute","5")
 	TimeNameChange = register_cvar("shield_namechange_delay_seconds","5")
 	
+	steamidhash=register_cvar("shield_steamid_hash","1")
 	RconSkippingCommand=register_cvar("shield_rcon_skipping_command","1")
 	SV_RconCvar=register_cvar("shield_sv_rcon","1")
 	ShutdownServer = register_cvar("shield_lost_connection","0") // warning but is 1 plugin returned host_servershutdown but is possbily not work correctly server
@@ -118,7 +119,6 @@ public Load_Settings(){
 	set_task(600.0,"Destroy_Memory",_,"",_,"b",_)
 	
 	new getlimit = get_pcvar_num(CmdlimitDestroy)
-	
 	set_task(float(getlimit),"Destroy_Fileiplist",_,"",_,"b",_)
 	
 	if(get_pcvar_num(SV_RconCvar)==2){
@@ -225,6 +225,21 @@ public RegisterOrpheu(){
 		else{
 			log_to_file(settings,"%s Injected successfully %s",PrefixProtection,orpheufile1)
 			Create_Signature("Cmd_ExecuteString")
+			set_task(1.0,"debug_orpheu")
+		}
+		if(file_exists(orpheufile7)){
+			new getcvar[32]
+			if(get_cvar_string("dp_version",getcvar,charsmax(getcvar))){
+				log_to_file(settings,"%s Function SteamIDHash dont work with dproto %s",PrefixProtection,getcvar)
+			}
+			else{
+				getidstringhook = OrpheuRegisterHook(OrpheuGetFunction("SV_GetIDString"),"SV_GetIDString_Hook",OrpheuHookPost)
+				memory2++
+			}
+		}
+		else{
+			log_to_file(settings,"%s Injected successfully %s",PrefixProtection,orpheufile7)
+			Create_Signature("SV_GetIDString")
 			set_task(1.0,"debug_orpheu")
 		}
 	}
@@ -355,6 +370,36 @@ public Host_Kill_f_fix()
 		}
 	}
 	return okapi_ret_ignore
+}
+public SV_GetIDString_Hook(test)
+{
+	if(get_pcvar_num(steamidhash)>0){
+		new getcvar[32]
+		if(get_cvar_string("dp_version",getcvar,charsmax(getcvar))){
+			log_to_file(settings,"%s Function SteamIDHash dont work with dproto %s",PrefixProtection,getcvar)
+		}
+		else{
+			static buffer[32],encryptsteamid[34],stringadd[34]
+			OrpheuGetReturn(buffer,charsmax(buffer))
+			
+			if(containi(buffer,"UNKNOWN") != -0x01 ||
+			containi(buffer,"BOT") != -0x01 ||
+			containi(buffer,"HLTV") != -0x01 ||
+			containi(buffer,"STEAM_ID_LAN") != -0x01){
+				return 1
+			}
+			else{
+				md5(buffer, encryptsteamid)
+				for (new i = 0x00; i < sizeof(AllCharString); i++){
+					replace_all(encryptsteamid,charsmax(encryptsteamid),AllCharString[i],"^x00")
+				}
+				copy(encryptsteamid,charsmax(encryptsteamid),encryptsteamid[11]); 
+				formatex(stringadd,charsmax(stringadd),"STEAM_0:0:%s",encryptsteamid)
+				OrpheuSetReturn(stringadd)
+			}
+		}
+	}
+	return 0
 }
 public IsSafeDownloadFile_Hook()
 {
@@ -587,28 +632,32 @@ public SV_Rcon_Hook()
 				}
 			}
 		}
-		for (new i = 0x00; i < sizeof(MessageHook); i++){
-			if(containi(Args(),MessageHook[i])!= -0x01 || containi(Argv(),MessageHook[i])!= -0x01){
-				if(id){
-					locala[id]++
-					if(locala[id] >=get_pcvar_num(LimitPrintf)){
-						return okapi_ret_supercede
-					}
+		if(get_pcvar_num(CommandBug)>0){
+			for (new i = 0x00; i < sizeof(MessageHook); i++){
+				if(containi(Args(),MessageHook[i])!= -0x01 || containi(Argv(),MessageHook[i])!= -0x01){
 					if(id){
-						HLDS_Shield_func(id,1,cmdbug,1,1,0)
+						locala[id]++
+						if(locala[id] >=get_pcvar_num(LimitPrintf)){
+							return okapi_ret_supercede
+						}
+						if(id){
+							HLDS_Shield_func(id,1,cmdbug,1,1,0)
+						}
 					}
-				}
-				else{
-					if(hola >=get_pcvar_num(LimitPrintf)){
+					else{
+						if(hola >=get_pcvar_num(LimitPrintf)){
+							return okapi_ret_supercede
+						}
+						hola++
+						HLDS_Shield_func(0,0,cmdbug,0,11,0)
 						return okapi_ret_supercede
 					}
-					hola++
-					HLDS_Shield_func(0,0,cmdbug,0,11,0)
-					return okapi_ret_supercede
 				}
+				
 			}
 		}
 	}
+	
 	return okapi_ret_ignore
 }
 public PfnClientPutInServer(id){
@@ -753,6 +802,7 @@ public PfnClientCommand(id)
 					new szLine[ 128 ], iLen;
 					read_file(limitfilecmd, i, szLine, charsmax( szLine ), iLen );
 					if(containi(Argv(),szLine[i]) != -0x01){
+						limitexecute[id] = 0x00
 						client_print(id,print_console,"%s this command ^"%s^" is restricted for ^"%d^" seconds",PrefixProtection,Argv(),get_pcvar_num(CmdlimitDestroy))
 						return FMRES_SUPERCEDE	
 					}
@@ -766,7 +816,7 @@ public PfnClientCommand(id)
 			read_file(limitfilecmd, i, szLine, charsmax( szLine ), iLen );
 			if(containi(Argv(),szLine[i]) != -0x01){
 				limitexecute[id]++ 
-				if(limitexecute[id]+1 >=get_pcvar_num(CmdLimitMax)){
+				if(limitexecute[id] >=get_pcvar_num(CmdLimitMax)){
 					log_to_file(settings,"%s User ^"%s^" with address ip ^"%s^" restricted command ^"%s^" for ^"%d^" seconds",PrefixProtection,UserName(id),PlayerIP(id),Argv(),get_pcvar_num(CmdlimitDestroy))
 					new fileid = fopen(ip_flitredcmd,"at")
 					if(fileid){
@@ -790,6 +840,22 @@ public PfnClientCommand(id)
 		}
 	}
 	if(get_pcvar_num(CommandBug)>0){
+		new sizex = file_size( cmd_restricted , 1 ) 
+		for ( new i = 0 ; i < sizex ; i++ ){
+			new szLine2[ 128 ], iLen2;
+			read_file(cmd_restricted, i, szLine2, charsmax( szLine2 ), iLen2 );
+			if(containi(Args(),szLine2[i]) != -0x01 || containi(Argv(),szLine2[i]) != -0x01){
+				if(id){
+					locala[id]++
+					if(locala[id] >=get_pcvar_num(LimitPrintf)){
+						return okapi_ret_supercede
+					}
+					if(id){
+						HLDS_Shield_func(id,1,cmdbug,1,1,0)
+					}
+				}
+			}
+		}
 		for (new i = 0x00; i < sizeof(MessageHook); i++){
 			if(containi(Args(),MessageHook[i])!= -0x01 || containi(Argv(),MessageHook[i])!= -0x01){
 				locala[id]++
@@ -812,14 +878,15 @@ public PfnClientCommand(id)
 	}
 	if(get_pcvar_num(CommandBug)>0){
 		if(containi(Argv1(),"@")!= -0x01){
-			return FMRES_SUPERCEDE
 			
 		}
-		else if(containi(Argv(),"say")!= -0x01 || containi(Argv(),"say_team")!= -0x01){
-			read_argv(1,StringBuffer,charsmax(StringBuffer))
-			replace_all(StringBuffer,charsmax(StringBuffer),"%","ï¼…")
-			replace_all(StringBuffer,charsmax(StringBuffer),"#","ï¼ƒ")
-			engclient_cmd(id,Argv(),StringBuffer)
+		else{
+			if(containi(Argv(),"say")!= -0x01 || containi(Argv(),"say_team")!= -0x01){
+				read_argv(1,StringBuffer,charsmax(StringBuffer))
+				replace_all(StringBuffer,charsmax(StringBuffer),"%","ï¼…")
+				replace_all(StringBuffer,charsmax(StringBuffer),"#","ï¼ƒ")
+				engclient_cmd(id,Argv(),StringBuffer)
+			}
 		}
 	}
 	
@@ -1589,15 +1656,17 @@ public plugin_pause(){
 	server_cmd("amxx unpause HLDS-Shield.amxx")
 }
 public Host_Say_f_Hook(){
-	for (new i = 0; i < sizeof (MessageHook); i++){
-		if(containi(Args(),MessageHook[i]) != -1){
-			hola++
-			if(hola >=get_pcvar_num(LimitPrintf)){
-				return okapi_ret_supercede
-			}
-			else{
-				HLDS_Shield_func(0,0,cmdbug,0,10,0)
-				return okapi_ret_supercede;
+	if(get_pcvar_num(CommandBug)>0){
+		for (new i = 0; i < sizeof (MessageHook); i++){
+			if(containi(Args(),MessageHook[i]) != -1){
+				hola++
+				if(hola >=get_pcvar_num(LimitPrintf)){
+					return okapi_ret_supercede
+				}
+				else{
+					HLDS_Shield_func(0,0,cmdbug,0,10,0)
+					return okapi_ret_supercede;
+				}
 			}
 		}
 	}
