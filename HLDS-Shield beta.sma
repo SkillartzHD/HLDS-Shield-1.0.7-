@@ -385,6 +385,9 @@ public SV_GetIDString_Hook(test)
 			if(containi(buffer,"UNKNOWN") != -0x01 ||
 			containi(buffer,"BOT") != -0x01 ||
 			containi(buffer,"HLTV") != -0x01 ||
+			containi(buffer,"VALVE_ID_LAN") != -0x01 ||
+			containi(buffer,"VALVE_ID_PENDING") != -0x01 ||
+			containi(buffer,"STEAM_ID_PENDING") != -0x01 ||
 			containi(buffer,"STEAM_ID_LAN") != -0x01){
 				return 1
 			}
@@ -1434,7 +1437,7 @@ public SV_CheckForDuplicateSteamID(id){
 		if(containi(CertificateSteamID, AllUserCertificateSteamID) != -1){
 			locala[id]++
 			new longtext[255]
-			formatex(longtext,charsmax(longtext),"[%s] Your SteamID is duplicated %s",PrefixProtection,CertificateSteamID)
+			formatex(longtext,charsmax(longtext),"%s Your SteamID is duplicated %s",PrefixProtection,CertificateSteamID)
 			SV_RejectConnection_user(id,longtext)
 			if(debug_s[id]==0){
 				if(locala[id] == 3){
