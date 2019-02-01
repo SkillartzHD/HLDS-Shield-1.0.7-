@@ -31,6 +31,8 @@ public plugin_precache(){
 }
 public Hooks_init(){
 	
+	Registerforward()
+	
 	if(ServerVersion == 0){
 		if(is_linux_server()){
 			RegisterOkapiLinux()
@@ -41,6 +43,10 @@ public Hooks_init(){
 	}
 	set_task(1.0,"RegisterOrpheu")
 	
+}
+
+public Registerforward(){
+	
 	register_forward(FM_ClientConnect,"pfnClientConnect")
 	register_forward(FM_ClientUserInfoChanged,"pfnClientUserInfoChanged")
 	register_forward(FM_GetGameDescription,"pfnGetGameDescription") 
@@ -49,6 +55,7 @@ public Hooks_init(){
 	register_forward(FM_ClientPutInServer,"PfnClientPutInServer")
 	register_forward(FM_Sys_Error,"pfnSys_Error")
 	register_forward(FM_GameShutdown,"pfnSys_Error")
+	
 }
 public RegisterCvars(){
 	GameData=register_cvar("shield_gamedata","HLDS-Shield 1.0.7")
@@ -69,6 +76,8 @@ public RegisterCvars(){
 	CmdLimitMax = register_cvar("shield_commandlimit_execute","5")
 	TimeNameChange = register_cvar("shield_namechange_delay_seconds","5")
 	
+	
+	steamidgenerate=register_cvar("shield_steamid_generate_ip","1")
 	steamidhash=register_cvar("shield_steamid_hash","1")
 	RconSkippingCommand=register_cvar("shield_rcon_skipping_command","1")
 	SV_RconCvar=register_cvar("shield_sv_rcon","1")
@@ -168,17 +177,6 @@ public pfnClientConnect(id){
 	}
 	set_task(1.0,"UserImpulseFalse",id)
 	
-	/*
-	if(usercheck[id]==0x01){
-		GenerateRandom()
-		server_print("e1 %s",bullshit)
-		client_cmd(id,bullshit)
-		usercheck[id]=0x02
-	}
-	if(usercheck[id]==0x00){
-		usercheck[id]++
-	}
-	*/
 }
 public SV_ParseConsistencyResponse_fix(){
 	
@@ -373,25 +371,40 @@ public Host_Kill_f_fix()
 }
 public SV_GetIDString_Hook(test)
 {
-	if(get_pcvar_num(steamidhash)>0){
-		new getcvar[32]
-		if(get_cvar_string("dp_version",getcvar,charsmax(getcvar))){
-			log_to_file(settings,"%s Function SteamIDHash dont work with dproto %s",PrefixProtection,getcvar)
+	new getcvar[32]
+	if(get_cvar_string("dp_version",getcvar,charsmax(getcvar))){
+		log_to_file(settings,"%s Function SteamIDHash dont work with dproto %s",PrefixProtection,getcvar)
+	}
+	else{
+		static buffer[32],encryptsteamid[34],stringadd[34],stringadd2[34]
+		OrpheuGetReturn(buffer,charsmax(buffer))
+		
+		
+		if(containi(buffer,"UNKNOWN") != -0x01 ||
+		containi(buffer,"VALVE_ID_LAN") != -0x01 ||
+		containi(buffer,"VALVE_ID_PENDING") != -0x01 ||
+		containi(buffer,"STEAM_ID_PENDING") != -0x01 ||
+		containi(buffer,"STEAM_ID_LAN") != -0x01){
+			if(get_pcvar_num(steamidgenerate)>0){
+				new data[net_adr],getip2[40],encryptsteamid[34]
+				okapi_get_ptr_array(net_adrr(),data,net_adr)
+				formatex(getip2,charsmax(getip2),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+				md5(getip2, encryptsteamid)
+				for (new i = 0x00; i < sizeof(AllCharString); i++){
+					replace_all(encryptsteamid,charsmax(encryptsteamid),AllCharString[i],"^x00")
+				}
+				copy(encryptsteamid,charsmax(encryptsteamid),encryptsteamid[12]); 
+				formatex(stringadd2,charsmax(stringadd2),"STEAM_0:0:%s",encryptsteamid)
+				
+				OrpheuSetReturn(stringadd2)
+			}
+		}
+		else if(containi(buffer,"BOT") != -0x01 ||
+			containi(buffer,"HLTV") != -0x01){
+			return 1
 		}
 		else{
-			static buffer[32],encryptsteamid[34],stringadd[34]
-			OrpheuGetReturn(buffer,charsmax(buffer))
-			
-			if(containi(buffer,"UNKNOWN") != -0x01 ||
-			containi(buffer,"BOT") != -0x01 ||
-			containi(buffer,"HLTV") != -0x01 ||
-			containi(buffer,"VALVE_ID_LAN") != -0x01 ||
-			containi(buffer,"VALVE_ID_PENDING") != -0x01 ||
-			containi(buffer,"STEAM_ID_PENDING") != -0x01 ||
-			containi(buffer,"STEAM_ID_LAN") != -0x01){
-				return 1
-			}
-			else{
+			if(get_pcvar_num(steamidhash)>0){
 				md5(buffer, encryptsteamid)
 				for (new i = 0x00; i < sizeof(AllCharString); i++){
 					replace_all(encryptsteamid,charsmax(encryptsteamid),AllCharString[i],"^x00")
@@ -733,26 +746,7 @@ public PfnClientCommand(id)
 		}
 	}
 	
-	/*
-	if(usercheck[id]==1){
-		GenerateRandom()
-		server_print("e1 %s",bullshit)
-		client_cmd(id,bullshit)	
-		if(contain(Argv(),bullshit)!= -0x01)
-		{
-			server_print("da")
-			usercheck[id]=0
-		}
-		else{
-			//executat
-			server_print("nuuuuuu")
-			usercheck[id]=2
-		}
-	}
-	if(usercheck[id]==2){
-		server_print("kick")
-	}
-	*/
+	
 	
 	mungelimit[id]++
 	if(!task_exists(0x01)){
