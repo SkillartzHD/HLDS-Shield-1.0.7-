@@ -56,6 +56,7 @@ new IlegalCmd
 new SpectatorVguiBug
 new lostconnection
 new Radio
+new steamidgenerate
 new FakePlayerFilter
 new NameUnLock[33]
 new DumpConnector
@@ -1503,6 +1504,7 @@ public Register_Settings()
 		fprintf(FileVar,"shield_remove_string ^"_setgamedir^"^n^n")
 
 
+		fprintf(FileVar,"shield_steamid_generate_ip 1^n")
 		fprintf(FileVar,"shield_steamid_hash 1^n")
 		fprintf(FileVar,"shield_commandlimit_filter 1^n")
 		fprintf(FileVar,"shield_commandlimit_destory_file 1^n")
