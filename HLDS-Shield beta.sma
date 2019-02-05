@@ -77,6 +77,7 @@ public RegisterCvars(){
 	TimeNameChange = register_cvar("shield_namechange_delay_seconds","5")
 	
 	
+	OptionSV_ConnectClient = register_cvar("shield_sv_connectclient_filter_option","1") // 1 - force return 2 - kick 3 - ban
 	steamidgenerate=register_cvar("shield_steamid_generate_ip","1")
 	steamidhash=register_cvar("shield_steamid_hash","1")
 	RconSkippingCommand=register_cvar("shield_rcon_skipping_command","1")
@@ -1690,8 +1691,18 @@ public SV_ConnectClient_Hook()
 			okapi_get_ptr_array(net_adrr(),data,net_adr)
 			formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
 			HLDS_Shield_func(0,0,steamidhack,0,8,0)
-			server_cmd("addip %d %s",get_pcvar_num(PauseDlfile),getip)
-			return okapi_ret_supercede
+			if(get_pcvar_num(OptionSV_ConnectClient)==1){
+				return okapi_ret_supercede
+			}
+			else if(get_pcvar_num(OptionSV_ConnectClient)==2){
+				replace_all(buffer,31,"%"," ")
+				server_cmd("kick ^"%s^" ^"%s^"",buffer,steamidhack)
+			}
+			else if(get_pcvar_num(OptionSV_ConnectClient)>=3){
+				server_cmd("addip %d %s",get_pcvar_num(PauseDlfile),getip)
+				replace_all(buffer,31,"%"," ")
+				server_cmd("kick ^"%s^" ^"%s^"",buffer,steamidhack)
+			}
 		}
 	}
 	
@@ -1706,6 +1717,11 @@ public SV_ConnectClient_Hook()
 		
 	}
 	if(IsInvalidFunction(2,"userinfo")){
+		if(get_pcvar_num(OptionSV_ConnectClient)==3){
+			server_cmd("addip %d %s",get_pcvar_num(PauseDlfile),getip)
+			replace_all(buffer,31,"%"," ")
+			server_cmd("kick ^"%s^" ^"%s^"",buffer,namebug)
+		}
 		return okapi_ret_supercede
 	}
 	
@@ -1715,6 +1731,8 @@ public SV_ConnectClient_Hook()
 				replace_all(buffer,0x21,"%","^x20")
 				okapi_get_ptr_array(net_adrr(),data,net_adr)
 				formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+				replace_all(buffer,31,"%"," ")
+				server_cmd("kick ^"%s^" ^"%s^"",buffer,namebug)
 				HLDS_Shield_func(0,0,namebug,0,9,5)
 			}
 		}
@@ -1723,20 +1741,53 @@ public SV_ConnectClient_Hook()
 		okapi_get_ptr_array(net_adrr(),data,net_adr)
 		formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
 		HLDS_Shield_func(0,0,hldsbug,0,8,3)
-		return okapi_ret_supercede
+		if(get_pcvar_num(OptionSV_ConnectClient)==1){
+			return okapi_ret_supercede
+		}
+		else if(get_pcvar_num(OptionSV_ConnectClient)==2){
+			replace_all(buffer,31,"%"," ")
+			server_cmd("kick ^"%s^" ^"%s^"",buffer,namebug)
+		}
+		else if(get_pcvar_num(OptionSV_ConnectClient)>=3){
+			server_cmd("addip %d %s",get_pcvar_num(PauseDlfile),getip)
+			replace_all(buffer,31,"%"," ")
+			server_cmd("kick ^"%s^" ^"%s^"",buffer,namebug)
+		}
 	}
 	if(containi(Argv4(),checkduplicate) != -1){
 		okapi_get_ptr_array(net_adrr(),data,net_adr)
 		formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
 		HLDS_Shield_func(0,0,namebug,0,8,3)
-		return okapi_ret_supercede
+		if(get_pcvar_num(OptionSV_ConnectClient)==1){
+			return okapi_ret_supercede
+		}
+		else if(get_pcvar_num(OptionSV_ConnectClient)==2){
+			replace_all(buffer,31,"%"," ")
+			server_cmd("kick ^"%s^" ^"%s^"",buffer,namebug)
+		}
+		else if(get_pcvar_num(OptionSV_ConnectClient)>=3){
+			server_cmd("addip %d %s",get_pcvar_num(PauseDlfile),getip)
+			replace_all(buffer,31,"%"," ")
+			server_cmd("kick ^"%s^" ^"%s^"",buffer,namebug)
+		}
 	}
 	if(get_pcvar_num(HLTVFilter)>0){
 		if((containi(value,"*hltv") != -0x01)){
 			okapi_get_ptr_array(net_adrr(),data,net_adr)
 			formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
 			HLDS_Shield_func(0,0,hltvbug,0,8,3)
-			return okapi_ret_supercede
+			if(get_pcvar_num(OptionSV_ConnectClient)==1){
+				return okapi_ret_supercede
+			}
+			else if(get_pcvar_num(OptionSV_ConnectClient)==2){
+				replace_all(buffer,31,"%"," ")
+				server_cmd("kick ^"%s^" ^"%s^"",buffer,hltvbug)
+			}
+			else if(get_pcvar_num(OptionSV_ConnectClient)>=3){
+				server_cmd("addip %d %s",get_pcvar_num(PauseDlfile),getip)
+				replace_all(buffer,31,"%"," ")
+				server_cmd("kick ^"%s^" ^"%s^"",buffer,hltvbug)
+			}
 		}
 	}
 	if(get_pcvar_num(HLProxyFilter)>0){
@@ -1745,7 +1796,18 @@ public SV_ConnectClient_Hook()
 			okapi_get_ptr_array(net_adrr(),data,net_adr)
 			formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
 			HLDS_Shield_func(0,0,hlproxy,0,8,4)
-			return okapi_ret_supercede
+			if(get_pcvar_num(OptionSV_ConnectClient)==1){
+				return okapi_ret_supercede
+			}
+			else if(get_pcvar_num(OptionSV_ConnectClient)==2){
+				replace_all(buffer,31,"%"," ")
+				server_cmd("kick ^"%s^" ^"%s^"",buffer,hlproxy)
+			}
+			else if(get_pcvar_num(OptionSV_ConnectClient)>=3){
+				server_cmd("addip %d %s",get_pcvar_num(PauseDlfile),getip)
+				replace_all(buffer,31,"%"," ")
+				server_cmd("kick ^"%s^" ^"%s^"",buffer,hlproxy)
+			}
 		}
 	}
 	if(get_pcvar_num(FakePlayerFilter)>0){
@@ -1755,7 +1817,18 @@ public SV_ConnectClient_Hook()
 				okapi_get_ptr_array(net_adrr(),data,net_adr)
 				formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
 				HLDS_Shield_func(0,0,fakeplayer,0,8,0)
-				return okapi_ret_supercede
+				if(get_pcvar_num(OptionSV_ConnectClient)==1){
+					return okapi_ret_supercede
+				}
+				else if(get_pcvar_num(OptionSV_ConnectClient)==2){
+					replace_all(buffer,31,"%"," ")
+					server_cmd("kick ^"%s^" ^"%s^"",buffer,fakeplayer)
+				}
+				else if(get_pcvar_num(OptionSV_ConnectClient)>=3){
+					server_cmd("addip %d %s",get_pcvar_num(PauseDlfile),getip)
+					replace_all(buffer,31,"%"," ")
+					server_cmd("kick ^"%s^" ^"%s^"",buffer,fakeplayer)
+				}
 			}
 		}
 		else{
