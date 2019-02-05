@@ -56,6 +56,7 @@ new IlegalCmd
 new SpectatorVguiBug
 new lostconnection
 new Radio
+new OptionSV_ConnectClient
 new steamidgenerate
 new FakePlayerFilter
 new NameUnLock[33]
@@ -545,7 +546,7 @@ new COM_UnMunges4554[] = {
 	//0x55,0x8B,0xEC,0xDEF,0xDEF,0x34,0xDEF,0x00,0x00,0x53,0x56,0x57,0xDEF,0xDEF,0xDEF,0x33 //netchan
 }
 new SV_ParseStringCommand[] = {
-	0x00
+	0xDEF
 }
 new SV_RunCmd[] = {
 	0x55,0x8B,0xEC,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0x45,0xDEF,
@@ -1504,6 +1505,7 @@ public Register_Settings()
 		fprintf(FileVar,"shield_remove_string ^"_setgamedir^"^n^n")
 
 
+		fprintf(FileVar,"shield_sv_connectclient_filter_option 1^n")
 		fprintf(FileVar,"shield_steamid_generate_ip 1^n")
 		fprintf(FileVar,"shield_steamid_hash 1^n")
 		fprintf(FileVar,"shield_commandlimit_filter 1^n")
