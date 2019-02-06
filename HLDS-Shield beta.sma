@@ -1504,11 +1504,12 @@ public SHIELD_NameDeBug2(id){
 	NameUnLock[id] = 2
 }
 
+new number
 public pfnClientUserInfoChanged(id,buffer){
-	
 	static szOldName[a_max],szNewName[a_max],longformate[255]
-	pev(id,pev_netname,szOldName,charsmax(szOldName)) 
-	formatex(longformate,charsmax(longformate),"%s",szOldName)
+	pev(id,pev_netname,szOldName,charsmax(szOldName))
+	number++
+	formatex(longformate,charsmax(longformate),"(%d)%s",number,szOldName)
 	get_user_info(id,"name",szNewName,charsmax(szNewName))
 	new lastname[a_max]
 	if(is_user_admin(id)){
