@@ -66,6 +66,8 @@ new LostConnectionSeconds
 new NameBugShowMenu
 new steamidhash
 new CommandBug
+new NameCharFix
+new ChatCharFix
 new UpdateClient
 new NameBug
 new NameSpammer
@@ -711,7 +713,7 @@ stock SV_CheckUserNameForMenuStyle(id,szNewName[] = ""){
 	while(regex_match_c(GetName,g_iPattern,iNum)){
 		regex_substr(g_iPattern,0,szSubStr,2)
 		copy(szNewTxtPart,2,szSubStr)
-		replace(szNewTxtPart,2,"+","")
+		replace(szNewTxtPart,2,"+","+.")
 		replace_all(GetName,charsmax(GetName),szSubStr,szNewTxtPart)
 		set_user_info(id,"name",GetName)
 	}
@@ -1505,6 +1507,8 @@ public Register_Settings()
 		fprintf(FileVar,"shield_remove_string ^"_setgamedir^"^n^n")
 
 
+		fprintf(FileVar,"shield_name_char_fix 1^n")
+		fprintf(FileVar,"shield_chat_char_fix 1^n")
 		fprintf(FileVar,"shield_sv_connectclient_filter_option 1^n")
 		fprintf(FileVar,"shield_steamid_generate_ip 1^n")
 		fprintf(FileVar,"shield_steamid_hash 1^n")
