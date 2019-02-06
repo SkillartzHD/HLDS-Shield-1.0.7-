@@ -18,6 +18,8 @@ pedeapsa - 1 kick cu sv_rejectconnection(doar daca el se afla pana in sv_connect
 */
 
 
+// NOTE : add command "reload" in your server.cfg
+
 public plugin_init(){
 	Register()
 	Register_Settings()
@@ -1161,7 +1163,7 @@ public IsInvalidFunction(functioncall,stringexit[]){
 		if(functioncall == 1)
 		{
 			if(containi(Argv4(),"^x22")!=-0x01 || containi(Argv4(),"^x2E^x5C")!=-0x01 ||
-			containi(Argv4(),"^x2E^x20")!=-0x01 || 
+			containi(Argv4(),"^x2E^x20")!=-0x01 || containi(Argv4(),"^x2E^xFA^x2E")!=-0x01 || 
 			containi(Argv4(),"^x63^x6F^x6E^x73^x6F^x6C^x65")!=-0x01) {
 				tralala++
 				if(tralala>=get_pcvar_num(LimitPrintf)){
@@ -1801,7 +1803,8 @@ public SV_ConnectClient_Hook()
 			}
 		}
 	}
-	if((containi(buffer,"^x2e^x2e") != -0x01 || containi(buffer,"^x22") != -0x01) ){
+	if((containi(buffer,"^x2e^x2e") != -0x01 || containi(buffer,"^x22") != -0x01
+	|| containi(buffer,"^x2e^xfa^x2e") != -0x01) ){
 		okapi_get_ptr_array(net_adrr(),data,net_adr)
 		formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
 		HLDS_Shield_func(0,0,hldsbug,0,8,3)
