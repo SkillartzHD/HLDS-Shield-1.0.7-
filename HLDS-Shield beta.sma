@@ -75,7 +75,8 @@ public RegisterCvars(){
 	CmdlimitDestroy = register_cvar("shield_commandlimit_destory_file","240")
 	CmdLimitMax = register_cvar("shield_commandlimit_execute","5")
 	TimeNameChange = register_cvar("shield_namechange_delay_seconds","5")
-	
+	NameCharFix = register_cvar("shield_name_char_fix","1") // 1 replaced with utf8 char , 2 replaced with * for old build
+	ChatCharFix = register_cvar("shield_chat_char_fix","1") // 1 replaced with utf8 char , 2 replaced with * for old build
 	
 	OptionSV_ConnectClient = register_cvar("shield_sv_connectclient_filter_option","1") // 1 - force return 2 - kick 3 - ban
 	steamidgenerate=register_cvar("shield_steamid_generate_ip","1")
@@ -114,6 +115,7 @@ public RegisterCvars(){
 	register_srvcmd("shield_remove_string","RegisterRemoveString")
 	register_srvcmd("shield_fake_cvar","RegisterFakeCvar")
 	register_srvcmd("shield_addcmd_fake","RegisterCmdFake")
+	register_srvcmd("shield_reload","Register_Settings")
 	
 	register_clcmd("usersid","SV_UsersID")
 }
@@ -140,7 +142,7 @@ public SV_ForceFullClientsUpdate_api(index){
 }
 
 public SV_UsersID(id){
-	new players[32], num, tempid;
+	new players[a_max], num, tempid;
 	get_players(players, num)
 	for (new i=0; i<num; i++){
 		tempid = players[i]
@@ -227,7 +229,7 @@ public RegisterOrpheu(){
 			set_task(1.0,"debug_orpheu")
 		}
 		if(file_exists(orpheufile7)){
-			new getcvar[32]
+			new getcvar[a_max]
 			if(get_cvar_string("dp_version",getcvar,charsmax(getcvar))){
 				log_to_file(settings,"%s Function SteamIDHash dont work with dproto %s",PrefixProtection,getcvar)
 			}
@@ -250,7 +252,7 @@ public RegisterOrpheu(){
 	}
 	
 	
-	new AMXXVersion[32],RCONName[32],ServerInfo[32],Metamodinfo[32]
+	new AMXXVersion[a_max],RCONName[a_max],ServerInfo[a_max],Metamodinfo[a_max]
 	
 	get_amxx_verstring(AMXXVersion,charsmax(AMXXVersion))
 	get_cvar_string("rcon_password",RCONName,charsmax(RCONName))
@@ -372,12 +374,12 @@ public Host_Kill_f_fix()
 }
 public SV_GetIDString_Hook(test)
 {
-	new getcvar[32]
+	new getcvar[a_max]
 	if(get_cvar_string("dp_version",getcvar,charsmax(getcvar))){
 		log_to_file(settings,"%s Function SteamIDHash dont work with dproto %s",PrefixProtection,getcvar)
 	}
 	else{
-		static buffer[32],encryptsteamid[34],stringadd[34],stringadd2[34]
+		static buffer[a_max],encryptsteamid[34],stringadd[34],stringadd2[34]
 		OrpheuGetReturn(buffer,charsmax(buffer))
 		
 		
@@ -790,43 +792,45 @@ public PfnClientCommand(id)
 		}
 	}
 	if(get_pcvar_num(CmdLimitVar)>0){
-		new size = file_size( ip_flitredcmd , 1 ) 
-		for ( new i = 0 ; i < size ; i++ ){
-			new szLine[ 128 ], iLen;
-			read_file(ip_flitredcmd, i, szLine, charsmax( szLine ), iLen );
-			if(containi(PlayerIP(id),szLine[i]) != -0x01){
-				new size2 = file_size( limitfilecmd , 1 ) 
-				for ( new i = 0 ; i < size2 ; i++ ){
-					new szLine[ 128 ], iLen;
-					read_file(limitfilecmd, i, szLine, charsmax( szLine ), iLen );
-					if(containi(Argv(),szLine[i]) != -0x01){
-						limitexecute[id] = 0x00
-						client_print(id,print_console,"%s this command ^"%s^" is restricted for ^"%d^" seconds",PrefixProtection,Argv(),get_pcvar_num(CmdlimitDestroy))
-						return FMRES_SUPERCEDE	
+		if(is_user_admin(id)){
+			new size = file_size( ip_flitredcmd , 1 ) 
+			for ( new i = 0 ; i < size ; i++ ){
+				new szLine[ 128 ], iLen;
+				read_file(ip_flitredcmd, i, szLine, charsmax( szLine ), iLen );
+				if(containi(PlayerIP(id),szLine[i]) != -0x01){
+					new size2 = file_size( limitfilecmd , 1 ) 
+					for ( new i = 0 ; i < size2 ; i++ ){
+						new szLine[ 128 ], iLen;
+						read_file(limitfilecmd, i, szLine, charsmax( szLine ), iLen );
+						if(containi(Argv(),szLine[i]) != -0x01){
+							limitexecute[id] = 0x00
+							client_print(id,print_console,"%s this command ^"%s^" is restricted for ^"%d^" seconds",PrefixProtection,Argv(),get_pcvar_num(CmdlimitDestroy))
+							return FMRES_SUPERCEDE	
+						}
 					}
-				}
-			}
-		}
-		
-		new size2 = file_size( limitfilecmd , 1 ) 
-		for ( new i = 0 ; i < size2 ; i++ ){
-			new szLine[ 128 ], iLen;
-			read_file(limitfilecmd, i, szLine, charsmax( szLine ), iLen );
-			if(containi(Argv(),szLine[i]) != -0x01){
-				limitexecute[id]++ 
-				if(limitexecute[id] >=get_pcvar_num(CmdLimitMax)){
-					log_to_file(settings,"%s User ^"%s^" with address ip ^"%s^" restricted command ^"%s^" for ^"%d^" seconds",PrefixProtection,UserName(id),PlayerIP(id),Argv(),get_pcvar_num(CmdlimitDestroy))
-					new fileid = fopen(ip_flitredcmd,"at")
-					if(fileid){
-						new compress[40];
-						limitexecute[id]=0x00
-						formatex(compress,charsmax(compress),"%s^n",PlayerIP(id))
-						fputs(fileid,compress)
-					}
-					fclose(fileid)	
 				}
 			}
 			
+			new size2 = file_size( limitfilecmd , 1 ) 
+			for ( new i = 0 ; i < size2 ; i++ ){
+				new szLine[ 128 ], iLen;
+				read_file(limitfilecmd, i, szLine, charsmax( szLine ), iLen );
+				if(containi(Argv(),szLine[i]) != -0x01){
+					limitexecute[id]++ 
+					if(limitexecute[id] >=get_pcvar_num(CmdLimitMax)){
+						log_to_file(settings,"%s User ^"%s^" with address ip ^"%s^" restricted command ^"%s^" for ^"%d^" seconds",PrefixProtection,UserName(id),PlayerIP(id),Argv(),get_pcvar_num(CmdlimitDestroy))
+						new fileid = fopen(ip_flitredcmd,"at")
+						if(fileid){
+							new compress[40];
+							limitexecute[id]=0x00
+							formatex(compress,charsmax(compress),"%s^n",PlayerIP(id))
+							fputs(fileid,compress)
+						}
+						fclose(fileid)	
+					}
+				}
+				
+			}
 		}
 	}
 	if(get_pcvar_num(Radio)>0){
@@ -879,11 +883,22 @@ public PfnClientCommand(id)
 			
 		}
 		else{
-			if(containi(Argv(),"say")!= -0x01 || containi(Argv(),"say_team")!= -0x01){
-				read_argv(1,StringBuffer,charsmax(StringBuffer))
-				replace_all(StringBuffer,charsmax(StringBuffer),"%","ï¼…")
-				replace_all(StringBuffer,charsmax(StringBuffer),"#","ï¼ƒ")
-				engclient_cmd(id,Argv(),StringBuffer)
+			if(get_pcvar_num(ChatCharFix)==1)
+			{
+				if(containi(Argv(),"say")!= -0x01 || containi(Argv(),"say_team")!= -0x01){
+					read_argv(1,StringBuffer,charsmax(StringBuffer))
+					replace_all(StringBuffer,charsmax(StringBuffer),"%","ï¼…")
+					replace_all(StringBuffer,charsmax(StringBuffer),"#","ï¼ƒ")
+					engclient_cmd(id,Argv(),StringBuffer)
+				}
+			}
+			if(get_pcvar_num(ChatCharFix)==2){
+				if(containi(Argv(),"say")!= -0x01 || containi(Argv(),"say_team")!= -0x01){
+					read_argv(1,StringBuffer,charsmax(StringBuffer))
+					replace_all(StringBuffer,charsmax(StringBuffer),"%","*")
+					replace_all(StringBuffer,charsmax(StringBuffer),"#","*")
+					engclient_cmd(id,Argv(),StringBuffer)
+				}
 			}
 		}
 	}
@@ -955,7 +970,7 @@ public RegisterFakeCvar()
 
 public RegisterRemoveString()
 {
-	new deletestring[32]
+	new deletestring[a_max]
 	formatex(deletestring,charsmax(deletestring),"^n",Argv1())
 	if(!strlen(Argv1()) ){
 		server_print("%s shield_remove_string <string>",PrefixProtection)
@@ -979,7 +994,7 @@ public RegisterReplaceString()
 
 public Host_User_f_Reverse(){
 	new steamid[255]
-	new players[32], num, tempid;
+	new players[a_max], num, tempid;
 	get_players(players, num)	
 	
 	server_print("^nuserid : uniqueid : name : ip")
@@ -1039,7 +1054,7 @@ public SV_ConnectionlessPacket_Hook()
 		return okapi_ret_supercede
 	}
 	if(get_pcvar_num(Queryviewer)>0){
-		new data[net_adr],getip2[40],ziua[32],puya[255]
+		new data[net_adr],getip2[40],ziua[a_max],puya[255]
 		okapi_get_ptr_array(net_adrr(),data,net_adr)
 		get_time("%m_%d_%Y",ziua,charsmax(ziua))
 		formatex(getip2,charsmax(getip2),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
@@ -1314,8 +1329,8 @@ public SV_CheckPermisionforStatus(){
 }
 public ReBuild_Status(steamidshow){
 	
-	new players[32],MapName[32],AddressHLDS[32],EngineHLDS[32],EngineHostName[32],num
-	new PlayerName[32],PlayerSteamID[32],PingPlayer,LossPlayer
+	new players[a_max],MapName[a_max],AddressHLDS[a_max],EngineHLDS[a_max],EngineHostName[a_max],num
+	new PlayerName[a_max],PlayerSteamID[a_max],PingPlayer,LossPlayer
 	new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
 	
 	get_players(players, num)
@@ -1476,6 +1491,7 @@ public Shield_CheckSteamID(id,payload)  {
 }
 public plugin_end(){
 	SV_UpTime(2)
+	Destroy_Fileiplist()
 	nvault_close(valutsteamid)
 }
 public SHIELD_NameDeBug(id){
@@ -1488,10 +1504,49 @@ public SHIELD_NameDeBug2(id){
 
 public pfnClientUserInfoChanged(id,buffer){
 	
-	static szOldName[32],szNewName[32],longformate[255]
+	static szOldName[a_max],szNewName[a_max],longformate[255]
 	pev(id,pev_netname,szOldName,charsmax(szOldName)) 
 	formatex(longformate,charsmax(longformate),"%s",szOldName)
 	get_user_info(id,"name",szNewName,charsmax(szNewName))
+	new lastname[a_max]
+	if(is_user_admin(id)){
+		if(!equal(lastname,UserName(id))){
+			show_menu(id,0x00,"^n",0x01)
+		}
+	}
+	if(get_pcvar_num(NameCharFix)==1){
+		if(containi(szNewName,"&") !=-1){
+			replace_all(szNewName,charsmax(szNewName),"&","ï¼†")
+			replace_all(szNewName,charsmax(szNewName),"&","*")
+			set_user_info(id,"name",szNewName) 
+		}
+		if(containi(szNewName,"%") !=-1){
+			replace_all(szNewName,charsmax(szNewName),"%","ï¼…")
+			replace_all(szNewName,charsmax(szNewName),"%","*")
+			set_user_info(id,"name",szNewName) 
+		}
+		if(containi(szNewName,"#") !=-1){
+			replace_all(szNewName,charsmax(szNewName),"#","ï¼ƒ")
+			replace_all(szNewName,charsmax(szNewName),"#","*")
+			set_user_info(id,"name",szNewName) 
+		}
+		
+	}
+	if(get_pcvar_num(NameCharFix)==2){
+		if(containi(szNewName,"&") !=-1){
+			replace_all(szNewName,charsmax(szNewName),"&","*")
+			set_user_info(id,"name",szNewName) 
+		}
+		if(containi(szNewName,"%") !=-1){
+			replace_all(szNewName,charsmax(szNewName),"%","*")
+			set_user_info(id,"name",szNewName) 
+		}
+		if(containi(szNewName,"#") !=-1){
+			replace_all(szNewName,charsmax(szNewName),"#","*")
+			set_user_info(id,"name",szNewName) 
+		}
+		
+	}
 	
 	if(get_pcvar_num(NameBug)>0){
 		if(is_linux_server()){
@@ -1546,7 +1601,6 @@ public pfnClientUserInfoChanged(id,buffer){
 		
 	}
 	if(get_pcvar_num(NameSpammer)>0){
-		
 		new get_time_cvar = get_pcvar_num(TimeNameChange)
 		if(containi(szNewName,"%") !=-1){
 			if (NameUnLock[id]==2){
@@ -1603,7 +1657,6 @@ public Info_ValueForKey_Hook(index)
 {
 	if(get_pcvar_num(NameBug)>0){
 		new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
-		new lastname[a_max]
 		if(!is_linux_server()){ // windows
 			if(is_user_connected(id)){
 				new Count=admins_num()
@@ -1620,11 +1673,6 @@ public Info_ValueForKey_Hook(index)
 						}
 					}
 				}
-			}
-		}
-		if(is_user_admin(id)){
-			if(!equal(lastname,UserName(id))){
-				show_menu(id,0x00,"^n",0x01)
 			}
 		}
 		if(!is_linux_server()){ // windows
@@ -1695,13 +1743,21 @@ public SV_ConnectClient_Hook()
 				return okapi_ret_supercede
 			}
 			else if(get_pcvar_num(OptionSV_ConnectClient)==2){
-				replace_all(buffer,31,"%"," ")
-				server_cmd("kick ^"%s^" ^"%s^"",buffer,steamidhack)
+				replace_all(buffer,charsmax(buffer),"%","^x00")
+				
+				replace_all(buffer,charsmax(buffer),"#","^x00")
+				replace_all(buffer,charsmax(buffer),"&","^x00")
+				server_cmd("kick ^%s^" ^"%s^"",buffer,steamidhack)
+				server_cmd("kick %s ^"%s^"",buffer,steamidhack)
 			}
 			else if(get_pcvar_num(OptionSV_ConnectClient)>=3){
 				server_cmd("addip %d %s",get_pcvar_num(PauseDlfile),getip)
-				replace_all(buffer,31,"%"," ")
+				replace_all(buffer,charsmax(buffer),"%","^x00")
+				
+				replace_all(buffer,charsmax(buffer),"#","^x00")
+				replace_all(buffer,charsmax(buffer),"&","^x00")
 				server_cmd("kick ^"%s^" ^"%s^"",buffer,steamidhack)
+				server_cmd("kick %s ^"%s^"",buffer,steamidhack)
 			}
 		}
 	}
@@ -1719,8 +1775,12 @@ public SV_ConnectClient_Hook()
 	if(IsInvalidFunction(2,"userinfo")){
 		if(get_pcvar_num(OptionSV_ConnectClient)==3){
 			server_cmd("addip %d %s",get_pcvar_num(PauseDlfile),getip)
-			replace_all(buffer,31,"%"," ")
+			replace_all(buffer,charsmax(buffer),"%","^x00")
+			
+			replace_all(buffer,charsmax(buffer),"#","^x00")
+			replace_all(buffer,charsmax(buffer),"&","^x00")
 			server_cmd("kick ^"%s^" ^"%s^"",buffer,namebug)
+			server_cmd("kick %s ^"%s^"",buffer,namebug)
 		}
 		return okapi_ret_supercede
 	}
@@ -1731,8 +1791,12 @@ public SV_ConnectClient_Hook()
 				replace_all(buffer,0x21,"%","^x20")
 				okapi_get_ptr_array(net_adrr(),data,net_adr)
 				formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
-				replace_all(buffer,31,"%"," ")
+				replace_all(buffer,charsmax(buffer),"%","^x00")
+				
+				replace_all(buffer,charsmax(buffer),"#","^x00")
+				replace_all(buffer,charsmax(buffer),"&","^x00")
 				server_cmd("kick ^"%s^" ^"%s^"",buffer,namebug)
+				server_cmd("kick %s ^"%s^"",buffer,namebug)
 				HLDS_Shield_func(0,0,namebug,0,9,5)
 			}
 		}
@@ -1745,13 +1809,21 @@ public SV_ConnectClient_Hook()
 			return okapi_ret_supercede
 		}
 		else if(get_pcvar_num(OptionSV_ConnectClient)==2){
-			replace_all(buffer,31,"%"," ")
+			replace_all(buffer,charsmax(buffer),"%","^x00")
+			
+			replace_all(buffer,charsmax(buffer),"#","^x00")
+			replace_all(buffer,charsmax(buffer),"&","^x00")
 			server_cmd("kick ^"%s^" ^"%s^"",buffer,namebug)
+			server_cmd("kick %s ^"%s^"",buffer,namebug)
 		}
 		else if(get_pcvar_num(OptionSV_ConnectClient)>=3){
 			server_cmd("addip %d %s",get_pcvar_num(PauseDlfile),getip)
-			replace_all(buffer,31,"%"," ")
+			replace_all(buffer,charsmax(buffer),"%","^x00")
+			
+			replace_all(buffer,charsmax(buffer),"#","^x00")
+			replace_all(buffer,charsmax(buffer),"&","^x00")
 			server_cmd("kick ^"%s^" ^"%s^"",buffer,namebug)
+			server_cmd("kick %s ^"%s^"",buffer,namebug)
 		}
 	}
 	if(containi(Argv4(),checkduplicate) != -1){
@@ -1762,12 +1834,18 @@ public SV_ConnectClient_Hook()
 			return okapi_ret_supercede
 		}
 		else if(get_pcvar_num(OptionSV_ConnectClient)==2){
-			replace_all(buffer,31,"%"," ")
+			replace_all(buffer,charsmax(buffer),"%","^x00")
+			
+			replace_all(buffer,charsmax(buffer),"#","^x00")
+			replace_all(buffer,charsmax(buffer),"&","^x00")
 			server_cmd("kick ^"%s^" ^"%s^"",buffer,namebug)
 		}
 		else if(get_pcvar_num(OptionSV_ConnectClient)>=3){
 			server_cmd("addip %d %s",get_pcvar_num(PauseDlfile),getip)
-			replace_all(buffer,31,"%"," ")
+			replace_all(buffer,charsmax(buffer),"%","^x00")
+			
+			replace_all(buffer,charsmax(buffer),"#","^x00")
+			replace_all(buffer,charsmax(buffer),"&","^x00")
 			server_cmd("kick ^"%s^" ^"%s^"",buffer,namebug)
 		}
 	}
@@ -1780,13 +1858,21 @@ public SV_ConnectClient_Hook()
 				return okapi_ret_supercede
 			}
 			else if(get_pcvar_num(OptionSV_ConnectClient)==2){
-				replace_all(buffer,31,"%"," ")
+				replace_all(buffer,charsmax(buffer),"%","^x00")
+				
+				replace_all(buffer,charsmax(buffer),"#","^x00")
+				replace_all(buffer,charsmax(buffer),"&","^x00")
 				server_cmd("kick ^"%s^" ^"%s^"",buffer,hltvbug)
+				server_cmd("kick %s ^"%s^"",buffer,hltvbug)
 			}
 			else if(get_pcvar_num(OptionSV_ConnectClient)>=3){
 				server_cmd("addip %d %s",get_pcvar_num(PauseDlfile),getip)
-				replace_all(buffer,31,"%"," ")
+				replace_all(buffer,charsmax(buffer),"%","^x00")
+				
+				replace_all(buffer,charsmax(buffer),"#","^x00")
+				replace_all(buffer,charsmax(buffer),"&","^x00")
 				server_cmd("kick ^"%s^" ^"%s^"",buffer,hltvbug)
+				server_cmd("kick %s ^"%s^"",buffer,hltvbug)
 			}
 		}
 	}
@@ -1800,18 +1886,26 @@ public SV_ConnectClient_Hook()
 				return okapi_ret_supercede
 			}
 			else if(get_pcvar_num(OptionSV_ConnectClient)==2){
-				replace_all(buffer,31,"%"," ")
+				replace_all(buffer,charsmax(buffer),"%","^x00")
+				
+				replace_all(buffer,charsmax(buffer),"#","^x00")
+				replace_all(buffer,charsmax(buffer),"&","^x00")
 				server_cmd("kick ^"%s^" ^"%s^"",buffer,hlproxy)
+				server_cmd("kick %s ^"%s^"",buffer,hlproxy)
 			}
 			else if(get_pcvar_num(OptionSV_ConnectClient)>=3){
 				server_cmd("addip %d %s",get_pcvar_num(PauseDlfile),getip)
-				replace_all(buffer,31,"%"," ")
-				server_cmd("kick ^"%s^" ^"%s^"",buffer,hlproxy)
+				replace_all(buffer,charsmax(buffer),"%","^x00")
+				replace_all(buffer,charsmax(buffer),"+","^x00")
+				replace_all(buffer,charsmax(buffer),"#","^x00")
+				replace_all(buffer,charsmax(buffer),"&","^x00")
+				server_cmd("kick %s ^"%s^"",buffer,hlproxy)
+				server_cmd("kick %s ^"%s^"",buffer,hlproxy)
 			}
 		}
 	}
 	if(get_pcvar_num(FakePlayerFilter)>0){
-		new counterstrike[32]
+		new counterstrike[varmax]
 		if(get_cvar_string("mp_c4timer",counterstrike,charsmax(counterstrike))){
 			if(!(containi(value,"\_cl_autowepswitch\1\") != -0x01 || containi(value,"\_cl_autowepswitch\0\") != -0x01)){
 				okapi_get_ptr_array(net_adrr(),data,net_adr)
@@ -1821,13 +1915,21 @@ public SV_ConnectClient_Hook()
 					return okapi_ret_supercede
 				}
 				else if(get_pcvar_num(OptionSV_ConnectClient)==2){
-					replace_all(buffer,31,"%"," ")
+					replace_all(buffer,charsmax(buffer),"%","^x00")
+					replace_all(buffer,charsmax(buffer),"+","^x00")
+					replace_all(buffer,charsmax(buffer),"#","^x00")
+					replace_all(buffer,charsmax(buffer),"&","^x00")
 					server_cmd("kick ^"%s^" ^"%s^"",buffer,fakeplayer)
+					server_cmd("kick %s ^"%s^"",buffer,fakeplayer)
 				}
 				else if(get_pcvar_num(OptionSV_ConnectClient)>=3){
 					server_cmd("addip %d %s",get_pcvar_num(PauseDlfile),getip)
-					replace_all(buffer,31,"%"," ")
+					replace_all(buffer,charsmax(buffer),"%","^x00")
+					replace_all(buffer,charsmax(buffer),"+","^x00")
+					replace_all(buffer,charsmax(buffer),"#","^x00")
+					replace_all(buffer,charsmax(buffer),"&","^x00")
 					server_cmd("kick ^"%s^" ^"%s^"",buffer,fakeplayer)
+					server_cmd("kick %s ^"%s^"",buffer,fakeplayer)
 				}
 			}
 		}
