@@ -256,15 +256,17 @@ public RegisterOrpheu(){
 	}
 	
 	
-	new AMXXVersion[a_max],RCONName[a_max],ServerInfo[a_max],Metamodinfo[a_max]
+	new AMXXVersion[a_max],RCONName[a_max],ServerInfo[a_max],Metamodinfo[a_max],get[a_max]
 	
 	get_amxx_verstring(AMXXVersion,charsmax(AMXXVersion))
 	get_cvar_string("rcon_password",RCONName,charsmax(RCONName))
 	get_cvar_string("sv_version",ServerInfo,charsmax(ServerInfo))
 	get_cvar_string("metamod_version",Metamodinfo,charsmax(Metamodinfo))
+	get_plugin(-1,get,charsmax(get))
 	
 	server_print("--------------------------------------------------------------------------------------")
 	server_print("%s Amxx : %s",PrefixProtection,AMXXVersion)
+	server_print("%s Plugin : %s",PrefixProtection,get)
 	server_print("%s Rcon : %s",PrefixProtection,RCONName)
 	server_print("%s Engine : %s",PrefixProtection,ServerInfo)
 	server_print("%s MetaMod : %s",PrefixProtection,Metamodinfo)
@@ -1707,7 +1709,11 @@ public Info_ValueForKey_Hook(index)
 	return okapi_ret_ignore
 }
 public plugin_pause(){
-	server_cmd("amxx unpause HLDS-Shield.amxx")
+	new get[a_max]
+	get_plugin(-1,get,charsmax(get))
+	server_cmd("amxx unpause %s",get)
+	log_to_file(settings,"%s Failed to pause plugin ^"%s^"",PrefixProtection,get)
+	client_print_color(0,0,"^4%s^1 : Failed to pause plugin ^"%s^"",PrefixProtection,get)
 }
 public Host_Say_f_Hook(){
 	if(get_pcvar_num(CommandBug)>0){
