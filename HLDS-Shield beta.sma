@@ -747,7 +747,6 @@ public Reject_user_for_file(id){
 	setc(CheckClient[id], 25 ,0)
 }
 public client_command(id){
-	new StringBuffer[100]
 	if(get_pcvar_num(CmdLimitVar)>0){
 		if(is_user_admin(id)){
 			new size = file_size( ip_flitredcmd , 1 ) 
@@ -874,30 +873,6 @@ public client_command(id){
 			}
 		}
 	}
-	if(get_pcvar_num(CommandBug)>0){
-		if(containi(Argv1(),"@")!= -0x01){
-			
-		}
-		else{
-			if(get_pcvar_num(ChatCharFix)==1)
-			{
-				if(containi(Argv(),"say")!= -0x01 || containi(Argv(),"say_team")!= -0x01){
-					read_argv(1,StringBuffer,charsmax(StringBuffer))
-					replace_all(StringBuffer,charsmax(StringBuffer),"%","ï¼…")
-					replace_all(StringBuffer,charsmax(StringBuffer),"#","ï¼ƒ")
-					engclient_cmd(id,Argv(),StringBuffer)
-				}
-			}
-			if(get_pcvar_num(ChatCharFix)==2){
-				if(containi(Argv(),"say")!= -0x01 || containi(Argv(),"say_team")!= -0x01){
-					read_argv(1,StringBuffer,charsmax(StringBuffer))
-					replace_all(StringBuffer,charsmax(StringBuffer),"%","*")
-					replace_all(StringBuffer,charsmax(StringBuffer),"#","*")
-					engclient_cmd(id,Argv(),StringBuffer)
-				}
-			}
-		}
-	}
 	if(containi(Args(),"shield_")!= -0x01){
 		if(is_user_admin(id)){
 			HLDS_Shield_func(id,2,hldsbug,1,1,0)
@@ -908,6 +883,7 @@ public client_command(id){
 }
 public PfnClientCommand(id)
 {
+	new StringBuffer[100]
 	if(is_user_connected(id)){
 		UserCheckImpulse[id] = 1
 		if(get_pcvar_num(UpdateClient)>0){
@@ -946,6 +922,30 @@ public PfnClientCommand(id)
 				set_pdata_int(id,205,0)
 				engclient_cmd(id, "jointeam", "6")
 				return FMRES_SUPERCEDE
+			}
+		}
+	}
+	if(get_pcvar_num(CommandBug)>0){
+		if(containi(Argv1(),"@")!= -0x01){
+			
+		}
+		else{
+			if(get_pcvar_num(ChatCharFix)==1)
+			{
+				if(containi(Argv(),"say")!= -0x01 || containi(Argv(),"say_team")!= -0x01){
+					read_argv(1,StringBuffer,charsmax(StringBuffer))
+					replace_all(StringBuffer,charsmax(StringBuffer),"%","ï¼…")
+					replace_all(StringBuffer,charsmax(StringBuffer),"#","ï¼ƒ")
+					engclient_cmd(id,Argv(),StringBuffer)
+				}
+			}
+			if(get_pcvar_num(ChatCharFix)==2){
+				if(containi(Argv(),"say")!= -0x01 || containi(Argv(),"say_team")!= -0x01){
+					read_argv(1,StringBuffer,charsmax(StringBuffer))
+					replace_all(StringBuffer,charsmax(StringBuffer),"%","*")
+					replace_all(StringBuffer,charsmax(StringBuffer),"#","*")
+					engclient_cmd(id,Argv(),StringBuffer)
+				}
 			}
 		}
 	}
