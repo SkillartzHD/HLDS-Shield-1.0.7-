@@ -847,21 +847,29 @@ public client_command(id){
 		}
 	}
 	if(get_pcvar_num(IlegalCmd)>0){
-		for (new i = 0x00; i < sizeof(ShieldServerCvarBlock); i++){
-			if(containi(Argv1(),ShieldServerCvarBlock[i]) != -0x01){
-				locala[id]++
-				if(locala[id] >=get_pcvar_num(LimitPrintf)){
-					return PLUGIN_HANDLED
-				}
-				else{
-					if(debug_s[id]==0){
-						if(locala[id] == 3){
-							locala[id]=1
-							debug_s[id]=1
-						}
+		if(containi(Argv(),"cl_setautobuy") != -0x01 ||
+		containi(Argv(),"say_team") != -0x01 ||
+		containi(Argv(),"rebuy") != -0x01 || 
+		containi(Argv(),"say") != -0x01){	
+			return PLUGIN_CONTINUE
+		}
+		else{
+			for (new i = 0x00; i < sizeof(ShieldServerCvarBlock); i++){
+				if(containi(Argv1(),ShieldServerCvarBlock[i]) != -0x01){
+					locala[id]++
+					if(locala[id] >=get_pcvar_num(LimitPrintf)){
+						return PLUGIN_HANDLED
 					}
-					HLDS_Shield_func(id,1,ilegalcommand,id,1,0)
-					return PLUGIN_HANDLED;
+					else{
+						if(debug_s[id]==0){
+							if(locala[id] == 3){
+								locala[id]=1
+								debug_s[id]=1
+							}
+						}
+						HLDS_Shield_func(id,1,ilegalcommand,id,1,0)
+						return PLUGIN_HANDLED;
+					}
 				}
 			}
 		}
