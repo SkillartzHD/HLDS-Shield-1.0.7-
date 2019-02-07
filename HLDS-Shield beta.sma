@@ -167,6 +167,8 @@ public UserImpulseFalse(id){
 }
 public pfnClientConnect(id){
 	usercheck[id]=1
+	DelaySpamBotStop[id] = get_gametime() + 5.0;
+	DelaySpamBotStart[id] = 0.0
 	FalseAllFunction(id)
 	Info_ValueForKey_Hook(id)
 	
@@ -663,6 +665,7 @@ public SV_Rcon_Hook()
 						}
 						if(id){
 							HLDS_Shield_func(id,1,cmdbug,1,1,0)
+							return okapi_ret_supercede
 						}
 					}
 					else{
@@ -741,58 +744,8 @@ public Reject_user_for_file(id){
 	}
 	setc(CheckClient[id], 25 ,0)
 }
-public PfnClientCommand(id)
-{
+public client_command(id){
 	new StringBuffer[100]
-	if(is_user_connected(id)){
-		UserCheckImpulse[id] = 1
-		if(get_pcvar_num(UpdateClient)>0){
-			SV_ForceFullClientsUpdate_api(id) // fix show players in vgui for old build
-		}
-	}
-	
-	
-	
-	mungelimit[id]++
-	if(!task_exists(0x01)){
-		set_task(0.1,"LevFunction",id+TASK_ONE)
-	}
-	if(containi(Args(),"shield_")!= -0x01){
-		if(is_user_admin(id)){
-			HLDS_Shield_func(id,2,hldsbug,1,1,0)
-			return FMRES_SUPERCEDE
-		}
-	}
-	if(mungelimit[id] >= get_pcvar_num(LimitMunge)){
-		mungelimit[id] = 0x00
-		locala[id]++
-		if(locala[id] >=get_pcvar_num(LimitPrintf)){
-			return 0x00 // for spam log :(
-		}
-		else{
-			if(!strlen(UserName(id))){
-				locala[id]++
-				
-				HLDS_Shield_func(id,1,suspicious,1,3,1)
-				return FMRES_SUPERCEDE
-			}
-			else{
-				locala[id]++
-				HLDS_Shield_func(id,1,suspicious,1,1,1)
-				return FMRES_SUPERCEDE
-			}
-			return FMRES_SUPERCEDE
-		}
-	}
-	if(get_pcvar_num(SpectatorVguiBug)>0){
-		if(equali(Argv(), "joinclass") || (equali(Argv(), "menuselect") && get_pdata_int(id,205) == 0x03)){
-			if(get_user_team(id) == 3){
-				set_pdata_int(id,205,0)
-				engclient_cmd(id, "jointeam", "6")
-				return FMRES_SUPERCEDE
-			}
-		}
-	}
 	if(get_pcvar_num(CmdLimitVar)>0){
 		if(is_user_admin(id)){
 			new size = file_size( ip_flitredcmd , 1 ) 
@@ -807,7 +760,7 @@ public PfnClientCommand(id)
 						if(containi(Argv(),szLine[i]) != -0x01){
 							limitexecute[id] = 0x00
 							client_print(id,print_console,"%s this command ^"%s^" is restricted for ^"%d^" seconds",PrefixProtection,Argv(),get_pcvar_num(CmdlimitDestroy))
-							return FMRES_SUPERCEDE	
+							return PLUGIN_HANDLED	
 						}
 					}
 				}
@@ -839,8 +792,18 @@ public PfnClientCommand(id)
 		for (new i = 0x00; i < sizeof(RadioCommand); i++){
 			if(containi(Argv(),RadioCommand[i]) != -0x01){
 				HLDS_Shield_func(id,3,radiofunction,0,0,0)
-				return FMRES_SUPERCEDE
+				return PLUGIN_HANDLED
 			}
+		}
+	}
+	if(containi(Argv(),"say") != -0x01 || containi(Argv(),"say_team") != -0x01 ||
+	containi(Argv(),"amx_") != -0x01){
+		static Float:fGameTime;
+		fGameTime = get_gametime()
+		
+		if(DelaySpamBotStop[id] > fGameTime){
+			console_print(id,"%s Wait %f seconds to to allow access command ^"%s^"",PrefixProtection,get_gametime(),Argv())
+			return PLUGIN_HANDLED
 		}
 	}
 	if(get_pcvar_num(CommandBug)>0){
@@ -852,10 +815,11 @@ public PfnClientCommand(id)
 				if(id){
 					locala[id]++
 					if(locala[id] >=get_pcvar_num(LimitPrintf)){
-						return okapi_ret_supercede
+						return PLUGIN_HANDLED
 					}
 					if(id){
 						HLDS_Shield_func(id,1,cmdbug,1,1,0)
+						return PLUGIN_HANDLED
 					}
 				}
 			}
@@ -864,7 +828,7 @@ public PfnClientCommand(id)
 			if(containi(Args(),MessageHook[i])!= -0x01 || containi(Argv(),MessageHook[i])!= -0x01){
 				locala[id]++
 				if(locala[id] >=get_pcvar_num(LimitPrintf)){
-					return FMRES_SUPERCEDE
+					return PLUGIN_HANDLED
 				}
 				else{
 					if(debug_s[id]==0){
@@ -874,9 +838,29 @@ public PfnClientCommand(id)
 						}
 					}
 					HLDS_Shield_func(id,1,cmdbug,0,5,0)
-					return FMRES_SUPERCEDE
+					return PLUGIN_HANDLED
 				}
-				return FMRES_SUPERCEDE
+				return PLUGIN_HANDLED
+			}
+		}
+	}
+	if(get_pcvar_num(IlegalCmd)>0){
+		for (new i = 0x00; i < sizeof(ShieldServerCvarBlock); i++){
+			if(containi(Argv1(),ShieldServerCvarBlock[i]) != -0x01){
+				locala[id]++
+				if(locala[id] >=get_pcvar_num(LimitPrintf)){
+					return PLUGIN_HANDLED
+				}
+				else{
+					if(debug_s[id]==0){
+						if(locala[id] == 3){
+							locala[id]=1
+							debug_s[id]=1
+						}
+					}
+					HLDS_Shield_func(id,1,ilegalcommand,id,1,0)
+					return PLUGIN_HANDLED;
+				}
 			}
 		}
 	}
@@ -904,34 +888,57 @@ public PfnClientCommand(id)
 			}
 		}
 	}
-	
-	if(get_pcvar_num(IlegalCmd)>0){
-		if(containi(Argv(),"cl_setautobuy") != -0x01 || containi(Argv(),"say_team") != -0x01 
-		|| containi(Argv(),"say") != -0x01){
-			return FMRES_IGNORED
+	if(containi(Args(),"shield_")!= -0x01){
+		if(is_user_admin(id)){
+			HLDS_Shield_func(id,2,hldsbug,1,1,0)
+			return PLUGIN_HANDLED
 		}
-		else{
-			for (new i = 0x00; i < sizeof(ShieldServerCvarBlock); i++){
-				if(containi(Argv1(),ShieldServerCvarBlock[i]) != -0x01){
-					locala[id]++
-					if(locala[id] >=get_pcvar_num(LimitPrintf)){
-						return FMRES_SUPERCEDE
-					}
-					else{
-						if(debug_s[id]==0){
-							if(locala[id] == 3){
-								locala[id]=1
-								debug_s[id]=1
-							}
-						}
-						HLDS_Shield_func(id,1,ilegalcommand,id,1,0)
-						return FMRES_SUPERCEDE;
-					}
-				}
-			}
+	}
+	return PLUGIN_CONTINUE
+}
+public PfnClientCommand(id)
+{
+	if(is_user_connected(id)){
+		UserCheckImpulse[id] = 1
+		if(get_pcvar_num(UpdateClient)>0){
+			SV_ForceFullClientsUpdate_api(id) // fix show players in vgui for old build
 		}
 	}
 	
+	mungelimit[id]++
+	if(!task_exists(0x01)){
+		set_task(0.1,"LevFunction",id+TASK_ONE)
+	}
+	if(mungelimit[id] >= get_pcvar_num(LimitMunge)){
+		mungelimit[id] = 0x00
+		locala[id]++
+		if(locala[id] >=get_pcvar_num(LimitPrintf)){
+			return 0x00 // for spam log :(
+		}
+		else{
+			if(!strlen(UserName(id))){
+				locala[id]++
+				
+				HLDS_Shield_func(id,1,suspicious,1,3,1)
+				return FMRES_SUPERCEDE
+			}
+			else{
+				locala[id]++
+				HLDS_Shield_func(id,1,suspicious,1,1,1)
+				return FMRES_SUPERCEDE
+			}
+			return FMRES_SUPERCEDE
+		}
+	}
+	if(get_pcvar_num(SpectatorVguiBug)>0){
+		if(equali(Argv(), "joinclass") || (equali(Argv(), "menuselect") && get_pdata_int(id,205) == 0x03)){
+			if(get_user_team(id) == 3){
+				set_pdata_int(id,205,0)
+				engclient_cmd(id, "jointeam", "6")
+				return FMRES_SUPERCEDE
+			}
+		}
+	}
 	return FMRES_IGNORED
 }
 public RegisterCmdFake()
@@ -1503,8 +1510,6 @@ public SHIELD_NameDeBug(id){
 public SHIELD_NameDeBug2(id){
 	NameUnLock[id] = 2
 }
-
-new number
 public pfnClientUserInfoChanged(id,buffer){
 	static szOldName[a_max],szNewName[a_max],longformate[255]
 	pev(id,pev_netname,szOldName,charsmax(szOldName))
@@ -2168,6 +2173,8 @@ public PfnClientDisconnect(id){
 	if(get_pcvar_num(RandomSteamid)>0){
 		Shield_CheckSteamID(id,2)
 	}
+	DelaySpamBotStop[id] = 0.0
+	DelaySpamBotStart[id] = 0.0
 	FalseAllFunction(id)
 }
 public SV_Spawn_f_Hook()
