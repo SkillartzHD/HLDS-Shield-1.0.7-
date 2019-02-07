@@ -45,6 +45,8 @@ new okapi_hook:duplicatehook
 new OrpheuFunction:long2
 new limitba[33]
 new debug_s[33]
+new number
+new Float:DelaySpamBotStop[33],Float:DelaySpamBotStart[33]
 new UserCheckImpulse[33]
 new DuplicateSteamid
 new HLTVFilter
