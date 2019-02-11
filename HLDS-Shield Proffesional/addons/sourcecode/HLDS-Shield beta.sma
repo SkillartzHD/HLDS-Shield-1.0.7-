@@ -4,7 +4,7 @@
 #include <HLDS_Shield_function.hlds>
 #endif
 
-/*03/05/2018 
+/*
 HLDS_Shield_func(index,print,msg[],emit,log,pedeapsa)
 index - id = jucator , 0 nimic
 print - 1..3 , 0 nu este nimic
@@ -35,6 +35,10 @@ public Hooks_init(){
 	
 	Registerforward()
 	
+	if(get_pcvar_num(OS_System)>0){
+		RegisterOS_System()
+	}
+	
 	if(ServerVersion == 0){
 		if(is_linux_server()){
 			RegisterOkapiLinux()
@@ -45,6 +49,24 @@ public Hooks_init(){
 	}
 	set_task(1.0,"RegisterOrpheu")
 	
+}
+
+public RegisterOS_System(){
+	
+	register_srvcmd("shield_os_ban","CL_ProfileBan")
+	register_message(get_user_msgid("MOTD"),"CL_MotdMessage")
+	
+	_OS_MainSettings()
+	_OS_CreateEmptyFile()
+	
+	if(file_exists(MainConfigfile)){
+		server_cmd("exec ^"%s^"",MainConfigfile)
+	}
+	else{
+		server_print("%s: I don't found file ^"%s^"",prefixos,MainConfigfile)
+	}
+	
+	set_task(0.1,"SV_ExecuteMainConfig")
 }
 
 public Registerforward(){
@@ -79,6 +101,15 @@ public RegisterCvars(){
 	TimeNameChange = register_cvar("shield_namechange_delay_seconds","5")
 	NameCharFix = register_cvar("shield_name_char_fix","1") // 1 replaced with utf8 char , 2 replaced with * for old build
 	ChatCharFix = register_cvar("shield_chat_char_fix","1") // 1 replaced with utf8 char , 2 replaced with * for old build
+	// OS_Ban
+	OS_System = register_cvar("shield_os_system","1")
+	CvarTableName = register_cvar("shield_os_username","SkillartzHD_PublicBan_List")
+	CvarAdministratorServer = register_cvar("shield_os_contact","WwW.AlphaCS.Ro")
+	CvarFindCvarBuffer = register_cvar("shield_os_userinfo_restrict_value","3958")
+	CvarCreateBuffer = register_cvar("shield_os_userinfo_restrict_name","513")
+	CvarVpnDetector = register_cvar("shield_vpn_detector","1")
+	CvarVpnDetectorKey = register_cvar("shield_vpn_detector_key","70968l-0233p8-6115a0-92173c")
+	// OS_Ban
 	
 	OptionSV_ConnectClient = register_cvar("shield_sv_connectclient_filter_option","1") // 1 - force return 2 - kick 3 - ban
 	steamidgenerate=register_cvar("shield_steamid_generate_ip","1")
@@ -143,6 +174,29 @@ public SV_ForceFullClientsUpdate_api(index){
 	SV_ForceFullClientsUpdate()
 }
 
+public SV_ExecuteMainConfig(){
+	new varget[100],key[50]
+	get_pcvar_string(CvarTableName,varget,charsmax(varget))
+	get_pcvar_string(CvarVpnDetectorKey,key,charsmax(key))
+	server_print("%s: CookieBan account: ^"User_%s^"^n%s: VPNDetectorKey: ^"%s^"",prefixos,varget,prefixos,key)
+	
+}
+public CL_MotdMessage(msgid,dest,id){
+	new AddressHLDS[32],stringbuffer[1000],varget[100]
+	get_cvar_string("net_address",AddressHLDS,charsmax(AddressHLDS))
+	get_pcvar_string(CvarTableName,varget,charsmax(varget))
+	replace_all(AddressHLDS,charsmax(AddressHLDS),".","+")
+	replace_all(AddressHLDS,charsmax(AddressHLDS),":","+")
+	formatex(stringbuffer,charsmax(stringbuffer),"%s/checkplayer.php?usertabel=%s&userserver=%s",urlcache,varget,AddressHLDS)
+	show_motd(id,stringbuffer)
+}
+public _OS_CreateEmptyFile(){
+	if(!file_exists("motd.txt")){
+		new MotdConfig = fopen("motd.txt","wb")
+		fprintf(MotdConfig,"^x20")
+		fclose(MotdConfig)
+	}
+}
 public SV_UsersID(id){
 	new players[a_max], num, tempid;
 	get_players(players, num)
@@ -161,6 +215,12 @@ public client_authorized(id){
 		SV_CheckForDuplicateSteamID(id)
 	}
 }
+public isCheckUserBanned(id){
+	new stringurl[255]
+	formatex(stringurl,charsmax(stringurl),"%s/%s",urlcache,CacheWebsite)
+	HTTP_DownloadFile(stringurl,CacheFile)
+	set_task(1.0,"_OS_DetectedUser",id)
+}
 
 public UserImpulseFalse(id){
 	UserCheckImpulse[id] = 0
@@ -171,6 +231,13 @@ public pfnClientConnect(id){
 	DelaySpamBotStart[id] = 0.0
 	FalseAllFunction(id)
 	Info_ValueForKey_Hook(id)
+	
+	if(get_pcvar_num(OS_System)>0){
+		if(get_pcvar_num(CvarVpnDetector)>0){
+			set_task(1.0,"_OS_VPNChecker",id)
+			set_task(2.0,"_OS_VpnDetected",id)
+		}
+	}
 	
 	if(ServerVersion == 1){ // rehlds
 		if(get_pcvar_num(NameProtector)>0){
@@ -238,7 +305,7 @@ public RegisterOrpheu(){
 				log_to_file(settings,"%s Function SteamIDHash dont work with dproto %s",PrefixProtection,getcvar)
 			}
 			else{
-				getidstringhook = OrpheuRegisterHook(OrpheuGetFunction("SV_GetIDString"),"SV_GetIDString_Hook",OrpheuHookPost)
+				//getidstringhook = OrpheuRegisterHook(OrpheuGetFunction("SV_GetIDString"),"SV_GetIDString_Hook",OrpheuHookPost)
 				memory2++
 			}
 		}
@@ -337,6 +404,178 @@ public Cmd_ExecuteString_Fix()
 
 public plugin_cfg(){
 	RegisterConfigPlugin()
+}
+public _OS_VPNChecker(id){
+	new CheckVPN[255],CookieFile[20],key[100]
+	get_pcvar_string(CvarVpnDetectorKey,key,charsmax(key))
+	formatex(CookieFile,charsmax(CookieFile),"addons/amxmodx/configs/OS_Ban/vpn_detector/%s_stored",PlayerIP(id))
+	formatex(CheckVPN,charsmax(CheckVPN),"%s/vpndetector.php?address=%s&key=%s",urlcache,PlayerIP(id),key)
+	replace_all(CookieFile,charsmax(CookieFile),".","_")
+	HTTP_DownloadFile(CheckVPN,CookieFile)
+}
+public HTTP_Download( const szFile[] , iDownloadID , iBytesRecv , iFileSize , bool:TransferComplete ) { 
+	if(TransferComplete) { 
+		server_print("%s: DEBUG_%x.",prefixos,iFileSize)
+		CheckVPN = iFileSize
+		checkusor = iFileSize
+	} 
+}
+public _OS_VpnDetected(id){
+	if(get_pcvar_num(CvarVpnDetector)>0){
+		new CookieFile[20],CookieFile2[20]
+		formatex(CookieFile,charsmax(CookieFile),"addons/amxmodx/configs/OS_Ban/vpn_detector/%s_stored",PlayerIP(id))
+		formatex(CookieFile2,charsmax(CookieFile2),"addons/amxmodx/configs/OS_Ban/vpn_detector/%s",PlayerIP(id))
+		
+		replace_all(CookieFile,charsmax(CookieFile),".","_")
+		replace_all(CookieFile2,charsmax(CookieFile2),".","_")
+		
+		new FileRestricted = file_exists(CookieFile)
+		new FileIdIP =file_exists(CookieFile2)
+		
+		if(!FileIdIP){
+			new MotdConfig = fopen(CookieFile2,"wb")
+			fprintf(MotdConfig,"^x20")
+			fclose(MotdConfig)
+		}
+		if(FileIdIP == FileRestricted){
+			if(CheckVPN==3){
+				PlayerGetPackets(id,2,0)
+				PlayerGetPackets(id,1,0)
+			}
+			else{
+				unlink(CookieFile)
+				unlink(CookieFile2)
+			}
+		}
+	}
+}
+public _OS_DetectedUser(id){
+	if(checkusor==1){
+		PlayerGetPackets(id,2,0)
+		PlayerGetPackets(id,1,0)
+		unlink(CacheFile)
+	}
+	else{
+		if(get_pcvar_num(CvarFindCvarBuffer)==-1 && get_pcvar_num(CvarCreateBuffer)==-1){
+			return 1
+		}
+		else{
+			new varget[100],userinfo[50],varget4[50]
+			get_pcvar_string(CvarCreateBuffer,varget4,charsmax(varget4))
+			get_pcvar_string(CvarFindCvarBuffer,varget,charsmax(varget))
+			
+			get_user_info(id,varget4,userinfo,charsmax(userinfo))
+			
+			if(containi(userinfo,varget) != -0x01)
+			{
+				PlayerGetPackets(id,2,1)
+				PlayerGetPackets(id,1,0)
+			}
+		}
+	}
+	return 0
+}
+public CL_ProfileBan(id){
+	
+	new reason[32],FirstArg[32],SecondArg[32],varget3[50],varget4[50]
+	new AddressHLDS[32],stringbuffer[1000],varget[100],StringArg[100],seconds
+	
+	get_pcvar_string(CvarFindCvarBuffer,varget3,charsmax(varget3))
+	get_pcvar_string(CvarCreateBuffer,varget4,charsmax(varget4))
+	
+	read_argv(1,FirstArg,sizeof(FirstArg) -1)
+	read_argv(2,SecondArg,sizeof(SecondArg) -1)
+	read_argv(3,StringArg,sizeof(StringArg) -1)
+	
+	new player = cmd_target(id,FirstArg,(CMDTARGET_NO_BOTS))
+	
+	if(!is_user_connected(player)){
+		console_print(id,"%s: i don't found userid/name",prefixos)
+		return PLUGIN_HANDLED
+	}
+	if(equal(FirstArg,"") || equal(SecondArg,"") || equal(StringArg,"")){
+		console_print(id,"%s: shield_os_ban <name> <reason> <seconds>",prefixos)
+		return PLUGIN_HANDLED
+	}
+	if(is_str_num(StringArg)){
+		seconds = abs(str_to_num(StringArg))
+	}
+	else{
+		console_print(id,"%s: argument 3 is only numbers!",prefixos)
+		return PLUGIN_HANDLED
+	}	
+	read_argv(2,reason,charsmax(reason))
+	remove_quotes (reason)
+	
+	get_cvar_string("net_address",AddressHLDS,charsmax(AddressHLDS))
+	get_pcvar_string(CvarTableName,varget,charsmax(varget))
+	replace_all(AddressHLDS,charsmax(AddressHLDS),".","+")
+	replace_all(AddressHLDS,charsmax(AddressHLDS),":","+")
+	formatex(stringbuffer,charsmax(stringbuffer),"%s/banuser.php?usertabel=%s&userserver=%s&timeban=%d",urlcache,varget,AddressHLDS,seconds)
+	show_motd(player,stringbuffer,"Counter-Strike")
+	client_print_color(0,0,"^4%s^1 User ^4^"%s^"^1 address: ^4^"%s^"^1 banned with reason ^"^4%s^1^"",prefixos,UserName(player),PlayerIP(player),SecondArg)
+	
+	log_to_file(LogOSExecuted,"----------------------------------------------------------------------")
+	log_to_file(LogOSExecuted,"%s UserName: ^"%s^"",prefixos,UserName(player),PlayerIP(player))
+	log_to_file(LogOSExecuted,"%s PlayerIP: ^"%s^"",prefixos,PlayerIP(player))
+	log_to_file(LogOSExecuted,"%s SteamID:  ^"%s^"",prefixos,BufferSteamID(player))
+	log_to_file(LogOSExecuted,"%s Reason:  ^"%s^"",prefixos,SecondArg)
+	log_to_file(LogOSExecuted,"%s Seconds:  ^"%s^"",prefixos,seconds)
+	log_to_file(LogOSExecuted,"%s Channel transmit:  ^"%s^"",prefixos,varget)
+	
+	if(get_pcvar_num(CvarFindCvarBuffer)==-1 && get_pcvar_num(CvarCreateBuffer)==-1){
+		return 1
+	}
+	else{
+		new userinfo2[50]
+		get_user_info(player,"bottomcolor",userinfo2,charsmax(userinfo2))
+		client_cmd(player,"setinfo bottomcolor ^"^"") // for clean userinfo for fix "Info string length exceeded"
+		client_cmd(player,"setinfo ^"%s^" ^"%s^"",varget4,varget3)
+		client_cmd(player,"setinfo bottomcolor %s",userinfo2) // set bottomcolor back
+	}
+	
+	set_task(3.0,"PlayerDisconnect",player)
+	return PLUGIN_CONTINUE
+}
+public PlayerDisconnect(player){
+	PlayerGetPackets(player,1,0)
+}
+stock PlayerGetPackets(index,function,userinfosettings){
+	new varget[50],varget2[50],varget3[50],varget4[50]
+	get_pcvar_string(CvarTableName,varget,charsmax(varget))
+	get_pcvar_string(CvarAdministratorServer,varget2,charsmax(varget2))
+	get_pcvar_string(CvarFindCvarBuffer,varget3,charsmax(varget3))
+	get_pcvar_string(CvarCreateBuffer,varget4,charsmax(varget4))
+	if(function == 1){
+		client_print(index,print_console,"^n----------------------------------------------------------------------")
+		client_print(index,print_console,"%s Banned from this channel ^"User_%s^"",prefixos,varget)
+		client_print(index,print_console,"%s UserName: ^"%s^"",prefixos,UserName(index),PlayerIP(index))
+		client_print(index,print_console,"%s PlayerIP: ^"%s^"",prefixos,PlayerIP(index))
+		client_print(index,print_console,"%s SteamID:  ^"%s^"",prefixos,BufferSteamID(index))
+		client_print(index,print_console,"%s Please contact administrator server : ^"%s^"",prefixos,varget2)
+		client_print(index,print_console,"----------------------------------------------------------------------^n")
+	}
+	if(function == 2){
+		log_to_file(LogFileOS,"----------------------------------------------------------------------")
+		log_to_file(LogFileOS,"%s Banned from this channel ^"User_%s^"",prefixos,varget)
+		log_to_file(LogFileOS,"%s UserName: ^"%s^"",prefixos,UserName(index),PlayerIP(index))
+		log_to_file(LogFileOS,"%s PlayerIP: ^"%s^"",prefixos,PlayerIP(index))
+		log_to_file(LogFileOS,"%s SteamID:  ^"%s^"",prefixos,BufferSteamID(index))
+		if(CheckVPN==3){
+			log_to_file(LogFileOS,"%s VPN Detected: ^"proxy_%s^"",prefixos,PlayerIP(index))
+		}
+		
+	}
+	if(userinfosettings == 1){
+		log_to_file(LogFileOS,"%s Userinfo Restricted:  ^"%s-%s^"",prefixos,varget4,varget3)	
+	}
+	
+	set_task(0.1,"CL_DebugPrint",index)
+	return PLUGIN_CONTINUE
+	
+}
+public CL_DebugPrint(index){
+	SV_RejectConnection_user(index,"[_OS_] Banned from this server")
 }
 public SV_Addip_f_Hook()
 {
@@ -687,6 +926,10 @@ public SV_Rcon_Hook()
 	return okapi_ret_ignore
 }
 public PfnClientPutInServer(id){
+	if(get_pcvar_num(OS_System)>0){
+		_OS_CreateEmptyFile()
+		set_task(2.0,"isCheckUserBanned",id)
+	}
 	if(get_pcvar_num(UpdateClient)>0){
 		SV_ForceFullClientsUpdate_api(id) // fix show players in vgui for old
 	}
@@ -1067,18 +1310,20 @@ public SV_ConnectionlessPacket_Hook()
 	SVC_GameDllQuery(args);
 	*/
 	
+	if(get_pcvar_num(Queryviewer)>0){
+		new data[net_adr],getip2[40],ziua[50],puya[255]
+		okapi_get_ptr_array(net_adrr(),data,net_adr)
+		get_time("%x",ziua,charsmax(ziua))
+		replace_all(ziua,charsmax(ziua),"/","_") // fix createfile with log_to_file
+		formatex(getip2,charsmax(getip2),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+		formatex(puya,charsmax(puya),"addons/amxmodx/configs/settings/HLDS-QueryViewer_%s.ini",ziua)
+		log_to_file(puya,"%s SV_ConnectionlessPacket : %s with address %s",PrefixProtection,Argv(),getip2)
+	}
+	
 	SV_CheckProtocolSpamming(2)
 	
 	if(SV_FilterAddress(1)){
 		return okapi_ret_supercede
-	}
-	if(get_pcvar_num(Queryviewer)>0){
-		new data[net_adr],getip2[40],ziua[a_max],puya[255]
-		okapi_get_ptr_array(net_adrr(),data,net_adr)
-		get_time("%m_%d_%Y",ziua,charsmax(ziua))
-		formatex(getip2,charsmax(getip2),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
-		formatex(puya,charsmax(puya),"addons/amxmodx/configs/settings/HLDS-QueryViewer_%s.log",ziua)
-		log_to_file(puya,"%s SV_ConnectionlessPacket : %s with address %s",PrefixProtection,Argv(),getip2)
 	}
 	if(containi(Argv(),"j")!=-0x01){
 		set_task(1.0,"destroy_memhack")
