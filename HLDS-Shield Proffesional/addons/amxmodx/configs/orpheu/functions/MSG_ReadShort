@@ -1,0 +1,1 @@
+{"name"       : "MSG_ReadShort","library"    : "engine","return"  :{"type" : "int"},"identifiers":[{"os"    : "windows","value" : [0x55,0x8B,0xEC,0x83,0xEC,"*","*","*","*","*","*","*",0x45,"*","*",0x45,"*","*","*","*","*",0x45,"*","*"]},{"os"    : "linux","value" : "MSG_ReadShort"}]}

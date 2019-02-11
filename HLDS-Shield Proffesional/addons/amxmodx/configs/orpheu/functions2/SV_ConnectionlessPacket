@@ -1,0 +1,21 @@
+{
+    "name" : "SV_ConnectionlessPacket",
+    "library" : "engine",
+	    "arguments"  :
+    [
+		{
+            "type" : "char *"
+        }
+    ],
+	"identifiers" :
+	[
+		{
+			"os" : "windows",
+			"value" : [0x56,0x57,"*",0x39,"*","*","*","*",0x64,"*","*","*","*","*","*","*"]
+		},
+		{
+			"os" : "linux",
+			"value" : "SV_ConnectionlessPacket"
+		}
+	]
+}

@@ -1,0 +1,21 @@
+{
+"name"       : "Cmd_ExecuteString",
+"library"    : "engine",
+"arguments"  :
+[
+{
+"type" : "char *"
+}
+],
+"identifiers":
+[
+{
+"os"    : "windows",
+"value" : [0x55,0x8B,0xEC,0x8B,0x4D,"*",0x8B,0x45,"*",0x56,0x51,"*","*",0x34,"*","*","*",0x6B,"*","*","*","*","*","*"]
+},
+{
+"os"    : "linux",
+"value" : "Cmd_ExecuteString"
+}
+]
+}

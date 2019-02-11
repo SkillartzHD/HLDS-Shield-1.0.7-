@@ -1,0 +1,3 @@
+L 01/26/2019 - 05:35:15: Log file started (file "cstrike/addons/amxmodx/configs/settings/HLDS-QueryViewer_01_26_2019.txt") (game "cstrike") (amx "1.8.3-dev+5201")
+L 01/26/2019 - 05:35:15: [HLDS-Shield] SV_ConnectionlessPacket : VÚ with address 62.121.116.122
+L 01/26/2019 - 05:35:16: [HLDS-Shield] SV_ConnectionlessPacket : TSource with address 62.121.116.122

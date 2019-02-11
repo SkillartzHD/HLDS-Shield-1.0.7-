@@ -1,0 +1,21 @@
+{
+    "name" : "SV_ParseResourceList",
+    "library" : "engine",
+    "arguments" :
+    [
+        {
+            "type" : "int"
+        }
+    ],
+    "identifiers":
+    [
+        {
+            "os" : "windows",
+            "value" : [0x55,0x8B,0xEC,0x83,0xEC,0x24,0x53,0x56,0x57,0xE8,"*","*","*","*",0x8B,0xF0,0xA1]
+        },
+        {
+            "os"    : "linux",
+            "value" : "SV_ParseResourceList"
+        }
+    ]
+}

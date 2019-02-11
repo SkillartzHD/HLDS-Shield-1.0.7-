@@ -1,0 +1,23 @@
+{
+    "name"       : "SV_ParseVoiceData",
+    "arguments"  :
+    [
+        {
+            "type" : "int"
+        }
+    ],
+    "library"    : "engine",
+    "identifiers":
+    [
+        {
+            "os"    : "windows",
+            "mod"   : "cstrike",
+            "value" : 0
+        },
+        {
+            "os"    : "linux",
+            "mod"   : "cstrike",
+            "value" : "SV_ParseVoiceData"
+        }
+    ]
+}
