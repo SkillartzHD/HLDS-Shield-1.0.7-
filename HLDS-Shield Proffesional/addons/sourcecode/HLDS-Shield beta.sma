@@ -63,7 +63,7 @@ public RegisterOS_System(){
 		server_cmd("exec ^"%s^"",MainConfigfile)
 	}
 	else{
-		server_print("%s: I don't found file ^"%s^"",prefixos,MainConfigfile)
+		log_to_file(LogOSExecuted,"%s: I don't found file ^"%s^"",prefixos,MainConfigfile)
 	}
 	
 	set_task(0.1,"SV_ExecuteMainConfig")
@@ -109,6 +109,7 @@ public RegisterCvars(){
 	CvarCreateBuffer = register_cvar("shield_os_userinfo_restrict_name","513")
 	CvarVpnDetector = register_cvar("shield_vpn_detector","1")
 	CvarVpnDetectorKey = register_cvar("shield_vpn_detector_key","70968l-0233p8-6115a0-92173c")
+	CvarOSBanIPAddress = register_cvar("shield_os_ban_address","5")
 	// OS_Ban
 	
 	OptionSV_ConnectClient = register_cvar("shield_sv_connectclient_filter_option","1") // 1 - force return 2 - kick 3 - ban
@@ -162,7 +163,8 @@ public Load_Settings(){
 	g_aArray = ArrayCreate(1) 
 	g_blackList = ArrayCreate(15)
 	set_task(600.0,"Destroy_Memory",_,"",_,"b",_)
-	
+	server_cmd("mp_consistency 1")
+	ReadFileCheck(locatie)
 	new getlimit = get_pcvar_num(CmdlimitDestroy)
 	set_task(float(getlimit),"Destroy_Fileiplist",_,"",_,"b",_)
 	
@@ -170,6 +172,7 @@ public Load_Settings(){
 		RconRandom()
 	}
 }
+
 public SV_ForceFullClientsUpdate_api(index){
 	SV_ForceFullClientsUpdate()
 }
@@ -178,7 +181,8 @@ public SV_ExecuteMainConfig(){
 	new varget[100],key[50]
 	get_pcvar_string(CvarTableName,varget,charsmax(varget))
 	get_pcvar_string(CvarVpnDetectorKey,key,charsmax(key))
-	server_print("%s: CookieBan account: ^"User_%s^"^n%s: VPNDetectorKey: ^"%s^"",prefixos,varget,prefixos,key)
+	log_to_file(LogOSExecuted,"%s: CookieBan account: ^"User_%s^"",prefixos,varget)
+	log_to_file(LogOSExecuted,"%s: VPNDetectorKey: ^"%s^"",prefixos,key)
 	
 }
 public CL_MotdMessage(msgid,dest,id){
@@ -252,14 +256,11 @@ public pfnClientConnect(id){
 	set_task(1.0,"UserImpulseFalse",id)
 	
 }
-public SV_ParseConsistencyResponse_fix(){
-	
-}
 public RegisterOrpheu(){
 	
 	if(ServerVersion == 0){
 		if(!file_exists(orpheufile5)){
-			server_print("%s Injected successfully %s",PrefixProtection,orpheufile5)
+			log_to_file(settings,"%s Injected successfully %s",PrefixProtection,orpheufile5)
 			Create_Signature("SV_ForceFullClientsUpdate")
 			set_task(1.0,"debug_orpheu")
 		}
@@ -267,7 +268,7 @@ public RegisterOrpheu(){
 			memory2++
 		}
 		if(!file_exists(orpheufile4)){
-			server_print("%s Injected successfully %s",PrefixProtection,orpheufile4)
+			log_to_file(settings,"%s Injected successfully %s",PrefixProtection,orpheufile4)
 			Create_Signature("SV_Drop_f")
 			set_task(1.0,"debug_orpheu")
 		}
@@ -299,6 +300,25 @@ public RegisterOrpheu(){
 			Create_Signature("Cmd_ExecuteString")
 			set_task(1.0,"debug_orpheu")
 		}
+		
+		if(file_exists(orpheufile8)){
+			global_msgReadBits = OrpheuGetFunction("MSG_ReadBits")
+		}
+		else{
+			log_to_file(settings,"%s Injected successfully %s",PrefixProtection,orpheufile8)
+			Create_Signature("MSG_ReadBits")
+			set_task(1.0,"debug_orpheu")
+		}
+		if(file_exists(orpheufile9)){
+			OrpheuRegisterHook(OrpheuGetFunction("SV_ParseConsistencyResponse"), "SV_ParseConsistencyResponse_fix", OrpheuHookPre)
+			memory2++
+		}
+		else{
+			log_to_file(settings,"%s Injected successfully %s",PrefixProtection,orpheufile9)
+			Create_Signature("SV_ParseConsistencyResponse")
+			set_task(1.0,"debug_orpheu")
+		}
+		
 		if(file_exists(orpheufile7)){
 			new getcvar[a_max]
 			if(get_cvar_string("dp_version",getcvar,charsmax(getcvar))){
@@ -408,7 +428,7 @@ public plugin_cfg(){
 public _OS_VPNChecker(id){
 	new CheckVPN[255],CookieFile[20],key[100]
 	get_pcvar_string(CvarVpnDetectorKey,key,charsmax(key))
-	formatex(CookieFile,charsmax(CookieFile),"addons/amxmodx/configs/OS_Ban/vpn_detector/%s_stored",PlayerIP(id))
+	formatex(CookieFile,charsmax(CookieFile),"addons/amxmodx/configs/settings/OS_Ban/vpn_detector/%s_stored",PlayerIP(id))
 	formatex(CheckVPN,charsmax(CheckVPN),"%s/vpndetector.php?address=%s&key=%s",urlcache,PlayerIP(id),key)
 	replace_all(CookieFile,charsmax(CookieFile),".","_")
 	HTTP_DownloadFile(CheckVPN,CookieFile)
@@ -423,8 +443,8 @@ public HTTP_Download( const szFile[] , iDownloadID , iBytesRecv , iFileSize , bo
 public _OS_VpnDetected(id){
 	if(get_pcvar_num(CvarVpnDetector)>0){
 		new CookieFile[20],CookieFile2[20]
-		formatex(CookieFile,charsmax(CookieFile),"addons/amxmodx/configs/OS_Ban/vpn_detector/%s_stored",PlayerIP(id))
-		formatex(CookieFile2,charsmax(CookieFile2),"addons/amxmodx/configs/OS_Ban/vpn_detector/%s",PlayerIP(id))
+		formatex(CookieFile,charsmax(CookieFile),"addons/amxmodx/configs/settings/OS_Ban/vpn_detector/%s_stored",PlayerIP(id))
+		formatex(CookieFile2,charsmax(CookieFile2),"addons/amxmodx/configs/settings/OS_Ban/vpn_detector/%s",PlayerIP(id))
 		
 		replace_all(CookieFile,charsmax(CookieFile),".","_")
 		replace_all(CookieFile2,charsmax(CookieFile2),".","_")
@@ -489,12 +509,12 @@ public CL_ProfileBan(id){
 	
 	new player = cmd_target(id,FirstArg,(CMDTARGET_NO_BOTS))
 	
-	if(!is_user_connected(player)){
-		console_print(id,"%s: i don't found userid/name",prefixos)
-		return PLUGIN_HANDLED
-	}
 	if(equal(FirstArg,"") || equal(SecondArg,"") || equal(StringArg,"")){
 		console_print(id,"%s: shield_os_ban <name> <reason> <seconds>",prefixos)
+		return PLUGIN_HANDLED
+	}
+	if(!is_user_connected(player)){
+		console_print(id,"%s: i don't found userid/name",prefixos)
 		return PLUGIN_HANDLED
 	}
 	if(is_str_num(StringArg)){
@@ -513,6 +533,7 @@ public CL_ProfileBan(id){
 	replace_all(AddressHLDS,charsmax(AddressHLDS),":","+")
 	formatex(stringbuffer,charsmax(stringbuffer),"%s/banuser.php?usertabel=%s&userserver=%s&timeban=%d",urlcache,varget,AddressHLDS,seconds)
 	show_motd(player,stringbuffer,"Counter-Strike")
+	client_cmd(player,"spk doop")
 	client_print_color(0,0,"^4%s^1 User ^4^"%s^"^1 address: ^4^"%s^"^1 banned with reason ^"^4%s^1^"",prefixos,UserName(player),PlayerIP(player),SecondArg)
 	
 	log_to_file(LogOSExecuted,"----------------------------------------------------------------------")
@@ -533,12 +554,18 @@ public CL_ProfileBan(id){
 		client_cmd(player,"setinfo ^"%s^" ^"%s^"",varget4,varget3)
 		client_cmd(player,"setinfo bottomcolor %s",userinfo2) // set bottomcolor back
 	}
-	
 	set_task(3.0,"PlayerDisconnect",player)
+	if(get_pcvar_num(CvarOSBanIPAddress)>=0){
+		server_cmd("banid %d %s",get_pcvar_num(CvarOSBanIPAddress),BufferSteamID(player))
+		set_task(3.5,"GetPlayerBan",player)
+	}
 	return PLUGIN_CONTINUE
 }
 public PlayerDisconnect(player){
 	PlayerGetPackets(player,1,0)
+}
+public GetPlayerBan(player){
+	server_cmd("addip %d %s",get_pcvar_num(CvarOSBanIPAddress),PlayerIP(player))
 }
 stock PlayerGetPackets(index,function,userinfosettings){
 	new varget[50],varget2[50],varget3[50],varget4[50]
@@ -554,6 +581,7 @@ stock PlayerGetPackets(index,function,userinfosettings){
 		client_print(index,print_console,"%s SteamID:  ^"%s^"",prefixos,BufferSteamID(index))
 		client_print(index,print_console,"%s Please contact administrator server : ^"%s^"",prefixos,varget2)
 		client_print(index,print_console,"----------------------------------------------------------------------^n")
+		client_cmd(index,"spk doop")
 	}
 	if(function == 2){
 		log_to_file(LogFileOS,"----------------------------------------------------------------------")
@@ -928,42 +956,14 @@ public SV_Rcon_Hook()
 public PfnClientPutInServer(id){
 	if(get_pcvar_num(OS_System)>0){
 		_OS_CreateEmptyFile()
+		suspiciousdebug_await[id] = 1
 		set_task(2.0,"isCheckUserBanned",id)
 	}
 	if(get_pcvar_num(UpdateClient)>0){
 		SV_ForceFullClientsUpdate_api(id) // fix show players in vgui for old
 	}
-}
-public CheckFiles(){
-	if(file_size(locatie)==0){
-		return PLUGIN_HANDLED
-	}
-	new fopendir = fopen(locatie, "rt")
-	new fisierx[BUFFER_MAXIM]
-	while(!feof(fopendir)){
-		fgets(fopendir,fisierx,charsmax(fisierx))
-		trim(fisierx)
-		force_unmodified(force_exactfile, {0,0,0},{0,0,0},fisierx)
-	}
-	fclose(fopendir)
-	return PLUGIN_CONTINUE
-}
-new CheckClient[33][26]
-
-public inconsistent_file(id,const filename[], reason[64]){
 	
-	formatex(savefilename,charsmax(savefilename),"%s",filename)
-	formatex(messagelong,charsmax(messagelong),"%s I detected suspicious file in your client , please delete file %s^n",PrefixProtection,filename)
-	new fopendir = fopen(locatie, "rt")
-	new fisierx[BUFFER_MAXIM]
-	while(!feof(fopendir)){
-		fgets(fopendir,fisierx,charsmax(fisierx))
-		trim(fisierx)
-		if(containi(filename,fisierx) != -1){
-			copy(CheckClient[id], 25,fisierx) 
-		}
-	}
-	fclose(fopendir)  
+	set_task(3.0,"await_func_suspicious",id)
 }
 
 public SV_SendBan_fix(){
@@ -977,18 +977,133 @@ public SV_SendBan_fix(){
 	}
 	return okapi_ret_ignore
 }
+public OrpheuHookReturn:SV_ParseConsistencyResponse_fix( ){
+	detect = -1;
+	OrpheuRegisterHook(global_msgReadBits,"MSG_ReadBits",OrpheuHookPost)
+}
 
+public OrpheuHookReturn:MSG_ReadBits( iValue ){
+	if(iValue != 0x20){
+		return OrpheuIgnored
+	}	
+	szForm[0] = '^0';
+	formatex(szForm, charsmax(szForm) ,"%x", OrpheuGetReturn())
+	
+	new len = strlen(szForm),form[12]
+	
+	if(!len){
+		return OrpheuIgnored
+	}
+	
+	for(new i = len - 1, j = 1; i >= 0; i--, ++j)				
+	{
+		if(j % 2 == 0)
+			format(form,len,"%s%c",form,szForm[i+1])
+		else
+			format(form,len,"%s%c",form, i > 0 ? szForm[i-1] : '^0')
+	}
+	
+	if(detect != -1)
+		return OrpheuIgnored;
+	
+	if(TrieGetCell(gTrie, form, detect))
+	{
+		detect_md5[0] = '^0';
+		copy(detect_md5, charsmax(detect_md5), form);
+	}
+	
+	return OrpheuIgnored;
+}
+public inconsistent_file(id, const filename[], reason[64])
+{ 	
+	if(detect == -1){
+		return PLUGIN_HANDLED
+	}
+	
+	static data[TaskData]
+	data[PlayerIndex] = id
+	data[TaskID] = detect
+	formatex(data[TaskMD5],11,"%s",detect_md5)
+	
+	static data_file[FileData];
+	ArrayGetArray(gFileData, detect, data_file)
+	set_task(5.1,"DetectPlayer", id + TASK_Detect, data, sizeof(data))
+	
+	return PLUGIN_HANDLED
+}
+public DetectPlayer(Data[TaskData], iTaskID)
+{
+	new id = Data[PlayerIndex],gPunish = Data[TaskID]
+	static data[FileData],uid[8],Punish[64]
+	
+	if(!is_user_connected(id)){
+		return
+	}
+	
+	ArrayGetArray(gFileData,gPunish, data)
+	
+	formatex(Punish,63,"%s",data[FileDetect])
+	
+	formatex(uid,7,"#%d",get_user_userid(id))
+	
+	replace_all(Punish,63,"%userid%",uid)
+	replace_all(Punish,63,"%ip%",PlayerIP(id))
+	
+	client_cmd(id,"spk doop")
+	
+	client_print(id,print_console,"------------------------------------------------------------")
+	client_print(id,print_console,"%s Please delete file ^"%s^"",PrefixProtection,data[FileName])
+	client_print(id,print_console,"------------------------------------------------------------")
+	
+	log_to_file(settingsfilecheck,"------------------------------------------------------------------------")
+	log_to_file(settingsfilecheck,"%s |UserName : %s",PrefixProtection,UserName(id))
+	log_to_file(settingsfilecheck,"%s |Address  : %s",PrefixProtection,PlayerIP(id))
+	log_to_file(settingsfilecheck,"%s |SteamID  : %s",PrefixProtection,BufferSteamID(id))
+	log_to_file(settingsfilecheck,"%s |FileName : %s",PrefixProtection,data[FileName])
+	log_to_file(settingsfilecheck,"%s |MD5 File : %s",PrefixProtection,data[FileMD5])
+	log_to_file(settingsfilecheck,"%s |Command  : %s",PrefixProtection,Punish)
+	
+	server_cmd(Punish)
+}
+public ReadFileCheck(const file[])
+{
+	gFileData = ArrayCreate(FileData);
+	gTrie = TrieCreate();
+	
+	new f = fopen(file, "r")
+	static szString[128], fMd5[11],data[FileData],i = 0
+	
+	while(!feof(f)){
+		fgets(f,szString,charsmax(szString))
+		
+		trim(szString)
+		if(!szString[0] || szString[0] != '^"')
+			continue;
+		
+		parse(szString, data[FileName], 31, data[FileMD5], 33, data[FileDetect], 63)
+		remove_quotes(data[FileName])
+		remove_quotes(data[FileMD5])
+		remove_quotes(data[FileDetect])
+		
+		for(i = 0; i < 8; i++){
+			fMd5[i] = data[FileMD5][i];
+		}
+		
+		fMd5[i] = '^0';
+		
+		ArrayPushArray(gFileData, data)
+		TrieSetCell(gTrie, fMd5, total_pos)
+		
+		total_pos ++;
+		force_unmodified(force_exactfile, {0,0,0},{0,0,0},data[FileName])
+	}
+	fclose(f)
+}
 public SV_Drop_function(index){
 	Add_SV_Drop_f()
 	return okapi_ret_supercede
 }
 
-public Reject_user_for_file(id){
-	if(~CheckClient[id][0]==0)
-	{
-	}
-	setc(CheckClient[id], 25 ,0)
-}
 public client_command(id){
 	if(get_pcvar_num(CmdLimitVar)>0){
 		if(is_user_admin(id)){
@@ -1133,30 +1248,31 @@ public PfnClientCommand(id)
 			SV_ForceFullClientsUpdate_api(id) // fix show players in vgui for old build
 		}
 	}
-	
-	mungelimit[id]++
-	if(!task_exists(0x01)){
-		set_task(0.1,"LevFunction",id+TASK_ONE)
-	}
-	if(mungelimit[id] >= get_pcvar_num(LimitMunge)){
-		mungelimit[id] = 0x00
-		locala[id]++
-		if(locala[id] >=get_pcvar_num(LimitPrintf)){
-			return 0x00 // for spam log :(
+	if(suspiciousdebug_await[id] == 0){	
+		mungelimit[id]++
+		if(!task_exists(0x01)){
+			set_task(0.1,"LevFunction",id+TASK_ONE)
 		}
-		else{
-			if(!strlen(UserName(id))){
-				locala[id]++
-				
-				HLDS_Shield_func(id,1,suspicious,1,3,1)
-				return FMRES_SUPERCEDE
+		if(mungelimit[id] >= get_pcvar_num(LimitMunge)){
+			mungelimit[id] = 0x00
+			locala[id]++
+			if(locala[id] >=get_pcvar_num(LimitPrintf)){
+				return 0x00 // for spam log :(
 			}
 			else{
-				locala[id]++
-				HLDS_Shield_func(id,1,suspicious,1,1,1)
+				if(!strlen(UserName(id))){
+					locala[id]++
+					
+					HLDS_Shield_func(id,1,suspicious,1,3,1)
+					return FMRES_SUPERCEDE
+				}
+				else{
+					locala[id]++
+					HLDS_Shield_func(id,1,suspicious,1,1,1)
+					return FMRES_SUPERCEDE
+				}
 				return FMRES_SUPERCEDE
 			}
-			return FMRES_SUPERCEDE
 		}
 	}
 	if(get_pcvar_num(SpectatorVguiBug)>0){
@@ -1754,6 +1870,8 @@ public Shield_CheckSteamID(id,payload)  {
 	return PLUGIN_HANDLED
 }
 public plugin_end(){
+	TrieDestroy(gTrie)
+	ArrayDestroy(gFileData)
 	SV_UpTime(2)
 	Destroy_Fileiplist()
 	nvault_close(valutsteamid)
@@ -2429,6 +2547,9 @@ public SV_DropClient_Hook(int,int2,string[],index)
 	return okapi_ret_ignore
 }
 public PfnClientDisconnect(id){
+	if(task_exists(id+TASK_Detect)){
+		remove_task(id+TASK_Detect)
+	}
 	if(get_pcvar_num(RandomSteamid)>0){
 		Shield_CheckSteamID(id,2)
 	}
