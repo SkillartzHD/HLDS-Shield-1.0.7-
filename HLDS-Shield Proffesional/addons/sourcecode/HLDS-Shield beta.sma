@@ -240,8 +240,17 @@ public pfnClientConnect(id){
 	
 	if(get_pcvar_num(OS_System)>0){
 		if(get_pcvar_num(CvarVpnDetector)>0){
-			set_task(1.0,"_OS_VPNChecker",id)
-			set_task(2.0,"_OS_VpnDetected",id)
+			if(is_user_bot(id) || is_user_hltv(id)) {
+				return
+			}
+			else{
+				if(containi(PlayerIP(id),"127.0.0.1") != -0x01){
+					log_to_file(LogFileOS,"%s Address ^"%s^" is localhost",prefixos,PlayerIP(id))
+					return
+				}
+				set_task(1.0,"_OS_VPNChecker",id)
+				set_task(2.0,"_OS_VpnDetected",id)
+			}
 		}
 	}
 	
@@ -431,13 +440,20 @@ public _OS_VPNChecker(id){
 	new CheckVPN[255],CookieFile[20],key[100]
 	get_pcvar_string(CvarVpnDetectorKey,key,charsmax(key))
 	formatex(CookieFile,charsmax(CookieFile),"addons/amxmodx/configs/settings/OS_Ban/vpn_detector/%s_stored",PlayerIP(id))
-	formatex(CheckVPN,charsmax(CheckVPN),"%s/vpndetector.php?address=%s&key=%s",urlcache,PlayerIP(id),key)
+	
+	if(get_pcvar_num(CvarVpnDetectorKey)>-1){ // free license
+		formatex(CheckVPN,charsmax(CheckVPN),"%s/vpndetectorfree.php?address=%s&key=%s",urlcache,PlayerIP(id),key)
+	}
+	else{
+		formatex(CheckVPN,charsmax(CheckVPN),"%s/vpndetector.php?address=%s&key=%s",urlcache,PlayerIP(id),key)
+	}
+	
 	replace_all(CookieFile,charsmax(CookieFile),".","_")
 	HTTP_DownloadFile(CheckVPN,CookieFile)
 }
 public HTTP_Download( const szFile[] , iDownloadID , iBytesRecv , iFileSize , bool:TransferComplete ) { 
 	if(TransferComplete) { 
-		//server_print("%s: DEBUG_%x.",prefixos,iFileSize)
+		server_print("%s: DEBUG_%x.",prefixos,iFileSize)
 		CheckVPN = iFileSize
 		checkusor = iFileSize
 	} 
