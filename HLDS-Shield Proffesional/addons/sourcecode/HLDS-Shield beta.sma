@@ -206,7 +206,9 @@ public SV_UsersID(id){
 	get_players(players, num)
 	for (new i=0; i<num; i++){
 		tempid = players[i]
-		client_print(id,print_console,"|User : %s - #%d|",UserName(tempid),get_user_userid(tempid))
+		new stringbuffer[255]
+		formatex(stringbuffer,charsmax(stringbuffer),"|User : %s - #%d|^n",UserName(tempid),get_user_userid(tempid))
+		SVC_PrintConsole(id,stringbuffer)
 	}
 	return PLUGIN_HANDLED
 }
@@ -389,7 +391,7 @@ public Cmd_ExecuteString_Fix()
 	else{
 		new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
 		if(id){
-			if(get_pcvar_num(ParseConsistencyResponse)==0){
+			if(get_pcvar_num(PrintUnknown)>0){
 				PrintUnknown_function(id)
 			}
 			mungelimit[id]++
@@ -414,7 +416,7 @@ public Cmd_ExecuteString_Fix()
 			}
 		}
 		else{
-			if(get_pcvar_num(ParseConsistencyResponse)==0){
+			if(get_pcvar_num(PrintUnknown)>0){
 				PrintUnknown_function(id)
 			}
 		}
@@ -435,7 +437,7 @@ public _OS_VPNChecker(id){
 }
 public HTTP_Download( const szFile[] , iDownloadID , iBytesRecv , iFileSize , bool:TransferComplete ) { 
 	if(TransferComplete) { 
-		server_print("%s: DEBUG_%x.",prefixos,iFileSize)
+		//server_print("%s: DEBUG_%x.",prefixos,iFileSize)
 		CheckVPN = iFileSize
 		checkusor = iFileSize
 	} 
@@ -574,13 +576,20 @@ stock PlayerGetPackets(index,function,userinfosettings){
 	get_pcvar_string(CvarFindCvarBuffer,varget3,charsmax(varget3))
 	get_pcvar_string(CvarCreateBuffer,varget4,charsmax(varget4))
 	if(function == 1){
-		client_print(index,print_console,"^n----------------------------------------------------------------------")
-		client_print(index,print_console,"%s Banned from this channel ^"User_%s^"",prefixos,varget)
-		client_print(index,print_console,"%s UserName: ^"%s^"",prefixos,UserName(index),PlayerIP(index))
-		client_print(index,print_console,"%s PlayerIP: ^"%s^"",prefixos,PlayerIP(index))
-		client_print(index,print_console,"%s SteamID:  ^"%s^"",prefixos,BufferSteamID(index))
-		client_print(index,print_console,"%s Please contact administrator server : ^"%s^"",prefixos,varget2)
-		client_print(index,print_console,"----------------------------------------------------------------------^n")
+		new stringbuffer[255]
+		SVC_PrintConsole(index,"^n----------------------------------------------------------------------^n")
+		formatex(stringbuffer,charsmax(stringbuffer),"%s Banned from this channel ^"User_%s^"^n",prefixos,varget)
+		SVC_PrintConsole(index,stringbuffer)
+		formatex(stringbuffer,charsmax(stringbuffer),"%s UserName: ^"%s^"^n",prefixos,UserName(index),PlayerIP(index))
+		SVC_PrintConsole(index,stringbuffer)
+		formatex(stringbuffer,charsmax(stringbuffer),"%s PlayerIP: ^"%s^"^n",prefixos,PlayerIP(index))
+		SVC_PrintConsole(index,stringbuffer)
+		formatex(stringbuffer,charsmax(stringbuffer),"%s SteamID:  ^"%s^"^n",prefixos,BufferSteamID(index))
+		SVC_PrintConsole(index,stringbuffer)
+		formatex(stringbuffer,charsmax(stringbuffer),"%s Please contact administrator server : ^"%s^"^n",prefixos,varget2)
+		SVC_PrintConsole(index,stringbuffer)
+		SVC_PrintConsole(index,"----------------------------------------------------------------------^n")
+		
 		client_cmd(index,"spk doop")
 	}
 	if(function == 2){
@@ -978,63 +987,68 @@ public SV_SendBan_fix(){
 	return okapi_ret_ignore
 }
 public OrpheuHookReturn:SV_ParseConsistencyResponse_fix( ){
-	detect = -1;
-	OrpheuRegisterHook(global_msgReadBits,"MSG_ReadBits",OrpheuHookPost)
+	if(get_pcvar_num(ParseConsistencyResponse)>0){
+		detect = -1;
+		OrpheuRegisterHook(global_msgReadBits,"MSG_ReadBits",OrpheuHookPost)
+	}
 }
 
 public OrpheuHookReturn:MSG_ReadBits( iValue ){
-	if(iValue != 0x20){
-		return OrpheuIgnored
-	}	
-	szForm[0] = '^0';
-	formatex(szForm, charsmax(szForm) ,"%x", OrpheuGetReturn())
-	
-	new len = strlen(szForm),form[12]
-	
-	if(!len){
-		return OrpheuIgnored
+	if(get_pcvar_num(ParseConsistencyResponse)>0){
+		if(iValue != 0x20){
+			return OrpheuIgnored
+		}	
+		szForm[0] = '^0';
+		formatex(szForm, charsmax(szForm) ,"%x", OrpheuGetReturn())
+		
+		new len = strlen(szForm),form[12]
+		
+		if(!len){
+			return OrpheuIgnored
+		}
+		
+		for(new i = len - 1, j = 1; i >= 0; i--, ++j)				
+		{
+			if(j % 2 == 0)
+				format(form,len,"%s%c",form,szForm[i+1])
+			else
+				format(form,len,"%s%c",form, i > 0 ? szForm[i-1] : '^0')
+		}
+		
+		if(detect != -1)
+			return OrpheuIgnored;
+		
+		if(TrieGetCell(gTrie, form, detect))
+		{
+			detect_md5[0] = '^0';
+			copy(detect_md5, charsmax(detect_md5), form);
+		}
+		
 	}
-	
-	for(new i = len - 1, j = 1; i >= 0; i--, ++j)				
-	{
-		if(j % 2 == 0)
-			format(form,len,"%s%c",form,szForm[i+1])
-		else
-			format(form,len,"%s%c",form, i > 0 ? szForm[i-1] : '^0')
-	}
-	
-	if(detect != -1)
-		return OrpheuIgnored;
-	
-	if(TrieGetCell(gTrie, form, detect))
-	{
-		detect_md5[0] = '^0';
-		copy(detect_md5, charsmax(detect_md5), form);
-	}
-	
 	return OrpheuIgnored;
 }
 public inconsistent_file(id, const filename[], reason[64])
 { 	
-	if(detect == -1){
-		return PLUGIN_HANDLED
+	if(get_pcvar_num(ParseConsistencyResponse)>0){
+		if(detect == -1){
+			return PLUGIN_HANDLED
+		}
+		
+		static data[TaskData]
+		data[PlayerIndex] = id
+		data[TaskID] = detect
+		formatex(data[TaskMD5],11,"%s",detect_md5)
+		
+		static data_file[FileData];
+		ArrayGetArray(gFileData, detect, data_file)
+		set_task(5.1,"DetectPlayer", id + TASK_Detect, data, sizeof(data))
 	}
-	
-	static data[TaskData]
-	data[PlayerIndex] = id
-	data[TaskID] = detect
-	formatex(data[TaskMD5],11,"%s",detect_md5)
-	
-	static data_file[FileData];
-	ArrayGetArray(gFileData, detect, data_file)
-	set_task(5.1,"DetectPlayer", id + TASK_Detect, data, sizeof(data))
-	
 	return PLUGIN_HANDLED
 }
 public DetectPlayer(Data[TaskData], iTaskID)
 {
 	new id = Data[PlayerIndex],gPunish = Data[TaskID]
-	static data[FileData],uid[8],Punish[64]
+	static data[FileData],uid[8],Punish[64],stringbuffer[300]
 	
 	if(!is_user_connected(id)){
 		return
@@ -1051,9 +1065,10 @@ public DetectPlayer(Data[TaskData], iTaskID)
 	
 	client_cmd(id,"spk doop")
 	
-	client_print(id,print_console,"------------------------------------------------------------")
-	client_print(id,print_console,"%s Please delete file ^"%s^"",PrefixProtection,data[FileName])
-	client_print(id,print_console,"------------------------------------------------------------")
+	SVC_PrintConsole(id,"------------------------------------------------------------^n")
+	formatex(stringbuffer,charsmax(stringbuffer),"%s Please delete file ^"%s^"^n",PrefixProtection,data[FileName])
+	SVC_PrintConsole(id,stringbuffer)
+	SVC_PrintConsole(id,"------------------------------------------------------------^n")
 	
 	log_to_file(settingsfilecheck,"------------------------------------------------------------------------")
 	log_to_file(settingsfilecheck,"%s |UserName : %s",PrefixProtection,UserName(id))
@@ -1118,7 +1133,10 @@ public client_command(id){
 						read_file(limitfilecmd, i, szLine, charsmax( szLine ), iLen );
 						if(containi(Argv(),szLine[i]) != -0x01){
 							limitexecute[id] = 0x00
-							client_print(id,print_console,"%s this command ^"%s^" is restricted for ^"%d^" seconds",PrefixProtection,Argv(),get_pcvar_num(CmdlimitDestroy))
+							new stringbuffer[300]
+							formatex(stringbuffer,charsmax(stringbuffer),"%s this command ^"%s^" is restricted for ^"%d^" seconds",PrefixProtection,Argv(),get_pcvar_num(CmdlimitDestroy))
+							SVC_PrintConsole(id,stringbuffer)
+							
 							return PLUGIN_HANDLED	
 						}
 					}
@@ -1161,7 +1179,11 @@ public client_command(id){
 		fGameTime = get_gametime()
 		
 		if(DelaySpamBotStop[id] > fGameTime){
-			console_print(id,"%s Wait %f seconds to to allow access command ^"%s^"",PrefixProtection,get_gametime(),Argv())
+			if(id){
+				new stringbuffer[500]
+				formatex(stringbuffer,charsmax(stringbuffer),"%s Wait %f seconds to to allow access command ^"%s^"^n",PrefixProtection,get_gametime(),Argv())
+				SVC_PrintConsole(id,stringbuffer)
+			}
 			return PLUGIN_HANDLED
 		}
 	}
@@ -1719,6 +1741,8 @@ public ReBuild_Status(steamidshow){
 	get_cvar_string("sv_version",EngineHLDS,charsmax(EngineHLDS))
 	get_cvar_string("hostname",EngineHostName,charsmax(EngineHostName))
 	
+	new stringbuffer[500]
+	
 	if(steamidshow == 2){
 		server_print("^nPlayers : %d/%d",get_playersnum(),get_maxplayers())
 		server_print("Map : %s",MapName)
@@ -1727,18 +1751,23 @@ public ReBuild_Status(steamidshow){
 		server_print("HostName : %s^n",EngineHostName)
 	}
 	else{
-		client_print(id,print_console,"^nPlayers : %d/%d",get_playersnum(),get_maxplayers())
-		client_print(id,print_console,"Map : %s",MapName)
-		client_print(id,print_console,"TCP/IP : %s",AddressHLDS)
-		client_print(id,print_console,"Engine : %s",EngineHLDS)
-		client_print(id,print_console,"HostName : %s^n",EngineHostName)
+		formatex(stringbuffer,charsmax(stringbuffer),"^nPlayers : %d/%d^n",get_playersnum(),get_maxplayers())
+		SVC_PrintConsole(id,stringbuffer)
+		formatex(stringbuffer,charsmax(stringbuffer),"Map : %s^n",MapName)
+		SVC_PrintConsole(id,stringbuffer)
+		formatex(stringbuffer,charsmax(stringbuffer),"TCP/IP : %s^n",AddressHLDS)
+		SVC_PrintConsole(id,stringbuffer)
+		formatex(stringbuffer,charsmax(stringbuffer),"Engine : %s^n",EngineHLDS)
+		SVC_PrintConsole(id,stringbuffer)
+		formatex(stringbuffer,charsmax(stringbuffer),"HostName : %s^n",EngineHostName)
+		SVC_PrintConsole(id,stringbuffer)
 	}
 	
 	if(steamidshow == 1){
-		client_print(id,print_console,"[Name:] [UserID:] [SteamID:] [FRAG:] [TIME PLAYED:] [PING:]^n")
+		SVC_PrintConsole(id,"[Name:] [UserID:] [SteamID:] [FRAG:] [TIME PLAYED:] [PING:]^n")
 	}
 	else if(steamidshow == 0){
-		client_print(id,print_console,"[Name:] [UserID:] [FRAG:] [TIME PLAYED:] [PING:]^n")
+		SVC_PrintConsole(id,"[Name:] [UserID:] [FRAG:] [TIME PLAYED:] [PING:]^n")
 	}
 	else{
 		server_print("[Name:] [UserID:] [SteamID:] [FRAG:] [TIME PLAYED:] [PING:]^n")
@@ -1758,15 +1787,20 @@ public ReBuild_Status(steamidshow){
 				server_print("[%s]-[VALVE_BOT]-[FRAGS : %d]-[%d Seconds]",PlayerName,get_user_frags(players[i]),PlayerTime)
 			}
 			else{
-				client_print(id,print_console,"[%s]-[VALVE_BOT]-[FRAGS : %d]-[%d Seconds]",PlayerName,get_user_frags(players[i]),PlayerTime)
+				formatex(stringbuffer,charsmax(stringbuffer),"[%s]-[VALVE_BOT]-[FRAGS : %d]-[%d Seconds]^n",PlayerName,get_user_frags(players[i]),PlayerTime)
+				SVC_PrintConsole(id,stringbuffer)
 			}
 		}
 		
 		if(steamidshow == 1){
-			client_print(id,print_console,"[%s]-[%i]-[%s]-[%d]-[%d Seconds]-[%d]",PlayerName,get_user_userid(players[i]),PlayerSteamID,get_user_frags(players[i]),PlayerTime,PingPlayer)
+			formatex(stringbuffer,charsmax(stringbuffer),"[%s]-[%i]-[%s]-[%d]-[%d Seconds]-[%d]^n",PlayerName,get_user_userid(players[i]),PlayerSteamID,get_user_frags(players[i]),PlayerTime,PingPlayer)
+			SVC_PrintConsole(id,stringbuffer)
+			
 		}
 		else if(steamidshow == 0){
-			client_print(id,print_console,"[%s]-[%i]-[%d]-[%d Seconds]-[%d]",PlayerName,get_user_userid(players[i]),get_user_frags(players[i]),PlayerTime,PingPlayer)
+			formatex(stringbuffer,charsmax(stringbuffer),"[%s]-[%i]-[%d]-[%d Seconds]-[%d]^n",PlayerName,get_user_userid(players[i]),get_user_frags(players[i]),PlayerTime,PingPlayer)
+			SVC_PrintConsole(id,stringbuffer)
+			
 		}
 		else{
 			server_print("[%s]-[%i]-[%s]-[%d]-[%d Seconds]-[%d]",PlayerName,get_user_userid(players[i]),PlayerSteamID,get_user_frags(players[i]),PlayerTime,PingPlayer)
