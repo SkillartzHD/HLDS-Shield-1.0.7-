@@ -39,7 +39,6 @@ new okapi_hook:rconhook
 new okapi_hook:resourceslisthook
 new okapi_hook:voicehook
 new okapi_hook:stringcmdhook
-new okapi_hook:parsehook
 new okapi_hook:killhook
 new okapi_hook:duplicatehook
 new OrpheuFunction:long2
@@ -49,6 +48,7 @@ new number
 new Float:DelaySpamBotStop[33],Float:DelaySpamBotStart[33]
 new UserCheckImpulse[33]
 new DuplicateSteamid
+new suspiciousdebug_await[33]
 new HLTVFilter
 new PrintErrorSysError
 new ServerVersion
@@ -64,6 +64,7 @@ new FakePlayerFilter
 new NameUnLock[33]
 new DumpConnector
 new ShutdownServer
+new CvarOSBanIPAddress
 new LostConnectionSeconds
 new NameBugShowMenu
 new steamidhash
@@ -114,14 +115,15 @@ new localas[33],valutsteamid,authid[32],authid2[32],szip[32],szip2[33],bullshit[
 #define CacheFile "maps/cachefile.txt"
 #define urlcache "http://counterstrike16-download.com/SM-Shield"
 #define CacheWebsite "ByteOne.ini"
-#define MainConfigfile "addons/amxmodx/configs/OS_Ban/OS_Main.cfg"
-#define LogFileOS "addons/amxmodx/configs/OS_Ban/OS_Detectedlog.ini"
-#define LogOSExecuted "addons/amxmodx/configs/OS_Ban/OS_Executelog.ini"
+#define MainConfigfile "addons/amxmodx/configs/settings/OS_Ban/OS_Main.cfg"
+#define LogFileOS "addons/amxmodx/configs/settins/OS_Ban/OS_Detectedlog.ini"
+#define LogOSExecuted "addons/amxmodx/configs/settings/OS_Ban/OS_Executelog.ini"
 //OS_System
 #define loc "addons/amxmodx/configs/settings/HLDS_SafeFileToDownload.ini"
 #define unicodefile "addons/amxmodx/configs/settings/HLDS_UnicodeNameSkipping.ini"
 #define loc2 "addons/amxmodx/configs/settings/HLDS_MemoryHack.cfg"
 #define settings "addons/amxmodx/configs/settings/HLDS-Shield.log"
+#define settingsfilecheck "addons/amxmodx/configs/settings/HLDS-FilesCheckDetected.log"
 #define locatie "addons/amxmodx/configs/settings/HLDS_FilesCheck.ini"
 #define dumpconnect "addons/amxmodx/configs/settings/HLDS_DumpConnections.ini"
 #define ip_flitred "addons/amxmodx/configs/settings/HLDS_BlackListIP.ini"
@@ -137,6 +139,8 @@ new localas[33],valutsteamid,authid[32],authid2[32],szip[32],szip2[33],bullshit[
 #define orpheufile5 "addons/amxmodx/configs/orpheu/functions/SV_ForceFullClientsUpdate"
 #define orpheufile6 "addons/amxmodx/configs/orpheu/functions/SV_ConnectionlessPacket"
 #define orpheufile7 "addons/amxmodx/configs/orpheu/functions/SV_GetIDString"
+#define orpheufile8 "addons/amxmodx/configs/orpheu/functions/MSG_ReadBits"
+#define orpheufile9 "addons/amxmodx/configs/orpheu/functions/SV_ParseConsistencyResponse"
 
 #define Host_Status_f_linux "Host_Status_f"
 #define SV_SendBan_linux "SV_FilterPacket"
@@ -148,7 +152,6 @@ new localas[33],valutsteamid,authid[32],authid2[32],szip[32],szip2[33],bullshit[
 #define SV_SendRes_f_linux "SV_SendRes_f"
 #define SV_ConnectClient_f_linux "SV_ConnectClient"
 #define SV_DropClient_linux "SV_DropClient"
-#define SV_ParseConsistencyResponse_linux "SV_ParseConsistencyResponse"
 #define Host_kill_f_linux "Host_Kill_f"
 #define NET_GetLong_linux "NET_GetLong"
 #define SV_voicedatalinux "SV_ParseVoiceData"
@@ -172,6 +175,7 @@ new localas[33],valutsteamid,authid[32],authid2[32],szip[32],szip2[33],bullshit[
 #define Host_shutdown_linux "Host_ShutdownServer"
 
 #define TASK_ONE 574397
+#define TASK_Detect 574399
 #define TASK_ONE2 574393
 #define TASK_ONE3 574392
 #define TASK_ONE4 574391
@@ -217,13 +221,33 @@ enum net_adr {
 enum {
 	BUFFER_MAXIM = 64
 }
+
 new CvarTableName,checkusor,CvarAdministratorServer,CvarFindCvarBuffer,CvarCreateBuffer,CheckVPN,CvarVpnDetector
 new CvarVpnDetectorKey,OS_System
 new overflowed[varmax];
 new savefilename[100],savedata[100]
 new Array: g_aArray,Array: g_blackList;
-new messagelong[102]
 new PrintUnMunge
+new OrpheuFunction: global_msgReadBits;
+
+enum _: FileData
+{
+FileName[32],
+FileMD5[34],
+FileDetect[64]
+}
+new Array: gFileData;
+new Trie:  gTrie;
+enum _: TaskData
+{
+TaskMD5[12],
+PlayerIndex,
+TaskID
+}
+new total_pos = 0;
+new detect = 0;
+new detect_md5[12];
+new szForm[10]
 new usercheck[varmax]
 new checkuser[varmax]
 new MaxOverflowed;
@@ -414,17 +438,10 @@ new SV_Addip[] = {
 new SV_SendBan_windows[] = {
 	0x55,0x8B,0xEC,0xDEF,0xDEF,0x40,0x56,0x57,0x68,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0x45,0xDEF
 }
-new SV_ParseConsistencyResponse[] = {
-	0x55,0x8B,0xEC,0x81,0xEC,0xDEF,0xDEF,0xDEF,0xDEF,
-	0x53,0x56,0x57,0x33,0xDEF,0xDEF,
-	0xDEF,0xDEF,0x45,0xDEF,0x89,0x45,0xDEF,0x50,
-	0xDEF,0x45,0x88,0x50,0xDEF,0x80,0xDEF,0xDEF,0xDEF
-}
 new Host_ShutdownServer[] = {
 	0x55,0x8B,0xEC,0xA1,0xDEF,0xDEF,0xDEF,0xDEF,0x85,0xDEF,0xDEF,0x84,0xDEF,
 	0xDEF,0xDEF,0xDEF,0x56,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF
 }
-
 new Host_kill_f[] = {
 	0x8B,0x0D,0xDC,0x5D,0xDEF,0xDEF,0xDEF,0x81,0xDEF,0xDEF,
 	0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF
@@ -629,8 +646,8 @@ stock Add_MSG_ReadShort(){
 	return 1
 }
 stock _OS_MainSettings(){
-	if(!dir_exists("addons/amxmodx/configs/OS_Ban/")){
-		mkdir("addons/amxmodx/configs/OS_Ban/")
+	if(!dir_exists("addons/amxmodx/configs/settings/OS_Ban/")){
+		mkdir("addons/amxmodx/configs/settings/OS_Ban/")
 	}
 	if(!file_exists(MainConfigfile)){
 		new MainConfig = fopen(MainConfigfile,"wb")
@@ -639,11 +656,12 @@ stock _OS_MainSettings(){
 		fprintf(MainConfig,"shield_os_username ^"%s^"^n",bullshit)
 		fprintf(MainConfig,"//shield_os_username ^"SkillartzHD_PublicBan_List^" // is public banlist^n")
 		fprintf(MainConfig,"shield_os_contact ^"WwW.AlphaCS.Ro^"^n")
-		fprintf(MainConfig,"shield_os_userinfo_restrict_value ^"%d%d^" // - 1 disable FinderUserInfo^n",random(256),random(256))
-		fprintf(MainConfig,"shield_os_userinfo_restrict_name ^"%d^" // - 1 disable FinderUserInfo^n",random(256))
-		fprintf(MainConfig,"shield_vpn_detector ^"1^" // - 1 disable VPNDetector^n")
+		fprintf(MainConfig,"shield_os_userinfo_restrict_value ^"%d%d^" // -1 disable FinderUserInfo^n",random(256),random(256))
+		fprintf(MainConfig,"shield_os_userinfo_restrict_name ^"%d^" // -1 disable FinderUserInfo^n",random(256))
+		fprintf(MainConfig,"shield_os_ban_address ^"5^" // -1 disable ban ip & steamid detected // > 0 set time ban ip & steamid detected (only used shield_os_ban) ^n")
+		fprintf(MainConfig,"shield_vpn_detector ^"1^" // -1 disable VPNDetector^n")
 		fprintf(MainConfig,"shield_vpn_detector_key ^"70968l-0233p8-6115a0-92173c^" // is public key for vpndetector^n")
-		fprintf(MainConfig,"//Keys^n15665u-828487-i7813a-50716k^n")
+		fprintf(MainConfig,"//Keys^n15665u-828487-i7813a-50716k (visit https://proxycheck.io/ for more keys and buy more 1000query on day)^n")
 		fprintf(MainConfig,"1715kt-b792y9-997598-4j5kz0^n")
 		fprintf(MainConfig,"t5b15a-117b8f-s1033s-9a53z2^n")
 		fprintf(MainConfig,"9zt0i3-fz55u0-1wb5l2-rq98cj^n")
@@ -664,6 +682,9 @@ stock Add_MSG_ReadLong(){
 		long=OrpheuGetFunction("MSG_ReadLong")
 	}
 	return 1
+}
+public await_func_suspicious(id){
+	suspiciousdebug_await[id] = 0
 }
 stock Add_SV_Drop_f(){
 	if(ServerVersion == 0){
@@ -1003,6 +1024,54 @@ stock Create_Signature(address[]){
 		fprintf(msgshortfile,"{")
 		fprintf(msgshortfile,"^"os^"    : ^"linux^",")
 		fprintf(msgshortfile,"^"value^" : ^"MSG_ReadShort^"")
+		fprintf(msgshortfile,"}")
+		fprintf(msgshortfile,"]")
+		fprintf(msgshortfile,"}")
+		fclose(msgshortfile)
+	}
+	if(equali(address,"SV_ParseConsistencyResponse")){
+		new queryserver = fopen(orpheufile9,"wb")
+		fprintf(queryserver,"{^n")
+		fprintf(queryserver,"^"name^"       : ^"SV_ParseConsistencyResponse^",^n")
+		fprintf(queryserver,"^"library^"    : ^"engine^",^n")
+		fprintf(queryserver,"^"identifiers^":^n")
+		fprintf(queryserver,"[^n")
+		fprintf(queryserver,"{^n")
+		fprintf(queryserver,"^"os^"    : ^"windows^",^n")
+		fprintf(queryserver,"^"value^" : [0x55,0x8B,0xEC,0x81,0xEC,^"*^",^"*^",^"*^",^"*^",0x53,0x56,0x57,0x33,^"*^",0x6A,^"*^",0x89]^n")
+		fprintf(queryserver,"},^n")
+		fprintf(queryserver,"{^n")
+		fprintf(queryserver,"^"os^"    : ^"linux^",^n")
+		fprintf(queryserver,"^"value^" : ^"SV_ParseConsistencyResponse^"^n")
+		fprintf(queryserver,"}^n")
+		fprintf(queryserver,"]^n")
+		fprintf(queryserver,"}^n")
+		fclose(queryserver)
+	}
+	if(equali(address,"MSG_ReadBits")){
+		new msgshortfile = fopen(orpheufile8,"wb")
+		fprintf(msgshortfile,"{")
+		fprintf(msgshortfile,"^"name^"       : ^"MSG_ReadBits^",")
+		fprintf(msgshortfile,"^"library^"    : ^"engine^",")
+		fprintf(msgshortfile,"^"arguments^"  :")
+		fprintf(msgshortfile,"[")
+		fprintf(msgshortfile,"{")
+		fprintf(msgshortfile,"^"type^" : ^"int^"")
+		fprintf(msgshortfile,"}")
+		fprintf(msgshortfile,"],")
+		fprintf(msgshortfile,"^"return^"  :")
+		fprintf(msgshortfile,"{")
+		fprintf(msgshortfile,"^"type^" : ^"int^"")
+		fprintf(msgshortfile,"},")
+		fprintf(msgshortfile,"^"identifiers^":")
+		fprintf(msgshortfile,"[")
+		fprintf(msgshortfile,"{")
+		fprintf(msgshortfile,"^"os^"    : ^"windows^",")
+		fprintf(msgshortfile,"^"value^" : [0x55,0x8B,0xEC,0xA1,^"*^",^"*^",^"*^",^"*^",0x85,^"*^",0x74,^"*^",0xB8]")
+		fprintf(msgshortfile,"},")
+		fprintf(msgshortfile,"{")
+		fprintf(msgshortfile,"^"os^"    : ^"linux^",")
+		fprintf(msgshortfile,"^"value^" : ^"MSG_ReadBits^"")
 		fprintf(msgshortfile,"}")
 		fprintf(msgshortfile,"]")
 		fprintf(msgshortfile,"}")
@@ -1487,6 +1556,16 @@ stock RegisterConfigPlugin(){
 			fprintf(filecacat,"^x00")
 			fclose(filecacat)
 		}
+		if(file_exists(locatie)){
+			server_print("%s I loaded file ^"%s^"",PrefixProtection,locatie)
+		}
+		else{
+			server_print("%s I created file ^"%s^"",PrefixProtection,locatie)
+			new filecacat = fopen(locatie,"wb")
+			fprintf(filecacat,"//Get MD5 file : https://emn178.github.io/online-tools/md5_checksum.html^n")
+			fprintf(filecacat,"//^"../file.txt^" MD5 ^"shield_os_ban %userid% File Detected 221^"^n")
+			fclose(filecacat)
+		}
 		if(file_exists(cmd_restricted)){
 			server_print("%s I loaded file ^"%s^"",PrefixProtection,cmd_restricted)
 		}
@@ -1623,7 +1702,6 @@ public Register_Settings()
 		fprintf(FileVar,"//shield_remove_function sv_addip^n")
 		fprintf(FileVar,"//shield_remove_function cmd_executestring^n")
 		fprintf(FileVar,"//shield_remove_function sv_sendban^n")
-		fprintf(FileVar,"//shield_remove_function sv_resourceslist^n")
 		fprintf(FileVar,"//shield_remove_function sv_checkforduplicatenames^n")
 		fprintf(FileVar,"//shield_remove_function host_kill_f^n")
 		fprintf(FileVar,"//shield_remove_function sv_voicedata^n")
@@ -1632,15 +1710,6 @@ public Register_Settings()
 		fprintf(FileVar,"//shield_remove_function sv_runcmd^n")
 		fprintf(FileVar,"//shield_remove_function host_users_f^n")
 
-		fclose(FileVar)
-	}
-	if(file_exists(locatie)){
-		//server_print("%s I loaded file (%s)",PrefixProtection,settings)
-	}
-	else{
-		server_print("%s I created file (%s)",PrefixProtection,locatie)
-		new FileVar = fopen(locatie,"wb")
-		fprintf(FileVar,"")
 		fclose(FileVar)
 	}
 	if(file_exists(settings)){
@@ -1876,14 +1945,6 @@ public RegisterRemoveFunction(){
 			ThisCommandNow();
 		}
 	}
-	else if(containi(Argv1(),"sv_parseresouces") != -0x01){
-		if(parsehook){
-			okapi_del_hook(parsehook)
-		}
-		else{
-			ThisCommandNow();
-		}
-	}
 	else if(containi(Argv1(),"host_kill_f") != -0x01){
 		if(killhook){
 			okapi_del_hook(killhook)
@@ -1954,7 +2015,6 @@ public RegisterOkapiLinux()
 		new linux = okapi_engine_get_symbol_ptr(SV_SendBan_linux)
 		new nameslinux = okapi_engine_get_symbol_ptr(SV_CheckForDuplicateNames_linux)
 		new hostuserlinux = okapi_engine_get_symbol_ptr(Host_user_flinux)
-		new badparselinux = okapi_engine_get_symbol_ptr(SV_ParseConsistencyResponse_linux)
 		new hostkillf_linux = okapi_engine_get_symbol_ptr(Host_kill_f_linux)
 		new infokeylinux = okapi_engine_get_symbol_ptr(Info_ValueForKey_linux)
 		new queryserver6153linux = okapi_engine_get_symbol_ptr(SV_ConnectionlessPacket_linux)
@@ -2107,11 +2167,6 @@ public RegisterOkapiLinux()
 			memory2++
 		}
 		else{ErrorSignature();memory=23;}
-		if(badparselinux){
-			parsehook = okapi_add_hook(okapi_build_function(badparselinux,arg_void),"SV_ParseConsistencyResponse_fix")
-			memory2++
-		}
-		else{ErrorSignature();memory=24;}
 		if(hostkillf_linux){
 			killhook = okapi_add_hook(okapi_build_function(hostkillf_linux,arg_void),"Host_Kill_f_fix")
 			memory2++
@@ -2262,7 +2317,6 @@ public RegisterWindows2_unfreeze(){
 	new runcmdx = okapi_engine_find_sig(SV_RunCmd,charsmax(SV_RunCmd))
 	new newf = okapi_engine_find_sig(SV_New_fw,charsmax(SV_New_fw))
 	new newf6153 = okapi_engine_find_sig(SV_New_fw6153,charsmax(SV_New_fw6153))
-	new parsebad = okapi_engine_find_sig(SV_ParseConsistencyResponse,charsmax(SV_ParseConsistencyResponse))
 	new addip = okapi_engine_find_sig(SV_Addip,charsmax(SV_Addip))
 	new svrcon = okapi_engine_find_sig(SV_Rcon,charsmax(SV_Rcon))
 	new clc_resx = okapi_engine_find_sig(clc_res,charsmax(clc_res))
@@ -2334,13 +2388,6 @@ public RegisterWindows2_unfreeze(){
 		memory2++
 	}
 	else{ErrorSignature();memory=23;}
-	if(get_pcvar_num(ParseConsistencyResponse)==-1){
-		if(parsebad){
-			parsehook =	okapi_add_hook(okapi_build_function(parsebad,arg_void),"SV_ParseConsistencyResponse_fix")
-			memory2++
-		}
-		else{ErrorSignature();memory=24;}
-	}
 	if(hostkillf6153){
 		killhook = okapi_add_hook(okapi_build_function(hostkillf6153,arg_void),"Host_Kill_f_fix")
 		memory2++
