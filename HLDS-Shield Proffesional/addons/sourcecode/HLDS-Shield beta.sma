@@ -552,7 +552,7 @@ public CL_ProfileBan(id){
 	formatex(stringbuffer,charsmax(stringbuffer),"%s/banuser.php?usertabel=%s&userserver=%s&timeban=%d",urlcache,varget,AddressHLDS,seconds)
 	show_motd(player,stringbuffer,"Counter-Strike")
 	client_cmd(player,"spk doop")
-	client_print_color(0,0,"^4%s^1 User ^4^"%s^"^1 address: ^4^"%s^"^1 banned with reason ^"^4%s^1^"",prefixos,UserName(player),PlayerIP(player),SecondArg)
+	client_print_color(0,0,"^4%s^1 User ^4^"%s^"^1 address: ^4^"%s^"^1 banned with reason ^4^"%s^"^1",prefixos,UserName(player),PlayerIP(player),SecondArg)
 	
 	log_to_file(LogOSExecuted,"----------------------------------------------------------------------")
 	log_to_file(LogOSExecuted,"%s UserName: ^"%s^"",prefixos,UserName(player),PlayerIP(player))
@@ -2605,6 +2605,8 @@ public PfnClientDisconnect(id){
 	}
 	DelaySpamBotStop[id] = 0.0
 	DelaySpamBotStart[id] = 0.0
+	remove_task(id)
+	limitba[id]=0x00
 	FalseAllFunction(id)
 }
 public SV_Spawn_f_Hook()
