@@ -1726,6 +1726,7 @@ public NET_GetLong()
 }
 public FS_Open_Hook(abc[])
 {
+	/*
 	if(!is_linux_server()){
 		if(containi(abc,".ini")!=-0x01 || containi(abc,"server.cfg")!=-0x01){
 			server_print("%s I found a access strange in ^"%s^"",PrefixProtection,abc)
@@ -1735,6 +1736,7 @@ public FS_Open_Hook(abc[])
 		return okapi_ret_ignore
 	}
 	return 0
+	*/
 	
 }
 public SV_CheckPermisionforStatus(){
