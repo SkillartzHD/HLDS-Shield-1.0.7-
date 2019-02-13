@@ -185,14 +185,15 @@ public SV_ExecuteMainConfig(){
 	log_to_file(LogOSExecuted,"%s: VPNDetectorKey: ^"%s^"",prefixos,key)
 	
 }
+new stringbuffer2[200]
 public CL_MotdMessage(msgid,dest,id){
-	new AddressHLDS[32],stringbuffer[1000],varget[100]
+	new AddressHLDS[32],varget[100]
 	get_cvar_string("net_address",AddressHLDS,charsmax(AddressHLDS))
 	get_pcvar_string(CvarTableName,varget,charsmax(varget))
 	replace_all(AddressHLDS,charsmax(AddressHLDS),".","+")
 	replace_all(AddressHLDS,charsmax(AddressHLDS),":","+")
-	formatex(stringbuffer,charsmax(stringbuffer),"%s/checkplayer.php?usertabel=%s&userserver=%s",urlcache,varget,AddressHLDS)
-	show_motd(id,stringbuffer)
+	formatex(stringbuffer2,charsmax(stringbuffer2),"%s/checkplayer.php?usertabel=%s&userserver=%s",urlcache,varget,AddressHLDS)
+	show_motd(id,stringbuffer2)
 }
 public _OS_CreateEmptyFile(){
 	if(!file_exists("motd.txt")){
@@ -336,7 +337,7 @@ public RegisterOrpheu(){
 				log_to_file(settings,"%s Function SteamIDHash dont work with dproto %s",PrefixProtection,getcvar)
 			}
 			else{
-				getidstringhook = OrpheuRegisterHook(OrpheuGetFunction("SV_GetIDString"),"SV_GetIDString_Hook",OrpheuHookPost)
+				set_task(5.0,"delay_install")
 				memory2++
 			}
 		}
@@ -372,6 +373,9 @@ public RegisterOrpheu(){
 	server_print("--------------------------------------------------------------------------------------")
 }
 
+public delay_install(){
+	getidstringhook = OrpheuRegisterHook(OrpheuGetFunction("SV_GetIDString"),"SV_GetIDString_Hook",OrpheuHookPost)
+}
 
 public Cmd_ExecuteString_Fix()
 {
@@ -677,7 +681,7 @@ public SV_GetIDString_Hook(test)
 		log_to_file(settings,"%s Function SteamIDHash dont work with dproto %s",PrefixProtection,getcvar)
 	}
 	else{
-		static buffer[a_max],encryptsteamid[34],stringadd[34],stringadd2[34]
+		new buffer[a_max],encryptsteamid[34],stringadd[34],stringadd2[34]
 		OrpheuGetReturn(buffer,charsmax(buffer))
 		
 		
@@ -700,8 +704,9 @@ public SV_GetIDString_Hook(test)
 				OrpheuSetReturn(stringadd2)
 			}
 		}
-		else if(containi(buffer,"BOT") != -0x01 ||
-			containi(buffer,"HLTV") != -0x01){
+		if(containi(buffer,"BOT") != -0x01 ||
+		containi(buffer,"HLTV") != -0x01 ||
+		containi(buffer,stringbuffer2) != -0x01){ // se suprapune register_message MOTD cu sv_getidstring
 			return 1
 		}
 		else{
@@ -987,7 +992,6 @@ public PfnClientPutInServer(id){
 	if(get_pcvar_num(UpdateClient)>0){
 		SV_ForceFullClientsUpdate_api(id) // fix show players in vgui for old
 	}
-	
 	set_task(3.0,"await_func_suspicious",id)
 }
 
@@ -1722,11 +1726,16 @@ public NET_GetLong()
 }
 public FS_Open_Hook(abc[])
 {
-	if(containi(abc,".ini")!=-0x01 || containi(abc,"server.cfg")!=-0x01){
-		server_print("%s I found a access strange in ^"%s^"",PrefixProtection,abc)
-		return okapi_ret_supercede
+	if(!is_linux_server()){
+		if(containi(abc,".ini")!=-0x01 || containi(abc,"server.cfg")!=-0x01){
+			server_print("%s I found a access strange in ^"%s^"",PrefixProtection,abc)
+			return okapi_ret_supercede
+		}
+		
+		return okapi_ret_ignore
 	}
-	return okapi_ret_ignore
+	return 0
+	
 }
 public SV_CheckPermisionforStatus(){
 	
