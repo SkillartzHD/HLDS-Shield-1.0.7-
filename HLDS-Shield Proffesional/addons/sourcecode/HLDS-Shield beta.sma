@@ -325,7 +325,7 @@ public RegisterOrpheu(){
 				log_to_file(settings,"%s Function SteamIDHash dont work with dproto %s",PrefixProtection,getcvar)
 			}
 			else{
-				//getidstringhook = OrpheuRegisterHook(OrpheuGetFunction("SV_GetIDString"),"SV_GetIDString_Hook",OrpheuHookPost)
+				getidstringhook = OrpheuRegisterHook(OrpheuGetFunction("SV_GetIDString"),"SV_GetIDString_Hook",OrpheuHookPost)
 				memory2++
 			}
 		}
