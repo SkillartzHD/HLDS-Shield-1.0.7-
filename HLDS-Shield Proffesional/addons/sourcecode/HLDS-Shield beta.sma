@@ -2219,7 +2219,7 @@ public Host_Say_f_Hook(){
 }
 public SV_ConnectClient_Hook()
 {
-	new data[net_adr],value[1024],buffer[128],getip[MAX_BUFFER_IP],checkduplicate[255]
+	new data[net_adr],value[1024],buffer[300],getip[MAX_BUFFER_IP],checkduplicate[255]
 	
 	read_argv(0x04,value,charsmax(value))
 	BufferName(value,charsmax(value),buffer)
