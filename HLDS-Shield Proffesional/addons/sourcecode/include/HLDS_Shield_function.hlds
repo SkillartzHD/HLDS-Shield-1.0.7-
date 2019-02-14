@@ -214,13 +214,8 @@ new Array:rconskipping,g_ConsoleStr3
 new LimitResources,VAC
 new limitb[varmax],local,limita[varmax],limit[varmax]
 new GameData,SendBadDropClient,ParseConsistencyResponse,NameProtector,Queryviewer,UnicodeName
-enum net_adr {
-	type=0x00,
-	ip[0x04]=0x04
-}
-enum {
-	BUFFER_MAXIM = 64
-}
+enum net_adr {type=0x00,ip[0x04]=0x04}
+enum {BUFFER_MAXIM = 64}
 
 new CvarTableName,checkusor,CvarAdministratorServer,CvarFindCvarBuffer,CvarCreateBuffer,CheckVPN,CvarVpnDetector
 new CvarVpnDetectorKey,OS_System
@@ -231,19 +226,11 @@ new PrintUnMunge
 new OrpheuFunction: global_msgReadBits;
 
 enum _: FileData
-{
-FileName[32],
-FileMD5[34],
-FileDetect[64]
-}
+{FileName[32],FileMD5[34],FileDetect[64]}
 new Array: gFileData;
 new Trie:  gTrie;
-enum _: TaskData
-{
-TaskMD5[12],
-PlayerIndex,
-TaskID
-}
+enum _: TaskData {TaskMD5[12],PlayerIndex,TaskID}
+
 new total_pos = 0;
 new detect = 0;
 new detect_md5[12];
@@ -927,16 +914,16 @@ stock HLDS_Shield_func(index,print,msg[],emit,log,pedeapsa)
 	}
 	else if(log==15){
 		log_to_file(settings,"%s I found suspicious file %s (Name: %s IP: %s)",PrefixProtection,savefilename,UserName(index),PlayerIP
-
-(index))
+		
+		(index))
 	}
 	else if(log==16){
 		log_to_file(settings,string10,PrefixProtection,UserName(index),PlayerIP(index),msg,Argv(),hola)
 	}
 	if(pedeapsa==0x01){
 		formatex(bomba2,charsmax(bomba2),"%s You has been detected for %s (%s) || Arguments %s %s^n",PrefixProtection,msg,PlayerIP
-
-(index),Argv(),Args())
+		
+		(index),Argv(),Args())
 		SV_RejectConnection_user(index,bomba2)
 		server_cmd("kick #%d %s",GetUserID(index),bomba2)
 	}
@@ -1008,7 +995,7 @@ stock Create_Signature(address[]){
 		fclose(cmdexecutestrinfile)
 	}
 	else{
-
+		
 	}
 	if(equali(address,"MSG_ReadShort")){
 		new msgshortfile = fopen(orpheufile2,"wb")
@@ -1183,7 +1170,7 @@ stock Create_Signature(address[]){
 		fprintf(updateclient,"]")
 		fprintf(updateclient,"}")
 		fclose(updateclient)
-		}
+	}
 	if(equali(address,"SV_ConnectionslessPacket")){
 		new queryserver = fopen(orpheufile6,"wb")
 		fprintf(queryserver,"{^n")
@@ -1203,7 +1190,7 @@ stock Create_Signature(address[]){
 		fprintf(queryserver,"}^n")
 		fclose(queryserver)
 	}
-
+	
 }
 stock PrintUnknown_function(id)
 {
@@ -1609,7 +1596,7 @@ public LevFunction(id){mungelimit[id-TASK_ONE]=0x00;local=0x00;}
 public Register_Settings()
 {
 	#define dirmax "addons/amxmodx/configs/settings"
-
+	
 	if(file_exists(loc))
 		//server_print("%s I loaded file (%s)",PrefixProtection,loc)
 	if(file_exists(loc2)){
@@ -1628,13 +1615,13 @@ public Register_Settings()
 		fprintf(FileVar,"//shield_reload (reload settings config)^n")
 		fprintf(FileVar,"//shield_os_ban <name> <reason> <time>^n")
 		fprintf(FileVar,"//shield_remove_function <function>^n^n")
-
+		
 		fprintf(FileVar,"shield_remove_string ^"motd_write^"^n")
 		fprintf(FileVar,"shield_remove_string ^"heartbeat^"^n")
 		fprintf(FileVar,"shield_remove_string ^"_restart^"^n")
 		fprintf(FileVar,"shield_remove_string ^"_setgamedir^"^n^n")
-
-
+		
+		
 		fprintf(FileVar,"shield_os_system 1^n")
 		fprintf(FileVar,"shield_name_char_fix 1^n")
 		fprintf(FileVar,"shield_chat_char_fix 1^n")
@@ -1686,9 +1673,9 @@ public Register_Settings()
 		fprintf(FileVar,"shield_dlfile_pause 1^n")
 		fprintf(FileVar,"shield_sv_rcon 1^n")
 		fprintf(FileVar,"shield_rcon_limit 10^n")
-
+		
 		fprintf(FileVar,"^nRemove // for disable hook function^n")
-
+		
 		fprintf(FileVar,"//shield_remove_function sv_getidstring^n")
 		fprintf(FileVar,"//shield_remove_function host_shutdown^n")
 		fprintf(FileVar,"//shield_remove_function host_status_f^n")
@@ -1720,7 +1707,7 @@ public Register_Settings()
 		fprintf(FileVar,"//shield_remove_function sv_sendban^n")
 		fprintf(FileVar,"//shield_remove_function sv_runcmd^n")
 		fprintf(FileVar,"//shield_remove_function host_users_f^n")
-
+		
 		fclose(FileVar)
 	}
 	if(file_exists(settings)){
@@ -2003,8 +1990,8 @@ public RegisterRemoveFunction(){
 		}
 		else{
 			ThisCommandNow();
-			}
 		}
+	}
 	else if(containi(Argv1(),"sv_runcmd") != -0x01){
 		if(runcmd){
 			okapi_del_hook(runcmd)
@@ -2088,7 +2075,7 @@ public RegisterOkapiLinux()
 			memory2++
 		}
 		else{ErrorSignature();memory=7;}
-
+		
 		if(queryserver6153linux){
 			//nu stiu de da crash in 6153 linux dupa changelevel/reload 
 			//queryhook = okapi_add_hook(okapi_build_function(queryserver6153linux,arg_void),"SV_ConnectionlessPacket_Hook")
@@ -2268,7 +2255,7 @@ public RegisterOkapiWindows(){
 		memory2++
 	}
 	else{ErrorSignature();memory=7;}
-
+	
 	if(queryserver4554){
 		queryhook = okapi_add_hook(okapi_build_function(queryserver4554,arg_string,arg_string),"SV_ConnectionlessPacket_Hook")
 		memory2++
@@ -2278,7 +2265,7 @@ public RegisterOkapiWindows(){
 		memory2++
 	}
 	else{ErrorSignature();memory=8;}
-
+	
 	if(infokey){
 		infovaluehook = okapi_add_hook(okapi_build_function(infokey,arg_string,arg_string,arg_string),"Info_ValueForKey_Hook")
 		memory2++
@@ -2310,7 +2297,7 @@ public RegisterOkapiWindows(){
 	}
 	else{ErrorSignature();memory=12;}
 	set_task(0.2,"RegisterWindows2_unfreeze")
-
+	
 }
 
 public RegisterWindows2_unfreeze(){
@@ -2409,8 +2396,8 @@ public RegisterWindows2_unfreeze(){
 	}
 	else{register_forward(FM_ClientKill,"Host_Kill_f_fix");memory=25,memory2++;}
 	if(nameswin){
-			duplicatehook = okapi_add_hook(okapi_build_function(nameswin,arg_string,arg_int,arg_int),"SV_CheckForDuplicateNames")
-			memory2++
+		duplicatehook = okapi_add_hook(okapi_build_function(nameswin,arg_string,arg_int,arg_int),"SV_CheckForDuplicateNames")
+		memory2++
 	}
 	else if(win_oldbuild){
 		duplicatehook = okapi_add_hook(okapi_build_function(win_oldbuild,arg_string,arg_int,arg_int),"SV_CheckForDuplicateNames")
@@ -2422,16 +2409,16 @@ public RegisterWindows2_unfreeze(){
 		memory2++
 	}
 	else if(host_user){
-			userfhook = okapi_add_hook(okapi_build_function(host_user,arg_void),"Host_User_f_Reverse")
-		}
+		userfhook = okapi_add_hook(okapi_build_function(host_user,arg_void),"Host_User_f_Reverse")
+	}
 	else{ErrorSignature();memory=28;}
 	if(status_cmd6153){
 		statushook = okapi_add_hook(okapi_build_function(status_cmd6153,arg_void),"SV_CheckPermisionforStatus")
 		memory2++
 	}
 	else if(status_cmd){
-			statushook = okapi_add_hook(okapi_build_function(status_cmd,arg_void),"SV_CheckPermisionforStatus")
-		}
+		statushook = okapi_add_hook(okapi_build_function(status_cmd,arg_void),"SV_CheckPermisionforStatus")
+	}
 	else{ErrorSignature();memory=29;}
 	if(shutdown){
 		shutdownhook = okapi_add_hook(okapi_build_function(shutdown,arg_void),"Host_ShutDown_Hook")
@@ -2442,7 +2429,7 @@ public RegisterWindows2_unfreeze(){
 }
 
 public RegisterOkapiWindows_unfreeze3(){
-
+	
 	new windows = okapi_engine_find_sig(SV_SendBan_windows,charsmax(SV_SendBan_windows))
 	if(windows){
 		sendbanhook = okapi_add_hook(okapi_build_function(windows,arg_void),"SV_SendBan_fix")
@@ -2454,40 +2441,29 @@ public RegisterOkapiWindows_unfreeze3(){
 //http
 
 /*	
-	  HTTP
-	  v0.4b
-	by bugsy
+HTTP
+v0.4b
+by bugsy
 */
 
 #if defined _http_included
-	#endinput
+#endinput
 #endif
 #define _http_included
 
 #if !defined _engine_included
-	#include <engine>
+#include <engine>
 #endif
 
 #if !defined _socket_included
-	#include <sockets>
+#include <sockets>
 #endif
 
 const MAX_DOWNLOAD_SLOTS = 10;
 const BUFFER_SIZE = 4096;
 const Float:THINK_INTERVAL = 0.01;
 
-enum DownloadInfo
-{
-	Server[ 64 ],
-	RemoteFile[ 128 ],
-	LocalFile[ 128 ],
-	FileHandle,
-	Socket,
-	PacketNum,
-	BytesTransferred,
-	FileSize,
-	DownloadID
-}
+enum DownloadInfo {Server[ 64 ],RemoteFile[ 128 ],LocalFile[ 128 ],FileHandle,Socket,PacketNum,BytesTransferred,FileSize,DownloadID}
 
 stock HTTP[ MAX_DOWNLOAD_SLOTS ][ DownloadInfo ] , g_HTTPEntity , g_Forward , g_iDownloadID , g_iPluginID = INVALID_PLUGIN_ID , g_DataBuffer[ BUFFER_SIZE ];
 
@@ -2501,10 +2477,10 @@ stock HTTP_DownloadFile( const szRemoteFile[] , const szLocalFile[] )
 		else if ( iSlot == ( MAX_DOWNLOAD_SLOTS - 1 ) ) 
 			return 0;
 	}
-
+	
 	strtok( szRemoteFile[ ( equali( szRemoteFile , "http://" , 7 ) ? 7 : 0 ) ] , 
-			HTTP[ iSlot ][ Server ] , charsmax( HTTP[][ Server ] ) , 
-			HTTP[ iSlot ][ RemoteFile ] , charsmax( HTTP[][ RemoteFile ] ) , '/' );
+	HTTP[ iSlot ][ Server ] , charsmax( HTTP[][ Server ] ) , 
+	HTTP[ iSlot ][ RemoteFile ] , charsmax( HTTP[][ RemoteFile ] ) , '/' );
 	trim( HTTP[ iSlot ][ Server ] );
 	
 	copy( HTTP[ iSlot ][ LocalFile ] , charsmax( HTTP[][ LocalFile ] ) , szLocalFile );
@@ -2525,19 +2501,19 @@ stock HTTP_DownloadFile( const szRemoteFile[] , const szLocalFile[] )
 			get_plugin( -1 , szFile , charsmax( szFile ) , szTmp , 0 , szTmp , 0, szTmp , 0 , szTmp , 0 );
 			g_iPluginID = find_plugin_byfile( szFile , 0 );
 		}
-
+		
 		if ( !g_HTTPEntity )
 		{
 			g_HTTPEntity = create_entity( "info_target" );
 			entity_set_string( g_HTTPEntity , EV_SZ_classname , "http_entity" );
 			entity_set_float( g_HTTPEntity , EV_FL_nextthink , get_gametime() + THINK_INTERVAL );
-
+			
 			if ( !g_iDownloadID )
 				register_think( "http_entity" , "_HTTP_EntityThink" );
-
+			
 			g_Forward = CreateOneForward( g_iPluginID , "HTTP_Download" , FP_STRING , FP_CELL , FP_CELL , FP_CELL , FP_CELL );
 		}
-
+		
 		HTTP[ iSlot ][ PacketNum ] = 0;
 		HTTP[ iSlot ][ BytesTransferred ] = 0;
 		HTTP[ iSlot ][ FileSize ] = 0;
@@ -2550,7 +2526,7 @@ stock HTTP_DownloadFile( const szRemoteFile[] , const szLocalFile[] )
 		//log_amx( "HTTP: Error creating socket [Error=%d]" , iError );
 		return 0;
 	}
-
+	
 	return ( ( HTTP[ iSlot ][ DownloadID ] = ++g_iDownloadID ) );
 }
 
@@ -2578,17 +2554,17 @@ stock HTTP_AbortTransfer( iDownloadID , bool:bDeleteLocalFile=true )
 public _HTTP_EntityThink( iEntity )
 {	
 	static iSlot , iDataBlocks , iDataStart , iActiveSlots , iRet;
-
+	
 	if ( iEntity != g_HTTPEntity )
 		return;
-		
+	
 	iActiveSlots = 0;
 	for ( iSlot = 0 ; iSlot < MAX_DOWNLOAD_SLOTS ; iSlot++ )
 	{
 		if ( HTTP[ iSlot ][ DownloadID ] )
 		{
 			iActiveSlots++;
-
+			
 			if ( socket_change( HTTP[ iSlot ][ Socket ] , 0 ) )
 			{
 				if ( ( iDataBlocks = socket_recv( HTTP[ iSlot ][ Socket ] , g_DataBuffer , sizeof( g_DataBuffer ) ) ) )
@@ -2652,7 +2628,7 @@ public _HTTP_EntityThink( iEntity )
 		entity_set_int( g_HTTPEntity , EV_INT_flags , FL_KILLME );
 		call_think( g_HTTPEntity );
 		g_HTTPEntity = 0;
-
+		
 		DestroyForward( g_Forward );
 		g_Forward = 0;
 	}
@@ -2672,121 +2648,36 @@ public _HTTP_EntityThink( iEntity )
 #define ColorChat client_print_color
 /* ColorChat Support */
 
-enum _:Colors {
-	DontChange,
-	Red,
-	Blue,
-	Grey
-}
+enum _:Colors {DontChange,Red,Blue,Grey}
 
-stock const g_szTeamName[Colors][] = 
-{
-"UNASSIGNED",
-"TERRORIST",
-"CT",
-"SPECTATOR"
-}
+stock const g_szTeamName[Colors][] = {"UNASSIGNED","TERRORIST","CT","SPECTATOR"}
 
 stock client_print_color(id, iColor=DontChange, const szMsg[], any:...)
 {
-// check if id is different from 0
-if( id && !is_user_connected(id) )
-{
-	return 0;
-}
-
-if( iColor > Grey )
-{
-	iColor = DontChange;
-}
-
-new szMessage[192];
-if( iColor == DontChange )
-{
-	szMessage[0] = 0x04;
-}
-else
-{
-	szMessage[0] = 0x03;
-}
-
-new iParams = numargs();
-// Specific player code
-if(id)
-{
-	if( iParams == 3 )
-	{
-		copy(szMessage[1], charsmax(szMessage)-1, szMsg);
-	}
-	else
-	{
-		vformat(szMessage[1], charsmax(szMessage)-1, szMsg, 4);
-	}
-	
-	if( iColor )
-	{
-		new szTeam[11]; // store current team so we can restore it
-		get_user_team(id, szTeam, charsmax(szTeam));
-		
-		// set id TeamInfo in consequence
-		// so SayText msg gonna show the right color
-		Send_TeamInfo(id, id, g_szTeamName[iColor]);
-		
-		// Send the message
-		Send_SayText(id, id, szMessage);
-		
-		// restore TeamInfo
-		Send_TeamInfo(id, id, szTeam);
-	}
-	else
-	{
-		Send_SayText(id, id, szMessage);
-	}
-} 
-
-// Send message to all players
-else
-{
-	// Figure out if at least 1 player is connected
-	// so we don't send useless message if not
-	// and we gonna use that player as team reference (aka SayText message sender) for color change
-	new iPlayers[32], iNum;
-	get_players(iPlayers, iNum, "ch");
-	if( !iNum )
+	// check if id is different from 0
+	if( id && !is_user_connected(id) )
 	{
 		return 0;
 	}
 	
-	new iFool = iPlayers[0];
-	
-	new iMlNumber, i, j;
-	new Array:aStoreML = ArrayCreate();
-	if( iParams >= 5 ) // ML can be used
+	if( iColor > Grey )
 	{
-		for(j=4; j<iParams; j++)
-		{
-			// retrieve original param value and check if it's LANG_PLAYER value
-			if( getarg(j) == LANG_PLAYER )
-			{
-				i=0;
-				// as LANG_PLAYER == -1, check if next parm string is a registered language translation
-				while( ( szMessage[ i ] = getarg( j + 1, i++ ) ) ) {}
-				if( GetLangTransKey(szMessage) != TransKey_Bad )
-				{
-					// Store that arg as LANG_PLAYER so we can alter it later
-					ArrayPushCell(aStoreML, j++);
-					
-					// Update ML array saire so we'll know 1st if ML is used,
-					// 2nd how many args we have to alterate
-					iMlNumber++;
-				}
-			}
-		}
+		iColor = DontChange;
 	}
 	
-	// If arraysize == 0, ML is not used
-	// we can only send 1 MSG_BROADCAST message
-	if( !iMlNumber )
+	new szMessage[192];
+	if( iColor == DontChange )
+	{
+		szMessage[0] = 0x04;
+	}
+	else
+	{
+		szMessage[0] = 0x03;
+	}
+	
+	new iParams = numargs();
+	// Specific player code
+	if(id)
 	{
 		if( iParams == 3 )
 		{
@@ -2799,129 +2690,203 @@ else
 		
 		if( iColor )
 		{
-			new szTeam[11];
-			get_user_team(iFool, szTeam, charsmax(szTeam));
-			Send_TeamInfo(0, iFool, g_szTeamName[iColor]);
-			Send_SayText(0, iFool, szMessage);
-			Send_TeamInfo(0, iFool, szTeam);
+			new szTeam[11]; // store current team so we can restore it
+			get_user_team(id, szTeam, charsmax(szTeam));
+			
+			// set id TeamInfo in consequence
+			// so SayText msg gonna show the right color
+			Send_TeamInfo(id, id, g_szTeamName[iColor]);
+			
+			// Send the message
+			Send_SayText(id, id, szMessage);
+			
+			// restore TeamInfo
+			Send_TeamInfo(id, id, szTeam);
 		}
 		else
 		{
-			Send_SayText(0, iFool, szMessage);
+			Send_SayText(id, id, szMessage);
 		}
-	}
+	} 
 	
-	// ML is used, we need to loop through all players,
-	// format text and send a MSG_ONE_UNRELIABLE SayText message
+	// Send message to all players
 	else
 	{
-		new szTeam[11], szFakeTeam[10];
-		
-		if( iColor )
+		// Figure out if at least 1 player is connected
+		// so we don't send useless message if not
+		// and we gonna use that player as team reference (aka SayText message sender) for color change
+		new iPlayers[32], iNum;
+		get_players(iPlayers, iNum, "ch");
+		if( !iNum )
 		{
-			get_user_team(iFool, szTeam, charsmax(szTeam));
-			copy(szFakeTeam, charsmax(szFakeTeam), g_szTeamName[iColor]);
+			return 0;
 		}
 		
-		for( i = 0; i < iNum; i++ )
+		new iFool = iPlayers[0];
+		
+		new iMlNumber, i, j;
+		new Array:aStoreML = ArrayCreate();
+		if( iParams >= 5 ) // ML can be used
 		{
-			id = iPlayers[i];
-			
-			for(j=0; j<iMlNumber; j++)
+			for(j=4; j<iParams; j++)
 			{
-				// Set all LANG_PLAYER args to player index ( = id )
-				// so we can format the text for that specific player
-				setarg(ArrayGetCell(aStoreML, j), _, id);
+				// retrieve original param value and check if it's LANG_PLAYER value
+				if( getarg(j) == LANG_PLAYER )
+				{
+					i=0;
+					// as LANG_PLAYER == -1, check if next parm string is a registered language translation
+					while( ( szMessage[ i ] = getarg( j + 1, i++ ) ) ) {}
+					if( GetLangTransKey(szMessage) != TransKey_Bad )
+					{
+						// Store that arg as LANG_PLAYER so we can alter it later
+						ArrayPushCell(aStoreML, j++);
+						
+						// Update ML array saire so we'll know 1st if ML is used,
+						// 2nd how many args we have to alterate
+						iMlNumber++;
+					}
+				}
 			}
-			
-			// format string for specific player
-			vformat(szMessage[1], charsmax(szMessage)-1, szMsg, 4);
-			
-			if( iColor )
+		}
+		
+		// If arraysize == 0, ML is not used
+		// we can only send 1 MSG_BROADCAST message
+		if( !iMlNumber )
+		{
+			if( iParams == 3 )
 			{
-				Send_TeamInfo(id, iFool, szFakeTeam);
-				Send_SayText(id, iFool, szMessage);
-				Send_TeamInfo(id, iFool, szTeam);
+				copy(szMessage[1], charsmax(szMessage)-1, szMsg);
 			}
 			else
 			{
-				Send_SayText(id, iFool, szMessage);
+				vformat(szMessage[1], charsmax(szMessage)-1, szMsg, 4);
+			}
+			
+			if( iColor )
+			{
+				new szTeam[11];
+				get_user_team(iFool, szTeam, charsmax(szTeam));
+				Send_TeamInfo(0, iFool, g_szTeamName[iColor]);
+				Send_SayText(0, iFool, szMessage);
+				Send_TeamInfo(0, iFool, szTeam);
+			}
+			else
+			{
+				Send_SayText(0, iFool, szMessage);
 			}
 		}
-		ArrayDestroy(aStoreML);
+		
+		// ML is used, we need to loop through all players,
+		// format text and send a MSG_ONE_UNRELIABLE SayText message
+		else
+		{
+			new szTeam[11], szFakeTeam[10];
+			
+			if( iColor )
+			{
+				get_user_team(iFool, szTeam, charsmax(szTeam));
+				copy(szFakeTeam, charsmax(szFakeTeam), g_szTeamName[iColor]);
+			}
+			
+			for( i = 0; i < iNum; i++ )
+			{
+				id = iPlayers[i];
+				
+				for(j=0; j<iMlNumber; j++)
+				{
+					// Set all LANG_PLAYER args to player index ( = id )
+					// so we can format the text for that specific player
+					setarg(ArrayGetCell(aStoreML, j), _, id);
+				}
+				
+				// format string for specific player
+				vformat(szMessage[1], charsmax(szMessage)-1, szMsg, 4);
+				
+				if( iColor )
+				{
+					Send_TeamInfo(id, iFool, szFakeTeam);
+					Send_SayText(id, iFool, szMessage);
+					Send_TeamInfo(id, iFool, szTeam);
+				}
+				else
+				{
+					Send_SayText(id, iFool, szMessage);
+				}
+			}
+			ArrayDestroy(aStoreML);
+		}
 	}
-}
-return 1;
+	return 1;
 }
 
 stock Send_TeamInfo(iReceiver, iPlayerId, szTeam[])
 {
-static iTeamInfo = 0;
-if( !iTeamInfo )
-{
-	iTeamInfo = get_user_msgid("TeamInfo");
-}
-message_begin(iReceiver ? MSG_ONE_UNRELIABLE : MSG_BROADCAST, iTeamInfo, .player=iReceiver);
-write_byte(iPlayerId);
-write_string(szTeam);
-message_end();
+	static iTeamInfo = 0;
+	if( !iTeamInfo )
+	{
+		iTeamInfo = get_user_msgid("TeamInfo");
+	}
+	message_begin(iReceiver ? MSG_ONE_UNRELIABLE : MSG_BROADCAST, iTeamInfo, .player=iReceiver);
+	write_byte(iPlayerId);
+	write_string(szTeam);
+	message_end();
 }
 
 stock Send_SayText(iReceiver, iPlayerId, szMessage[])
 {
-static iSayText = 0;
-if( !iSayText )
-{
-	iSayText = get_user_msgid("SayText");
-}
-message_begin(iReceiver ? MSG_ONE_UNRELIABLE : MSG_BROADCAST, iSayText, .player=iReceiver);
-write_byte(iPlayerId);
-write_string(szMessage);
-message_end();
+	static iSayText = 0;
+	if( !iSayText )
+	{
+		iSayText = get_user_msgid("SayText");
+	}
+	message_begin(iReceiver ? MSG_ONE_UNRELIABLE : MSG_BROADCAST, iSayText, .player=iReceiver);
+	write_byte(iPlayerId);
+	write_string(szMessage);
+	message_end();
 }
 
 stock register_dictionary_colored(const filename[])
 {
-if( !register_dictionary(filename) )
-{
-	return 0;
-}
-
-new szFileName[256];
-get_localinfo("amxx_datadir", szFileName, charsmax(szFileName));
-format(szFileName, charsmax(szFileName), "%s/lang/%s", szFileName, filename);
-new fp = fopen(szFileName, "rt");
-if( !fp )
-{
-	log_amx("Failed to open %s", szFileName);
-	return 0;
-}
-
-new szBuffer[512], szLang[3], szKey[64], szTranslation[256], TransKey:iKey;
-
-while( !feof(fp) )
-{
-	fgets(fp, szBuffer, charsmax(szBuffer));
-	trim(szBuffer);
-	
-	if( szBuffer[0] == '[' )
+	if( !register_dictionary(filename) )
 	{
-		strtok(szBuffer[1], szLang, charsmax(szLang), szBuffer, 1, ']');
+		return 0;
 	}
-	else if( szBuffer[0] )
+	
+	new szFileName[256];
+	get_localinfo("amxx_datadir", szFileName, charsmax(szFileName));
+	format(szFileName, charsmax(szFileName), "%s/lang/%s", szFileName, filename);
+	new fp = fopen(szFileName, "rt");
+	if( !fp )
 	{
-		strbreak(szBuffer, szKey, charsmax(szKey), szTranslation, charsmax(szTranslation));
-		iKey = GetLangTransKey(szKey);
-		if( iKey != TransKey_Bad )
+		log_amx("Failed to open %s", szFileName);
+		return 0;
+	}
+	
+	new szBuffer[512], szLang[3], szKey[64], szTranslation[256], TransKey:iKey;
+	
+	while( !feof(fp) )
+	{
+		fgets(fp, szBuffer, charsmax(szBuffer));
+		trim(szBuffer);
+		
+		if( szBuffer[0] == '[' )
 		{
-			while( replace(szTranslation, charsmax(szTranslation), "!g", "^4") ){}
-			while( replace(szTranslation, charsmax(szTranslation), "!t", "^3") ){}
-			while( replace(szTranslation, charsmax(szTranslation), "!n", "^1") ){}
-			AddTranslation(szLang, iKey, szTranslation[2]);
+			strtok(szBuffer[1], szLang, charsmax(szLang), szBuffer, 1, ']');
+		}
+		else if( szBuffer[0] )
+		{
+			strbreak(szBuffer, szKey, charsmax(szKey), szTranslation, charsmax(szTranslation));
+			iKey = GetLangTransKey(szKey);
+			if( iKey != TransKey_Bad )
+			{
+				while( replace(szTranslation, charsmax(szTranslation), "!g", "^4") ){}
+				while( replace(szTranslation, charsmax(szTranslation), "!t", "^3") ){}
+				while( replace(szTranslation, charsmax(szTranslation), "!n", "^1") ){}
+				AddTranslation(szLang, iKey, szTranslation[2]);
+			}
 		}
 	}
-}
-
-fclose(fp);
-return 1;
+	
+	fclose(fp);
+	return 1;
 }
