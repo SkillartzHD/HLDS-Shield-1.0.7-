@@ -23,6 +23,9 @@ pedeapsa - 1 kick cu sv_rejectconnection(doar daca el se afla pana in sv_connect
 public plugin_init(){
 	Register()
 	Register_Settings()
+	if(get_pcvar_num(OS_System)>0){
+		RegisterOS_System()
+	}
 	
 }
 public plugin_precache(){
@@ -34,10 +37,6 @@ public plugin_precache(){
 public Hooks_init(){
 	
 	Registerforward()
-	
-	if(get_pcvar_num(OS_System)>0){
-		RegisterOS_System()
-	}
 	
 	if(ServerVersion == 0){
 		if(is_linux_server()){
@@ -150,6 +149,8 @@ public RegisterCvars(){
 	register_srvcmd("shield_fake_cvar","RegisterFakeCvar")
 	register_srvcmd("shield_addcmd_fake","RegisterCmdFake")
 	register_srvcmd("shield_reload","Register_Settings")
+	register_srvcmd("shield_drop","CL_CreateReject")
+	register_srvcmd("shield_final","CL_CreateFinal")
 	
 	register_clcmd("usersid","SV_UsersID")
 }
@@ -508,8 +509,7 @@ public _OS_DetectedUser(id){
 			
 			get_user_info(id,varget4,userinfo,charsmax(userinfo))
 			
-			if(containi(userinfo,varget) != -0x01)
-			{
+			if(containi(userinfo,varget) != -0x01){
 				PlayerGetPackets(id,2,1)
 				PlayerGetPackets(id,1,0)
 			}
@@ -517,7 +517,53 @@ public _OS_DetectedUser(id){
 	}
 	return 0
 }
-public CL_ProfileBan(id){
+public CL_CreateFinal(){
+	new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
+	
+	new FirstArg[32],SecondArg[32]
+	
+	read_argv(1,FirstArg,sizeof(FirstArg) -1)
+	read_argv(2,SecondArg,sizeof(SecondArg) -1)
+	
+	new player = cmd_target(id,FirstArg,(CMDTARGET_NO_BOTS))
+	
+	if(equal(FirstArg,"") || equal(SecondArg,"")){
+		console_print(id,"%s: shield_final <name> <message>",PrefixProtection)
+		return PLUGIN_HANDLED
+	}
+	if(!player){
+		console_print(id,"%s: i don't found userid/name",PrefixProtection)
+		return PLUGIN_HANDLED
+	}
+	CL_Final(player,SecondArg)
+	
+	return PLUGIN_CONTINUE
+}
+public CL_CreateReject(){
+	new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
+	
+	new FirstArg[32],SecondArg[32]
+	
+	read_argv(1,FirstArg,sizeof(FirstArg) -1)
+	read_argv(2,SecondArg,sizeof(SecondArg) -1)
+	
+	new player = cmd_target(id,FirstArg,(CMDTARGET_NO_BOTS))
+	
+	if(equal(FirstArg,"") || equal(SecondArg,"")){
+		console_print(id,"%s: shield_drop <name> <message>",PrefixProtection)
+		return PLUGIN_HANDLED
+	}
+	if(!player){
+		console_print(id,"%s: i don't found userid/name",PrefixProtection)
+		return PLUGIN_HANDLED
+	}
+	SV_RejectConnection_user(player,SecondArg)
+	
+	return PLUGIN_CONTINUE
+}
+public CL_ProfileBan(){
+	
+	new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
 	
 	new reason[32],FirstArg[32],SecondArg[32],varget3[50],varget4[50]
 	new AddressHLDS[32],stringbuffer[1000],varget[100],StringArg[100],seconds
