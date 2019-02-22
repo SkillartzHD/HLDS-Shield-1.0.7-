@@ -112,7 +112,7 @@ new localas[33],valutsteamid,authid[32],authid2[32],szip[32],szip2[33],bullshit[
 
 //OS_System
 #define prefixos "[OS-System]-[HLDS-Shield]"
-#define CacheFile "maps/cachefile.txt"
+#define CacheFile "addons/amxmodx/configs/settings/OS_Ban/cachefile.txt"
 #define urlcache "http://counterstrike16-download.com/SM-Shield"
 #define CacheWebsite "ByteOne.ini"
 #define MainConfigfile "addons/amxmodx/configs/settings/OS_Ban/OS_Main.cfg"
@@ -141,6 +141,8 @@ new localas[33],valutsteamid,authid[32],authid2[32],szip[32],szip2[33],bullshit[
 #define orpheufile7 "addons/amxmodx/configs/orpheu/functions/SV_GetIDString"
 #define orpheufile8 "addons/amxmodx/configs/orpheu/functions/MSG_ReadBits"
 #define orpheufile9 "addons/amxmodx/configs/orpheu/functions/SV_ParseConsistencyResponse"
+#define orpheufile10 "addons/amxmodx/configs/orpheu/functions/PF_WriteString_I"
+#define orpheufile11 "addons/amxmodx/configs/orpheu/functions/UTIL_ClientPrint"
 
 #define Host_Status_f_linux "Host_Status_f"
 #define SV_SendBan_linux "SV_FilterPacket"
@@ -1004,7 +1006,7 @@ stock Create_Signature(address[]){
 		fprintf(msgshortfile,"^"library^"    : ^"engine^",")
 		fprintf(msgshortfile,"^"return^"  :")
 		fprintf(msgshortfile,"{")
-		fprintf(msgshortfile,"^"type^" : ^"int^"")
+		fprintf(msgshortfile,"^"type^" : ^"long^"")
 		fprintf(msgshortfile,"},")
 		fprintf(msgshortfile,"^"identifiers^":")
 		fprintf(msgshortfile,"[")
@@ -1039,20 +1041,77 @@ stock Create_Signature(address[]){
 		fprintf(queryserver,"}^n")
 		fclose(queryserver)
 	}
+	if(equali(address,"PF_WriteString_I")){
+		new PF_WriteString_I = fopen(orpheufile10,"wb")
+		fprintf(PF_WriteString_I,"{")
+		fprintf(PF_WriteString_I,"^"name^"       : ^"PF_WriteString_I^",")
+		fprintf(PF_WriteString_I,"^"library^"    : ^"engine^",")
+		fprintf(PF_WriteString_I,"^"arguments^"  :")
+		fprintf(PF_WriteString_I,"[")
+		fprintf(PF_WriteString_I,"{")
+		fprintf(PF_WriteString_I,"^"type^" : ^"char *^"")
+		fprintf(PF_WriteString_I,"}")
+		fprintf(PF_WriteString_I,"],")
+		fprintf(PF_WriteString_I,"^"identifiers^":")
+		fprintf(PF_WriteString_I,"[")
+		fprintf(PF_WriteString_I,"{")
+		fprintf(PF_WriteString_I,"^"os^"    : ^"windows^",")
+		fprintf(PF_WriteString_I,"^"value^" : [0x55,0x8B,0xEC,0x53,0x8B,0x5D,^"*^",0x56,0x8B,0x75,^"*^",0x83,^"*^",^"*^",0x57,0x74]") // posibile crash in windows idk
+		fprintf(PF_WriteString_I,"},")
+		fprintf(PF_WriteString_I,"{")
+		fprintf(PF_WriteString_I,"^"os^"    : ^"linux^",")
+		fprintf(PF_WriteString_I,"^"value^" : ^"PF_WriteString_I^"")
+		fprintf(PF_WriteString_I,"}")
+		fprintf(PF_WriteString_I,"]")
+		fprintf(PF_WriteString_I,"}")
+		fclose(PF_WriteString_I)
+	}
+	if(equali(address,"UTIL_ClientPrint")){
+		new utilclientprint = fopen(orpheufile11,"wb")
+		fprintf(utilclientprint,"{")
+		fprintf(utilclientprint,"^"name^"       : ^"UTIL_ClientPrint^",")
+		fprintf(utilclientprint,"^"library^"    : ^"amxmodx_mm^",")
+		fprintf(utilclientprint,"^"arguments^"  :")
+		fprintf(utilclientprint,"[")
+		fprintf(utilclientprint,"{")
+		fprintf(utilclientprint,"^"type^" : ^"edict_s *^"")
+		fprintf(utilclientprint,"},")
+		fprintf(utilclientprint,"{")
+		fprintf(utilclientprint,"^"type^" : ^"int^"")
+		fprintf(utilclientprint,"},")
+		fprintf(utilclientprint,"{")
+		fprintf(utilclientprint,"^"type^" : ^"char *^"")
+		fprintf(utilclientprint,"}")
+		fprintf(utilclientprint,"],")
+		fprintf(utilclientprint,"^"identifiers^":")
+		fprintf(utilclientprint,"[")
+		fprintf(utilclientprint,"{")
+		fprintf(utilclientprint,"^"os^"    : ^"windows^",")
+		fprintf(utilclientprint,"^"value^" : [0x83,^"*^",^"*^",^"*^",^"*^",^"*^",0x00,0x74,^"*^",0x8B,0x44,^"*^",^"*^",0x53,0x56,0x8B,0x74,^"*^",^"*^",0x8A,0x9E,^"*^",^"*^",^"*^",^"*^",0xC6,0x86,^"*^",^"*^",^"*^",^"*^",0x00,0x85,0xC0,0x74,^"*^",0x50,0xA1,^"*^",^"*^",^"*^",^"*^",0x6A,0x00,0x50,0x6A,0x01,0xEB]")
+		fprintf(utilclientprint,"},")
+		fprintf(utilclientprint,"{")
+		fprintf(utilclientprint,"^"os^"    : ^"linux^",")
+		fprintf(utilclientprint,"^"value^" : ^"UTIL_ClientPrint^"")
+		fprintf(utilclientprint,"}")
+		fprintf(utilclientprint,"]")
+		fprintf(utilclientprint,"}")
+		fclose(utilclientprint)
+	}
 	if(equali(address,"MSG_ReadBits")){
 		new msgshortfile = fopen(orpheufile8,"wb")
+		
 		fprintf(msgshortfile,"{")
 		fprintf(msgshortfile,"^"name^"       : ^"MSG_ReadBits^",")
 		fprintf(msgshortfile,"^"library^"    : ^"engine^",")
 		fprintf(msgshortfile,"^"arguments^"  :")
 		fprintf(msgshortfile,"[")
 		fprintf(msgshortfile,"{")
-		fprintf(msgshortfile,"^"type^" : ^"int^"")
+		fprintf(msgshortfile,"^"type^" : ^"long^"")
 		fprintf(msgshortfile,"}")
 		fprintf(msgshortfile,"],")
 		fprintf(msgshortfile,"^"return^"  :")
 		fprintf(msgshortfile,"{")
-		fprintf(msgshortfile,"^"type^" : ^"int^"")
+		fprintf(msgshortfile,"^"type^" : ^"long^"")
 		fprintf(msgshortfile,"},")
 		fprintf(msgshortfile,"^"identifiers^":")
 		fprintf(msgshortfile,"[")
@@ -1076,7 +1135,7 @@ stock Create_Signature(address[]){
 		fprintf(getidstringfile,"^"arguments^" :^n")
 		fprintf(getidstringfile,"[^n")
 		fprintf(getidstringfile,"{^n")
-		fprintf(getidstringfile,"^"type^" : ^"pointer^"^n")
+		fprintf(getidstringfile,"^"type^" : ^"long^"^n")
 		fprintf(getidstringfile,"}^n")
 		fprintf(getidstringfile,"],^n")
 		fprintf(getidstringfile,"^"return^" :^n")
