@@ -1,0 +1,1 @@
+{"name"       : "PF_WriteString_I","library"    : "engine","arguments"  :[{"type" : "char *"}],"identifiers":[{"os"    : "windows","value" : [0x55,0x8B,0xEC,0x53,0x8B,0x5D,"*",0x56,0x8B,0x75,"*",0x83,"*","*",0x57,0x74]},{"os"    : "linux","value" : "PF_WriteString_I"}]}
