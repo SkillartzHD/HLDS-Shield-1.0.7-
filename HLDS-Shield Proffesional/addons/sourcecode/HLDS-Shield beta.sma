@@ -229,7 +229,47 @@ public isCheckUserBanned(id){
 	HTTP_DownloadFile(stringurl,CacheFile)
 	set_task(1.0,"_OS_DetectedUser",id)
 }
+public UTIL_ClientPrint_Hook(string,string2,stringmsg[]){
+	VoidFunction(stringmsg,1)
+}
 
+public PF_WriteString_I_Hook(stringmsg[]){
+	VoidFunction(stringmsg,2)
+}
+
+stock VoidFunction(stringUS[],func){
+	new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
+	if(is_user_connected(id)){
+		new string[700]
+		formatex(string,charsmax(string),"%s",stringUS)
+		if(strlen(string)>=150){
+			return 0 // don't print client message
+		}
+		if(get_pcvar_num(ChatCharFix)==1){
+			replace_all(string,charsmax(string),"%","ï¼…")
+			replace_all(string,charsmax(string),"#","ï¼ƒ")
+		}
+		if(get_pcvar_num(ChatCharFix)==2){
+			replace_all(string,charsmax(string),"%","*")
+			replace_all(string,charsmax(string),"#","*")
+		}
+		else{
+			if(func==1){
+				server_print("%s",string) // deoarece e o functie swds/engine
+			}
+			if(func==2){
+				log_amx("%s",string) // deoarece e o functie amxmodx
+			}
+		}
+	}
+	return 1
+}
+public ProtectAllPluginsChatReplaced(){
+	if(strlen(Argv1())>=150){
+		return 1; // fix possible crash in replace with unicode char for all plugins tags/replace chat
+	}
+	return 0
+}
 public UserImpulseFalse(id){
 	UserCheckImpulse[id] = 0
 }
@@ -269,6 +309,7 @@ public pfnClientConnect(id){
 	set_task(1.0,"UserImpulseFalse",id)
 	
 }
+new CheckOS = 0
 public RegisterOrpheu(){
 	
 	if(ServerVersion == 0){
@@ -355,7 +396,7 @@ public RegisterOrpheu(){
 		log_to_file(settings,"^n%s I loaded plugin with %d functions hooked in hlds [windows]^n",PrefixProtection,memory2)
 	}
 	
-	
+	RegisterFixChars()
 	new AMXXVersion[a_max],RCONName[a_max],ServerInfo[a_max],Metamodinfo[a_max],get[a_max]
 	
 	get_amxx_verstring(AMXXVersion,charsmax(AMXXVersion))
@@ -373,7 +414,41 @@ public RegisterOrpheu(){
 	SV_UpTime(1)
 	server_print("--------------------------------------------------------------------------------------")
 }
-
+public RegisterFixChars(){
+	
+	register_message(get_user_msgid("SayText"),"ProtectAllPluginsChatReplaced")
+	
+	if(CheckOS==0){
+		if(is_linux_server()){
+			CheckOS = 2 // linux
+		}
+		else{
+			CheckOS = 1 // windows
+		}
+	}
+	
+	if(CheckOS==1){
+		if(!file_exists("addons/amxmodx/configs/orpheu/functions/UTIL_ClientPrint")){
+			Create_Signature("UTIL_ClientPrint")
+			set_task(1.0,"debug_orpheu")
+		}
+		else{
+			OrpheuRegisterHook(OrpheuGetFunction("UTIL_ClientPrint"),"UTIL_ClientPrint_Hook")
+			memory2++
+		}
+	}
+	
+	if(CheckOS==2){
+		if(!file_exists("addons/amxmodx/configs/orpheu/functions/PF_WriteString_I")){
+			Create_Signature("PF_WriteString_I")
+			set_task(1.0,"debug_orpheu")
+		}
+		else{
+			OrpheuRegisterHook(OrpheuGetFunction("PF_WriteString_I"),"PF_WriteString_I_Hook")
+			memory2++
+		}
+	}
+}
 public delay_install(){
 	getidstringhook = OrpheuRegisterHook(OrpheuGetFunction("SV_GetIDString"),"SV_GetIDString_Hook",OrpheuHookPost)
 }
@@ -1329,7 +1404,7 @@ public client_command(id){
 }
 public PfnClientCommand(id)
 {
-	new StringBuffer[100]
+	new StringBuffer[700]
 	if(is_user_connected(id)){
 		UserCheckImpulse[id] = 1
 		if(get_pcvar_num(UpdateClient)>0){
@@ -1372,27 +1447,31 @@ public PfnClientCommand(id)
 			}
 		}
 	}
-	if(get_pcvar_num(CommandBug)>0){
-		if(containi(Argv1(),"@")!= -0x01){
-			
-		}
-		else{
-			if(get_pcvar_num(ChatCharFix)==1)
-			{
-				if(containi(Argv(),"say")!= -0x01 || containi(Argv(),"say_team")!= -0x01){
-					read_argv(1,StringBuffer,charsmax(StringBuffer))
-					replace_all(StringBuffer,charsmax(StringBuffer),"%","ï¼…")
-					replace_all(StringBuffer,charsmax(StringBuffer),"#","ï¼ƒ")
-					engclient_cmd(id,Argv(),StringBuffer)
+	if(containi(Argv1(),"@")!= -0x01){
+		
+	}
+	else{
+		if(get_pcvar_num(ChatCharFix)==1)
+		{
+			if(containi(Argv(),"say")!= -0x01 || containi(Argv(),"say_team")!= -0x01){
+				read_argv(1,StringBuffer,charsmax(StringBuffer))
+				if(strlen(StringBuffer)>=150){
+					return FMRES_SUPERCEDE
 				}
+				replace_all(StringBuffer,charsmax(StringBuffer),"%","ï¼…")
+				replace_all(StringBuffer,charsmax(StringBuffer),"#","ï¼ƒ")
+				engclient_cmd(id,Argv(),StringBuffer)
 			}
-			if(get_pcvar_num(ChatCharFix)==2){
-				if(containi(Argv(),"say")!= -0x01 || containi(Argv(),"say_team")!= -0x01){
-					read_argv(1,StringBuffer,charsmax(StringBuffer))
-					replace_all(StringBuffer,charsmax(StringBuffer),"%","*")
-					replace_all(StringBuffer,charsmax(StringBuffer),"#","*")
-					engclient_cmd(id,Argv(),StringBuffer)
+		}
+		if(get_pcvar_num(ChatCharFix)==2){
+			if(containi(Argv(),"say")!= -0x01 || containi(Argv(),"say_team")!= -0x01){
+				read_argv(1,StringBuffer,charsmax(StringBuffer))
+				if(strlen(StringBuffer)>=150){
+					return FMRES_SUPERCEDE
 				}
+				replace_all(StringBuffer,charsmax(StringBuffer),"%","*")
+				replace_all(StringBuffer,charsmax(StringBuffer),"#","*")
+				engclient_cmd(id,Argv(),StringBuffer)
 			}
 		}
 	}
