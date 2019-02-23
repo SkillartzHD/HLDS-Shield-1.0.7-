@@ -344,9 +344,8 @@ new const AllCharString[][]={
 	"q","w","e","r","t","y","u","i","o","p","a","b","c","d","e","f","g","h","j","k",
 	"l","z","x","c","v","b","n","m"
 }
-new const CommandAllowInpfnClientConnect[][]={
-	"sendres","dlfile","new","sendents","_","amxxauth","connect","U","V","TSource","amx_pausecfg",
-	"rcon","getchallenge","challenge","dropclient","setinfo","Vwóµ9","specmode","unpause","vban","VModEnable","Uwóµ9","Uwóµ9"
+new const CommandBlockInpfnClientConnect[][]={
+	"say","say_team","amx_","status","meta"
 }
 new const SafeDownload[][]={
 	".cfg",".dll",".asi",".ini",".amxx",
