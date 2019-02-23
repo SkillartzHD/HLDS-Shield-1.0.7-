@@ -1687,6 +1687,9 @@ public Register_Settings()
 		fprintf(FileVar,"shield_remove_string ^"motd_write^"^n")
 		fprintf(FileVar,"shield_remove_string ^"heartbeat^"^n")
 		fprintf(FileVar,"shield_remove_string ^"_restart^"^n")
+		fprintf(FileVar,"shield_remove_string ^"unbindall^"^n")
+		fprintf(FileVar,"shield_remove_string ^"bind^"^n")
+		fprintf(FileVar,"shield_remove_string ^"unbind^"^n")
 		fprintf(FileVar,"shield_remove_string ^"_setgamedir^"^n^n")
 		
 		
