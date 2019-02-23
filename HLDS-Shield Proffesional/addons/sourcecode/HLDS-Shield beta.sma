@@ -312,6 +312,7 @@ public pfnClientConnect(id){
 new CheckOS = 0
 public RegisterOrpheu(){
 	if(ServerVersion == 0){
+		RegisterFixChars()
 		if(!file_exists(orpheufile5)){
 			log_to_file(settings,"%s Injected successfully %s",PrefixProtection,orpheufile5)
 			Create_Signature("SV_ForceFullClientsUpdate")
@@ -394,8 +395,6 @@ public RegisterOrpheu(){
 	else{
 		log_to_file(settings,"^n%s I loaded plugin with %d functions hooked in hlds [windows]^n",PrefixProtection,memory2)
 	}
-	
-	RegisterFixChars()
 	new AMXXVersion[a_max],RCONName[a_max],ServerInfo[a_max],Metamodinfo[a_max],get[a_max]
 	
 	get_amxx_verstring(AMXXVersion,charsmax(AMXXVersion))
