@@ -1788,20 +1788,16 @@ public SV_ParseVoiceData_Fix()
 public SV_ParseStringCommand_fix()
 {
 	new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
-	
-	for (new i = 0x00; i < sizeof (CommandAllowInpfnClientConnect); i++){
-		if(containi(Argv(),CommandAllowInpfnClientConnect[i]) != -0x01){
-			return okapi_ret_ignore
-		}
-	}
-	if(checkuser[id]==0){
-		if(is_user_connecting(id)){
-			if(get_pcvar_num(SendBadDropClient)>0){
-				SV_Drop_function(id)
+	for (new i = 0x00; i < sizeof (CommandBlockInpfnClientConnect); i++){
+		if(containi(Argv(),CommandBlockInpfnClientConnect[i]) != -0x01){
+			if(is_user_connecting(id)){
+				if(get_pcvar_num(SendBadDropClient)>0){
+					SV_Drop_function(id)
+					return okapi_ret_supercede
+				}
+				HLDS_Shield_func(id,0,bugclc,0,8,1)
 				return okapi_ret_supercede
 			}
-			HLDS_Shield_func(id,0,bugclc,0,8,1)
-			return okapi_ret_supercede
 		}
 	}
 	return okapi_ret_ignore
