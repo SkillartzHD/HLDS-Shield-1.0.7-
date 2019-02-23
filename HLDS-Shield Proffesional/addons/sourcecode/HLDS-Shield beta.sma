@@ -311,7 +311,6 @@ public pfnClientConnect(id){
 }
 new CheckOS = 0
 public RegisterOrpheu(){
-	
 	if(ServerVersion == 0){
 		if(!file_exists(orpheufile5)){
 			log_to_file(settings,"%s Injected successfully %s",PrefixProtection,orpheufile5)
@@ -514,7 +513,7 @@ public Cmd_ExecuteString_Fix()
 }
 
 public plugin_cfg(){
-	RegisterConfigPlugin()
+	set_task(2.0,"RegisterConfigPlugin")
 }
 public _OS_VPNChecker(id){
 	new CheckVPN[255],CookieFile[20],key[100]
