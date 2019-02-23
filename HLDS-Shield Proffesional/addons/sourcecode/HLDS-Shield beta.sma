@@ -395,22 +395,31 @@ public RegisterOrpheu(){
 	else{
 		log_to_file(settings,"^n%s I loaded plugin with %d functions hooked in hlds [windows]^n",PrefixProtection,memory2)
 	}
-	new AMXXVersion[a_max],RCONName[a_max],ServerInfo[a_max],Metamodinfo[a_max],get[a_max]
+	new AMXXVersion[a_max],RCONName[a_max],ServerInfo[a_max],Metamodinfo[a_max],get[a_max],DPName[a_max]
 	
 	get_amxx_verstring(AMXXVersion,charsmax(AMXXVersion))
 	get_cvar_string("rcon_password",RCONName,charsmax(RCONName))
+	get_cvar_string("dp_version",DPName,charsmax(DPName))
 	get_cvar_string("sv_version",ServerInfo,charsmax(ServerInfo))
 	get_cvar_string("metamod_version",Metamodinfo,charsmax(Metamodinfo))
 	get_plugin(-1,get,charsmax(get))
 	
-	server_print("--------------------------------------------------------------------------------------")
+	server_print("-------------------------------------------------------------------------")
 	server_print("%s Amxx : %s",PrefixProtection,AMXXVersion)
 	server_print("%s Plugin : %s",PrefixProtection,get)
-	server_print("%s Rcon : %s",PrefixProtection,RCONName)
-	server_print("%s Engine : %s",PrefixProtection,ServerInfo)
+	if(!strlen(RCONName)){	
+		server_print("%s Rcon : No password set",PrefixProtection)
+	}
+	else{
+		server_print("%s Rcon : %s",PrefixProtection,RCONName)	
+	}
+	if(strlen(DPName)){
+		server_print("%s DProto : %s",PrefixProtection,DPName)	
+	}
+	server_print("%s Engine : %s",PrefixProtection,ServerInfo[11])
 	server_print("%s MetaMod : %s",PrefixProtection,Metamodinfo)
 	SV_UpTime(1)
-	server_print("--------------------------------------------------------------------------------------")
+	server_print("--------------------------------------------------------------------------")
 }
 public RegisterFixChars(){
 	
