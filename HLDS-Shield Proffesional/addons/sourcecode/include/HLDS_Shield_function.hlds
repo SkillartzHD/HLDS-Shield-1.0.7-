@@ -1318,7 +1318,7 @@ stock cmpStr3(str[]) {
 	}
 	return false
 }
-stock RegisterConfigPlugin(){
+public RegisterConfigPlugin(){
 	if(ServerVersion == 0){
 		if(file_exists(loc)){
 			server_print("%s I loaded file ^"%s^"",PrefixProtection,loc)
@@ -1584,6 +1584,38 @@ stock RegisterConfigPlugin(){
 		}
 		fclose(File3)
 	}
+}
+
+public destroy_holax(){holax=0x00;}
+public destroy_fuck(){fuck=0x00;}
+public destroy_memhack(){memhack=0x00;}
+public debug_orpheu(){server_cmd("reload");}
+public Destroy_Memory(){hola = 0x00;}
+public Destroy_Fileiplist(){
+	new fileid = fopen(ip_flitredcmd,"wb")
+	if(fileid){
+		fprintf(fileid,"^x00")
+	}
+	fclose(fileid)	
+}
+public sv_new_f_debug(id){
+	if(limitba[id-TASK_ONE4] <= 1/2){
+		limitba[id-TASK_ONE4]=0x00	
+	}
+}
+public Shield_ProtectionSpam(id){limita[id-TASK_ONE3] = 0x00;}
+public LevFunction(id){mungelimit[id-TASK_ONE]=0x00;local=0x00;}
+
+public Register_Settings()
+{
+	if(!dir_exists("addons/amxmodx/configs/orpheu/functions")){
+		server_print("%s I created dir (addons/amxmodx/configs/orpheu/functions)",PrefixProtection)
+		mkdir("addons/amxmodx/configs/orpheu/functions")
+	}
+	if(!dir_exists("addons/amxmodx/configs/orpheu")){
+		server_print("%s I created dir (addons/amxmodx/configs/orpheu)",PrefixProtection)
+		mkdir("addons/amxmodx/configs/orpheu")
+	}
 	if(get_pcvar_num(CmdLimitVar)>0){
 		if(file_exists(limitfilecmd)){
 			server_print("%s I loaded file ^"%s^"",PrefixProtection,limitfilecmd)
@@ -1615,8 +1647,8 @@ stock RegisterConfigPlugin(){
 		else{
 			server_print("%s I created file ^"%s^"",PrefixProtection,locatie)
 			new filecacat = fopen(locatie,"wb")
-			fprintf(filecacat,"//Get MD5 file : https://emn178.github.io/online-tools/md5_checksum.html^n")
-			fprintf(filecacat,"//^"../file.txt^" MD5 ^"shield_os_ban %userid% File Detected 221^"^n")
+			fprintf(filecacat,";Get MD5 file : https://emn178.github.io/online-tools/md5_checksum.html^n")
+			//fprintf(filecacat,";^"file.txt^" MD5 ^"shield_os_ban %userid% File Detected 221^"^n")
 			fclose(filecacat)
 		}
 		if(file_exists(cmd_restricted)){
@@ -1629,35 +1661,13 @@ stock RegisterConfigPlugin(){
 			fprintf(filecacat,"connect^n")
 			fclose(filecacat)
 		}
-	}
-}
-
-public destroy_holax(){holax=0x00;}
-public destroy_fuck(){fuck=0x00;}
-public destroy_memhack(){memhack=0x00;}
-public debug_orpheu(){server_cmd("reload");}
-public Destroy_Memory(){hola = 0x00;}
-public Destroy_Fileiplist(){
-	new fileid = fopen(ip_flitredcmd,"wb")
-	if(fileid){
-		fprintf(fileid,"^x00")
-	}
-	fclose(fileid)	
-}
-public sv_new_f_debug(id){
-	if(limitba[id-TASK_ONE4] <= 1/2){
-		limitba[id-TASK_ONE4]=0x00	
-	}
-}
-public Shield_ProtectionSpam(id){limita[id-TASK_ONE3] = 0x00;}
-public LevFunction(id){mungelimit[id-TASK_ONE]=0x00;local=0x00;}
-
-public Register_Settings()
-{
+		}
 	#define dirmax "addons/amxmodx/configs/settings"
-	
-	if(file_exists(loc))
-		//server_print("%s I loaded file (%s)",PrefixProtection,loc)
+
+	if(!dir_exists(dirmax)){
+		server_print("%s I created dir (%s)",PrefixProtection,dirmax)
+		mkdir(dirmax)
+	}
 	if(file_exists(loc2)){
 		server_cmd("exec %s",loc2)
 		server_print("%s I loaded file ^"%s^"",PrefixProtection,loc2)
@@ -1690,7 +1700,7 @@ public Register_Settings()
 		fprintf(FileVar,"shield_commandlimit_filter 1^n")
 		fprintf(FileVar,"shield_commandlimit_destory_file 1^n")
 		fprintf(FileVar,"shield_commandlimit_execute 1^n")
-		fprintf(FileVar,"shield_namechange_delay_seconds 1^n")
+		fprintf(FileVar,"shield_namechange_delay_seconds 8^n")
 		fprintf(FileVar,"shield_rcon_skipping_command 1^n")
 		fprintf(FileVar,"shield_lost_connection 0^n")
 		fprintf(FileVar,"shield_lost_connection_seconds 15^n")
@@ -1777,13 +1787,6 @@ public Register_Settings()
 		new FileVar = fopen(settings,"wb")
 		fprintf(FileVar,"")
 		fclose(FileVar)
-	}
-	if(dir_exists(dirmax)){
-		//server_print("%s I loaded dir (%s)",PrefixProtection,dirmax)
-	}
-	else{
-		server_print("%s I created dir (%s)",PrefixProtection,dirmax)
-		mkdir(dirmax)
 	}
 }
 public ThisCommandNow(){ server_print("%s This function ^"%s^" is disabled",PrefixProtection,Argv1());}
