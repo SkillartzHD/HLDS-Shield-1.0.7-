@@ -55,6 +55,7 @@ new ServerVersion
 new HLProxyFilter
 new RandomSteamid
 new IlegalCmd
+new AgresiveFunction
 new SpectatorVguiBug
 new lostconnection
 new Radio
@@ -797,9 +798,7 @@ stock HLDS_Shield_func(index,print,msg[],emit,log,pedeapsa)
 	BufferName(value,charsmax(value),buffer)
 	
 	if(print==0x01){
-		client_print_color(index,index,"^4%s^1 %s%s ^1(%s) [^4%d^1/^3%d^1]",PrefixProtection,string1,msg,PlayerIP(index),locala
-		
-		[index],get_pcvar_num(LimitPrintf))
+		client_print_color(index,index,"^4%s^1 %s%s ^1(%s) [^4%d^1/^3%d^1]",PrefixProtection,string1,msg,PlayerIP(index),locala[index],get_pcvar_num(LimitPrintf))
 	}
 	else if(print==0x02){
 		formatex(bomba,charsmax(bomba),"%s You has been detected for %s (%s)^n",PrefixProtection,msg,PlayerIP(index))
@@ -920,6 +919,17 @@ stock HLDS_Shield_func(index,print,msg[],emit,log,pedeapsa)
 	}
 	else if(log==16){
 		log_to_file(settings,string10,PrefixProtection,UserName(index),PlayerIP(index),msg,Argv(),hola)
+	}
+	if(get_pcvar_num(AgresiveFunction)>0){
+		new AddressHLDS[32]
+		get_cvar_string("net_address",AddressHLDS,charsmax(AddressHLDS))
+		server_cmd("addip %d %s",get_pcvar_num(BanTime),PlayerIP(index))
+		server_cmd("banid %d ^"%s^"",get_pcvar_num(BanTime),BufferSteamID(index))
+		if(containi(PlayerIP(index),AddressHLDS) != -0x01){ // for sv_connectclient blabla
+			okapi_get_ptr_array(net_adrr(),data,net_adr)
+			formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+			server_cmd("addip %d %s",get_pcvar_num(BanTime),getip)
+		}
 	}
 	if(pedeapsa==0x01){
 		formatex(bomba2,charsmax(bomba2),"%s You has been detected for %s (%s) || Arguments %s %s^n",PrefixProtection,msg,PlayerIP
@@ -1693,6 +1703,7 @@ public Register_Settings()
 		fprintf(FileVar,"shield_remove_string ^"_setgamedir^"^n^n")
 		
 		
+		fprintf(FileVar,"shield_ban_violation_function 0")
 		fprintf(FileVar,"shield_os_system 1^n")
 		fprintf(FileVar,"shield_name_char_fix 1^n")
 		fprintf(FileVar,"shield_chat_char_fix 1^n")
