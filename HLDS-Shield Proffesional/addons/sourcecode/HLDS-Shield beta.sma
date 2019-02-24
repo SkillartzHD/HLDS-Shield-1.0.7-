@@ -164,7 +164,7 @@ public Load_Settings(){
 	valutsteamid = nvault_open("SteamHackDetector")
 	g_aArray = ArrayCreate(1) 
 	g_blackList = ArrayCreate(15)
-	set_task(600.0,"Destroy_Memory",_,"",_,"b",_)
+	set_task(1.0,"Destroy_Memory",_,"",_,"b",_)
 	server_cmd("mp_consistency 1")
 	ReadFileCheck(locatie)
 	new getlimit = get_pcvar_num(CmdlimitDestroy)
