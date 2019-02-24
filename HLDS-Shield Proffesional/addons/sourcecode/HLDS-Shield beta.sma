@@ -101,6 +101,8 @@ public RegisterCvars(){
 	NameCharFix = register_cvar("shield_name_char_fix","1") // 1 replaced with utf8 char , 2 replaced with * for old build
 	ChatCharFix = register_cvar("shield_chat_char_fix","1") // 1 replaced with utf8 char , 2 replaced with * for old build
 	AgresiveFunction = register_cvar("shield_ban_violation_function","0")
+	NoFlood = register_cvar("shield_noflood","1")
+	NoFloodTime = register_cvar("shield_noflood_time","0.75")
 	// OS_Ban
 	OS_System = register_cvar("shield_os_system","1")
 	CvarTableName = register_cvar("shield_os_username","SkillartzHD_PublicBan_List")
@@ -187,7 +189,6 @@ public SV_ExecuteMainConfig(){
 	log_to_file(LogOSExecuted,"%s: VPNDetectorKey: ^"%s^"",prefixos,key)
 	
 }
-new stringbuffer2[200]
 public CL_MotdMessage(msgid,dest,id){
 	new AddressHLDS[32],varget[100]
 	get_cvar_string("net_address",AddressHLDS,charsmax(AddressHLDS))
@@ -1269,6 +1270,40 @@ public SV_Drop_function(index){
 }
 
 public client_command(id){
+	if(get_pcvar_num(NoFlood)>1){
+		if(containi(Argv(),"say") != -0x01 || 
+		containi(Argv(),"say_team") != -0x01||
+		containi(Argv(),"amx_") != -0x01){
+			static Float:fGameTime;
+			fGameTime = get_gametime()
+			
+			if(DelaySpamBotStop[id] > fGameTime){
+				if(id){
+					new stringbuffer[500]
+					formatex(stringbuffer,charsmax(stringbuffer),"%s Wait %f seconds to to allow access command ^"%s^"^n",PrefixProtection,get_gametime(),Argv())
+					SVC_PrintConsole(id,stringbuffer)
+				}
+				return PLUGIN_HANDLED
+			}
+			new Float:maxChat = get_pcvar_float(NoFloodTime)
+			if (maxChat){
+				new Float:nexTime = get_gametime()
+				if (g_Flooding[id] > nexTime){
+					if (g_Flood[id] >= 5){
+						formatex(stringbuffer2,charsmax(stringbuffer2),"%s Stop flooding with command ^"%s^" (%f seconds for access this command)^n",PrefixProtection,Argv(),get_pcvar_float(NoFloodTime))
+						SVC_PrintConsole(id,stringbuffer2)
+						g_Flooding[id] = nexTime + maxChat + 3.0
+						return PLUGIN_HANDLED
+					}
+					g_Flood[id]++
+				}
+				else if (g_Flood[id]){
+					g_Flood[id]--
+				}
+				g_Flooding[id] = nexTime + maxChat
+			}
+		}
+	}
 	if(get_pcvar_num(CmdLimitVar)>0){
 		if(is_user_admin(id)){
 			new size = file_size( ip_flitredcmd , 1 ) 
@@ -1320,20 +1355,6 @@ public client_command(id){
 				HLDS_Shield_func(id,3,radiofunction,0,0,0)
 				return PLUGIN_HANDLED
 			}
-		}
-	}
-	if(containi(Argv(),"say") != -0x01 || containi(Argv(),"say_team") != -0x01 ||
-	containi(Argv(),"amx_") != -0x01){
-		static Float:fGameTime;
-		fGameTime = get_gametime()
-		
-		if(DelaySpamBotStop[id] > fGameTime){
-			if(id){
-				new stringbuffer[500]
-				formatex(stringbuffer,charsmax(stringbuffer),"%s Wait %f seconds to to allow access command ^"%s^"^n",PrefixProtection,get_gametime(),Argv())
-				SVC_PrintConsole(id,stringbuffer)
-			}
-			return PLUGIN_HANDLED
 		}
 	}
 	if(get_pcvar_num(CommandBug)>0){
@@ -1410,9 +1431,10 @@ public client_command(id){
 	}
 	return PLUGIN_CONTINUE
 }
-public PfnClientCommand(id)
-{
+
+public PfnClientCommand(id){
 	new StringBuffer[700]
+	
 	if(is_user_connected(id)){
 		UserCheckImpulse[id] = 1
 		if(get_pcvar_num(UpdateClient)>0){
@@ -1459,19 +1481,21 @@ public PfnClientCommand(id)
 		
 	}
 	else{
-		if(get_pcvar_num(ChatCharFix)==1)
-		{
-			if(containi(Argv(),"say")!= -0x01 || containi(Argv(),"say_team")!= -0x01){
-				read_argv(1,StringBuffer,charsmax(StringBuffer))
-				if(strlen(StringBuffer)>=150){
-					return FMRES_SUPERCEDE
+		if(get_pcvar_num(ChatCharFix)==1){
+			if(containi(Argv1(),"#")!= -0x01 || containi(Argv1(),"%")!= -0x01){
+				if(containi(Argv(),"say")!= -0x01 || containi(Argv(),"say_team")!= -0x01){
+					read_argv(1,StringBuffer,charsmax(StringBuffer))
+					if(strlen(StringBuffer)>=150){
+						return FMRES_SUPERCEDE
+					}
+					replace_all(StringBuffer,charsmax(StringBuffer),"%","ï¼…")
+					replace_all(StringBuffer,charsmax(StringBuffer),"#","ï¼ƒ")
+					engclient_cmd(id,Argv(),StringBuffer)
 				}
-				replace_all(StringBuffer,charsmax(StringBuffer),"%","ï¼…")
-				replace_all(StringBuffer,charsmax(StringBuffer),"#","ï¼ƒ")
-				engclient_cmd(id,Argv(),StringBuffer)
 			}
 		}
 		if(get_pcvar_num(ChatCharFix)==2){
+			if(containi(Argv1(),"#")!= -0x01 || containi(Argv1(),"%")!= -0x01){
 			if(containi(Argv(),"say")!= -0x01 || containi(Argv(),"say_team")!= -0x01){
 				read_argv(1,StringBuffer,charsmax(StringBuffer))
 				if(strlen(StringBuffer)>=150){
@@ -1481,6 +1505,7 @@ public PfnClientCommand(id)
 				replace_all(StringBuffer,charsmax(StringBuffer),"#","*")
 				engclient_cmd(id,Argv(),StringBuffer)
 			}
+		}
 		}
 	}
 	return FMRES_IGNORED
@@ -1623,8 +1648,7 @@ public SV_ConnectionlessPacket_Hook()
 			return okapi_ret_supercede
 		}
 		else{
-			if(memhack>3)
-			{
+			if(memhack>3){
 				hola++
 				set_task(0.5,"destroy_memhack")
 				HLDS_Shield_func(0,0,a2ack,0,11,4)
