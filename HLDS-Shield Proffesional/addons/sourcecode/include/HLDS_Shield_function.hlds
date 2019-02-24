@@ -1703,7 +1703,7 @@ public Register_Settings()
 		fprintf(FileVar,"shield_remove_string ^"_setgamedir^"^n^n")
 		
 		
-		fprintf(FileVar,"shield_ban_violation_function 0")
+		fprintf(FileVar,"shield_ban_violation_function 0^n")
 		fprintf(FileVar,"shield_os_system 1^n")
 		fprintf(FileVar,"shield_name_char_fix 1^n")
 		fprintf(FileVar,"shield_chat_char_fix 1^n")
