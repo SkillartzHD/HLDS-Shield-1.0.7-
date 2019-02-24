@@ -1477,27 +1477,29 @@ public PfnClientCommand(id){
 			}
 		}
 	}
-	if(containi(Argv1(),"@")!= -0x01){
-		
-	}
-	else{
-		if(get_pcvar_num(ChatCharFix)==1){
-			if(containi(Argv1(),"#")!= -0x01 || containi(Argv1(),"%")!= -0x01){
-				if(containi(Argv(),"say")!= -0x01 || containi(Argv(),"say_team")!= -0x01){
-					read_argv(1,StringBuffer,charsmax(StringBuffer))
-					if(strlen(StringBuffer)>=150){
-						return FMRES_SUPERCEDE
-					}
-					replace_all(StringBuffer,charsmax(StringBuffer),"%","ï¼…")
-					replace_all(StringBuffer,charsmax(StringBuffer),"#","ï¼ƒ")
-					engclient_cmd(id,Argv(),StringBuffer)
-				}
-			}
-		}
-		if(get_pcvar_num(ChatCharFix)==2){
-			if(containi(Argv1(),"#")!= -0x01 || containi(Argv1(),"%")!= -0x01){
+	if(get_pcvar_num(ChatCharFix)==1){
+		if(containi(Argv1(),"#")!= -0x01 || containi(Argv1(),"%")!= -0x01){
 			if(containi(Argv(),"say")!= -0x01 || containi(Argv(),"say_team")!= -0x01){
 				read_argv(1,StringBuffer,charsmax(StringBuffer))
+				if(StringBuffer[0]=='@'){
+					return FMRES_IGNORED
+				}
+				if(strlen(StringBuffer)>=150){
+					return FMRES_SUPERCEDE
+				}
+				replace_all(StringBuffer,charsmax(StringBuffer),"%","ï¼…")
+				replace_all(StringBuffer,charsmax(StringBuffer),"#","ï¼ƒ")
+				engclient_cmd(id,Argv(),StringBuffer)
+			}
+		}
+	}
+	if(get_pcvar_num(ChatCharFix)==2){
+		if(containi(Argv1(),"#")!= -0x01 || containi(Argv1(),"%")!= -0x01){
+			if(containi(Argv(),"say")!= -0x01 || containi(Argv(),"say_team")!= -0x01){
+				read_argv(1,StringBuffer,charsmax(StringBuffer))
+				if(StringBuffer[0]=='@'){
+					return FMRES_IGNORED
+				}
 				if(strlen(StringBuffer)>=150){
 					return FMRES_SUPERCEDE
 				}
@@ -1505,7 +1507,6 @@ public PfnClientCommand(id){
 				replace_all(StringBuffer,charsmax(StringBuffer),"#","*")
 				engclient_cmd(id,Argv(),StringBuffer)
 			}
-		}
 		}
 	}
 	return FMRES_IGNORED
