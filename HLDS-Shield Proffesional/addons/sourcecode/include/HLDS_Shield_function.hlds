@@ -1707,7 +1707,7 @@ public Register_Settings()
 		fprintf(FileVar,"shield_remove_string ^"_setgamedir^"^n^n")
 		
 		fprintf(FileVar,"shield_noflood 0^n")
-		fprintf(FileVar,"shield_noflood_time 0^n")
+		fprintf(FileVar,"shield_noflood_time 0.75^n")
 		fprintf(FileVar,"shield_ban_violation_function 0^n")
 		fprintf(FileVar,"shield_os_system 1^n")
 		fprintf(FileVar,"shield_name_char_fix 1^n")
