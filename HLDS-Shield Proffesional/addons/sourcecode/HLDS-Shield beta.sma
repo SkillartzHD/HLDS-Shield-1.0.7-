@@ -100,6 +100,7 @@ public RegisterCvars(){
 	TimeNameChange = register_cvar("shield_namechange_delay_seconds","5")
 	NameCharFix = register_cvar("shield_name_char_fix","1") // 1 replaced with utf8 char , 2 replaced with * for old build
 	ChatCharFix = register_cvar("shield_chat_char_fix","1") // 1 replaced with utf8 char , 2 replaced with * for old build
+	AgresiveFunction = register_cvar("shield_ban_violation_function","0")
 	// OS_Ban
 	OS_System = register_cvar("shield_os_system","1")
 	CvarTableName = register_cvar("shield_os_username","SkillartzHD_PublicBan_List")
@@ -985,7 +986,7 @@ public IsSafeDownloadFile_Hook()
 public COM_UnMunge()
 {
 	if(get_pcvar_num(PrintUnMunge)>0){
-		server_print("COM_UnMunge : %s",Argv())
+		log_to_file(settings,"COM_UnMunge : %s",Argv())
 	}
 	return okapi_ret_ignore
 }
