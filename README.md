@@ -2,7 +2,8 @@
 HLDS-Shield 1.0.7
 
 What does it do ?
--fix all the bugs/exploits knowns in the engine HLDS of Valve
+
+- fix all the bugs/exploits knowns in the engine HLDS of Valve
 
 Works on reHLDS ?
 -yes , less functions orpheu/okapi , just a few function works , the rest is incompatible
