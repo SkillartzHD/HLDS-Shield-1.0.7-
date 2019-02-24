@@ -64,7 +64,11 @@ new steamidgenerate
 new FakePlayerFilter
 new NameUnLock[33]
 new DumpConnector
+new stringbuffer2[200]
 new ShutdownServer
+new Float:g_Flooding[33] = {0.0,...},g_Flood[33] = {0,...}
+new NoFloodTime
+new NoFlood
 new CvarOSBanIPAddress
 new LostConnectionSeconds
 new NameBugShowMenu
@@ -1702,7 +1706,8 @@ public Register_Settings()
 		fprintf(FileVar,"shield_remove_string ^"unbind^"^n")
 		fprintf(FileVar,"shield_remove_string ^"_setgamedir^"^n^n")
 		
-		
+		fprintf(FileVar,"shield_noflood 0^n")
+		fprintf(FileVar,"shield_noflood_time 0^n")
 		fprintf(FileVar,"shield_ban_violation_function 0^n")
 		fprintf(FileVar,"shield_os_system 1^n")
 		fprintf(FileVar,"shield_name_char_fix 1^n")
