@@ -418,7 +418,12 @@ public RegisterOrpheu(){
 	if(strlen(DPName)){
 		server_print("%s DProto : %s",PrefixProtection,DPName)	
 	}
-	server_print("%s Engine : %s",PrefixProtection,ServerInfo[11])
+	if(!is_linux_server()){
+		server_print("%s Engine : %s",PrefixProtection,ServerInfo[11])
+	}
+	else{
+		server_print("%s Engine : %s",PrefixProtection,ServerInfo[17])
+	}
 	server_print("%s MetaMod : %s",PrefixProtection,Metamodinfo)
 	SV_UpTime(1)
 	server_print("--------------------------------------------------------------------------")
@@ -787,6 +792,12 @@ public Host_Kill_f_fix()
 			locala[id]++
 			if(locala[id] >=get_pcvar_num(LimitExploit)){
 				HLDS_Shield_func(id,0,killbug,1,0,1) // index print msg emit log pedeapsa
+				if(memory == 25){
+					return FMRES_SUPERCEDE
+				}
+				else{
+					return okapi_ret_supercede
+				}
 			}
 			if(debug_s[id]==0){
 				if(locala[id] == 3){
@@ -798,8 +809,12 @@ public Host_Kill_f_fix()
 				SV_Drop_function(id)
 			}
 			HLDS_Shield_func(id,0,killbug,1,1,0) // index print msg emit log pedeapsa
-			
-			return okapi_ret_supercede
+			if(memory == 25){
+				return FMRES_SUPERCEDE
+			}
+			else{
+				return okapi_ret_supercede
+			}
 		}
 	}
 	return okapi_ret_ignore
@@ -1897,6 +1912,9 @@ public SV_CheckPermisionforStatus(){
 	
 	new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
 	
+	if(is_user_connecting(id)){
+		return okapi_ret_supercede
+	}
 	if(is_user_admin(id)){
 		ReBuild_Status(1)
 	}
