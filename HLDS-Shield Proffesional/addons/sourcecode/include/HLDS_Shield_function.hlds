@@ -76,6 +76,7 @@ new steamidhash
 new CommandBug
 new NameCharFix
 new ChatCharFix
+new convertortime[255],hour,minutes
 new UpdateClient
 new NameBug
 new NameSpammer
@@ -1300,6 +1301,37 @@ stock BufferName(info[],size,name[],size_name = 31) // nu pune mai mare decat 31
 	else{
 		name[0x00] = EOS;
 	}
+}
+stock ConvertorInt(int) {
+	format(convertortime,10,"^x00")
+	hour = 0
+	minutes = 0
+	new temp[64]
+	if(int<-0){
+		formatex(convertortime,charsmax(convertortime),"this value is invalid ^"%d^"",int)
+		return false
+	}
+	if(int==0){
+		formatex(convertortime,charsmax(convertortime),"Permanent Ban",int)
+		return false
+	}
+	if(int>=3600){
+		for(;int>=3600;int-=3600){
+			hour++
+		}
+		formatex(temp,charsmax(temp),"Hours: %d^x20|^x20", hour)
+		add(convertortime,charsmax(convertortime),temp)
+	}
+	if(int>=60){
+		for(;int>=60;int-=60){
+			minutes++
+		}
+		formatex(temp,charsmax(temp),"Minutes: %d^x20|^x20",minutes)
+		add(convertortime,charsmax(temp),temp)
+	}
+	formatex(temp,charsmax(temp),"Seconds: %d^x20|^x20",int)
+	add(convertortime,charsmax(convertortime), temp)
+	return true
 }
 stock cmpStr(str[]) {
 	
