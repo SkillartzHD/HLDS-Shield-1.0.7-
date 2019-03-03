@@ -675,7 +675,13 @@ public CL_ProfileBan(){
 		return PLUGIN_HANDLED
 	}
 	if(is_str_num(StringArg)){
-		seconds = abs(str_to_num(StringArg))
+		if(equal(StringArg,"-")){
+			console_print(id,"%s: invalid argument",prefixos)
+		}
+		else{
+			seconds = abs(str_to_num(StringArg))
+			ConvertorInt(seconds)
+		}
 	}
 	else{
 		console_print(id,"%s: argument 3 is only numbers!",prefixos)
@@ -698,7 +704,7 @@ public CL_ProfileBan(){
 	log_to_file(LogOSExecuted,"%s PlayerIP: ^"%s^"",prefixos,PlayerIP(player))
 	log_to_file(LogOSExecuted,"%s SteamID:  ^"%s^"",prefixos,BufferSteamID(player))
 	log_to_file(LogOSExecuted,"%s Reason:  ^"%s^"",prefixos,SecondArg)
-	log_to_file(LogOSExecuted,"%s Seconds:  ^"%s^"",prefixos,seconds)
+	log_to_file(LogOSExecuted,"%s Time:  ^"%s^"",prefixos,convertortime)
 	log_to_file(LogOSExecuted,"%s Channel transmit:  ^"%s^"",prefixos,varget)
 	
 	if(get_pcvar_num(CvarFindCvarBuffer)==-1 && get_pcvar_num(CvarCreateBuffer)==-1){
