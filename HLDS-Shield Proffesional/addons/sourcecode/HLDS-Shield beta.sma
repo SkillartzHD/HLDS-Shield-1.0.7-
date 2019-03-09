@@ -52,6 +52,8 @@ public Hooks_init(){
 
 public RegisterOS_System(){
 	
+	register_srvcmd("shield_unban","_OS_SendUnBan")
+	register_srvcmd("shield_ban","CL_ProfileBan_RealTime")
 	register_srvcmd("shield_os_ban","CL_ProfileBan")
 	register_message(get_user_msgid("MOTD"),"CL_MotdMessage")
 	
@@ -283,6 +285,35 @@ public pfnClientConnect(id){
 	Info_ValueForKey_Hook(id)
 	
 	if(get_pcvar_num(OS_System)>0){
+		new getipban[32],getsteam[32],getfileorg[255],getfileorgsteamid[255],szfile1[64],len
+		new stringbuffer[255]
+		get_user_ip(id,getipban,charsmax(getipban),1)
+		get_user_authid(id,getsteam,charsmax(getsteam))
+		
+		replace_all(getipban,charsmax(getipban),".","_")
+		formatex(getfileorg,charsmax(getfileorg),"addons/amxmodx/configs/settings/OS_Ban/Users/%s.txt",getipban)
+		formatex(getfileorgsteamid,charsmax(getfileorgsteamid),"addons/amxmodx/configs/settings/OS_Ban/Users/%s.txt",getsteam)
+		
+		if(file_exists(getfileorg)){
+			read_file(getfileorg,0,szfile1,charsmax(szfile1),len)
+		}
+		Send_CalculationsTimeBan(0,1,getfileorg)
+		
+		new IntFileNumber = abs(str_to_num(szfile1)) // to int
+		new RealClock = str_to_num(GetTimeReal) // to int
+		
+		if(RealClock<=IntFileNumber){
+			formatex(stringbuffer,charsmax(stringbuffer),"^n%s Expire Data : ^"%d^"^n",prefixos,IntFileNumber)
+			SVC_PrintConsole(id,stringbuffer)
+			PlayerDisconnect(id)
+			set_task(1.0,"ProtectPlayerDontExistSVC",id)
+		}
+		else{
+			if(file_exists(getfileorg)){
+				unlink(getfileorg)
+			}
+		}
+		//set_task(10.0,"CheckOS_SteamID",id) // neterminat
 		if(get_pcvar_num(CvarVpnDetector)>0){
 			if(is_user_bot(id) || is_user_hltv(id)) {
 				return
@@ -310,6 +341,31 @@ public pfnClientConnect(id){
 	}
 	set_task(1.0,"UserImpulseFalse",id)
 	
+}
+public CheckOS_SteamID(index){
+	new getsteam[32],getfileorgsteamid[255],szfile2[64],len
+	
+	get_user_authid(index,getsteam,charsmax(getsteam))
+	
+	formatex(getfileorgsteamid,charsmax(getfileorgsteamid),"addons/amxmodx/configs/settings/OS_Ban/Users/%s.txt",getsteam)
+	
+	if(file_exists(getfileorgsteamid)){
+		read_file(getfileorgsteamid,0,szfile2,charsmax(szfile2),len)
+	}
+	
+	Send_CalculationsTimeBan(0,1,getfileorgsteamid)
+	
+	new IntFileNumberSteamID = abs(str_to_num(szfile2)) // to int
+	new RealClock = str_to_num(GetTimeReal) // to int
+	
+	if(RealClock<=IntFileNumberSteamID){
+		server_cmd("kick #%d for ^"%d^"",get_user_userid(index),IntFileNumberSteamID)
+	}
+	else{
+		if(file_exists(getfileorgsteamid)){
+			unlink(getfileorgsteamid)
+		}
+	}
 }
 new CheckOS = 0
 public RegisterOrpheu(){
@@ -650,77 +706,203 @@ public CL_CreateReject(){
 	
 	return PLUGIN_CONTINUE
 }
-public CL_ProfileBan(){
-	
-	new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
-	
-	new reason[32],FirstArg[32],SecondArg[32],varget3[50],varget4[50]
-	new AddressHLDS[32],stringbuffer[1000],varget[100],StringArg[100],seconds
-	
-	get_pcvar_string(CvarFindCvarBuffer,varget3,charsmax(varget3))
-	get_pcvar_string(CvarCreateBuffer,varget4,charsmax(varget4))
-	
-	read_argv(1,FirstArg,sizeof(FirstArg) -1)
-	read_argv(2,SecondArg,sizeof(SecondArg) -1)
-	read_argv(3,StringArg,sizeof(StringArg) -1)
-	
-	new player = cmd_target(id,FirstArg,(CMDTARGET_NO_BOTS))
-	
-	if(equal(FirstArg,"") || equal(SecondArg,"") || equal(StringArg,"")){
-		console_print(id,"%s: shield_os_ban <name> <reason> <seconds>",prefixos)
-		return PLUGIN_HANDLED
-	}
-	if(!is_user_connected(player)){
-		console_print(id,"%s: i don't found userid/name",prefixos)
-		return PLUGIN_HANDLED
-	}
-	if(is_str_num(StringArg)){
-		if(equal(StringArg,"-")){
-			console_print(id,"%s: invalid argument",prefixos)
+public _OS_SendUnBan(id){
+	if(get_pcvar_num(OS_System)>0){
+		new banid[20],getfileorg[255]
+		read_argv(1,banid,charsmax(banid))
+		
+		replace_all(banid,charsmax(banid),".","_")
+		
+		formatex(getfileorg,charsmax(getfileorg),"addons/amxmodx/configs/settings/OS_Ban/Users/%s.txt",banid)
+		
+		if(file_exists(getfileorg)){
+			unlink(getfileorg)
+			console_print(id,"%s: I successfully unbanned address ^"%s^"",prefixos,banid)
 		}
 		else{
-			seconds = abs(str_to_num(StringArg))
-			ConvertorInt(seconds)
+			console_print(id,"%s: This address ^"%s^" no't exist in banlist",prefixos,banid)
 		}
 	}
-	else{
-		console_print(id,"%s: argument 3 is only numbers!",prefixos)
-		return PLUGIN_HANDLED
-	}	
-	read_argv(2,reason,charsmax(reason))
-	remove_quotes (reason)
+}
+
+public CL_ProfileBan_RealTime(){
 	
-	get_cvar_string("net_address",AddressHLDS,charsmax(AddressHLDS))
-	get_pcvar_string(CvarTableName,varget,charsmax(varget))
-	replace_all(AddressHLDS,charsmax(AddressHLDS),".","+")
-	replace_all(AddressHLDS,charsmax(AddressHLDS),":","+")
-	formatex(stringbuffer,charsmax(stringbuffer),"%s/banuser.php?usertabel=%s&userserver=%s&timeban=%d",urlcache,varget,AddressHLDS,seconds)
-	show_motd(player,stringbuffer,"Counter-Strike")
-	client_cmd(player,"spk doop")
-	client_print_color(0,0,"^4%s^1 User ^4^"%s^"^1 address: ^4^"%s^"^1 banned with reason ^4^"%s^"^1",prefixos,UserName(player),PlayerIP(player),SecondArg)
-	
-	log_to_file(LogOSExecuted,"----------------------------------------------------------------------")
-	log_to_file(LogOSExecuted,"%s UserName: ^"%s^"",prefixos,UserName(player),PlayerIP(player))
-	log_to_file(LogOSExecuted,"%s PlayerIP: ^"%s^"",prefixos,PlayerIP(player))
-	log_to_file(LogOSExecuted,"%s SteamID:  ^"%s^"",prefixos,BufferSteamID(player))
-	log_to_file(LogOSExecuted,"%s Reason:  ^"%s^"",prefixos,SecondArg)
-	log_to_file(LogOSExecuted,"%s Time:  ^"%s^"",prefixos,convertortime)
-	log_to_file(LogOSExecuted,"%s Channel transmit:  ^"%s^"",prefixos,varget)
-	
-	if(get_pcvar_num(CvarFindCvarBuffer)==-1 && get_pcvar_num(CvarCreateBuffer)==-1){
-		return 1
+	if(get_pcvar_num(OS_System)>0){
+		new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
+		
+		new reason[32],FirstArg[32],SecondArg[32],StringArg[100],seconds
+		
+		read_argv(1,FirstArg,sizeof(FirstArg) -1)
+		read_argv(2,SecondArg,sizeof(SecondArg) -1)
+		read_argv(3,StringArg,sizeof(StringArg) -1)
+		
+		new player = cmd_target(id,FirstArg,(CMDTARGET_NO_BOTS))
+		
+		if(equal(FirstArg,"") || equal(SecondArg,"") || equal(StringArg,"")){
+			console_print(id,"%s: shield_os_ban <name> <reason> <minutes>",prefixos)
+			return PLUGIN_HANDLED
+		}
+		if(!is_user_connected(player)){
+			console_print(id,"%s: i don't found userid/name",prefixos)
+			return PLUGIN_HANDLED
+		}
+		if(is_str_num(StringArg)){
+			if(equal(StringArg,"-")){
+				console_print(id,"%s: invalid argument",prefixos)
+			}
+			else{
+				seconds = abs(str_to_num(StringArg))
+				ConvertorInt(seconds)
+			}
+		}
+		else{
+			console_print(id,"%s: argument 3 is only numbers!",prefixos)
+			return PLUGIN_HANDLED
+		}	
+		read_argv(2,reason,charsmax(reason))
+		remove_quotes(reason)
+		
+		_OS_SendBanIP(player)
+		_OS_SendBanSteamID(player)
+		client_cmd(player,"spk doop")
+		client_print_color(0,0,"^4%s^1 User ^4^"%s^"^1 address: ^4^"%s^"^1 & steamid: ^4^"%s^"^1 ^4 banned with reason ^4^"%s^"^1 [ID:^4Simple Ban^1]",prefixos,UserName(player),PlayerIP(player),BufferSteamID(player),SecondArg)
+		
+		log_to_file(LogOSExecuted,"----------------------------------------------------------------------")
+		log_to_file(LogOSExecuted,"%s UserName: ^"%s^"",prefixos,UserName(player),PlayerIP(player))
+		log_to_file(LogOSExecuted,"%s PlayerIP: ^"%s^"",prefixos,PlayerIP(player))
+		log_to_file(LogOSExecuted,"%s SteamID:  ^"%s^"",prefixos,BufferSteamID(player))
+		log_to_file(LogOSExecuted,"%s Reason:  ^"%s^"",prefixos,SecondArg)
+		log_to_file(LogOSExecuted,"%s Time:  ^"%s^"",prefixos,convertortime)
+		
+		set_task(3.0,"PlayerDisconnect",player)
 	}
-	else{
-		new userinfo2[50]
-		get_user_info(player,"bottomcolor",userinfo2,charsmax(userinfo2))
-		client_cmd(player,"setinfo bottomcolor ^"^"") // for clean userinfo for fix "Info string length exceeded"
-		client_cmd(player,"setinfo ^"%s^" ^"%s^"",varget4,varget3)
-		client_cmd(player,"setinfo bottomcolor %s",userinfo2) // set bottomcolor back
+	return PLUGIN_CONTINUE
+}
+public _OS_SendBanIP(index){
+	if(get_pcvar_num(OS_System)>0){
+		new getfileorg[255],getip[32]
+		
+		get_user_ip(index,getip,charsmax(getip),1)
+		replace_all(getip,charsmax(getip),".","_")
+		formatex(getfileorg,charsmax(getfileorg),"addons/amxmodx/configs/settings/OS_Ban/Users/%s.txt",getip)
+		
+		if(!file_exists(getfileorg)){
+			new timeban[20]
+			read_argv(3,timeban,charsmax(timeban))
+			
+			new timebanint = abs(str_to_num(timeban))
+			
+			if(timebanint>=91556926){
+				timebanint=98888888
+			}
+			Send_CalculationsTimeBan(timebanint,0,getfileorg)
+		}
+		else{
+			replace_all(getip,charsmax(getip),"_",".")
+			server_print("unban please address ^"%s^"",getip)
+		}
 	}
-	set_task(3.0,"PlayerDisconnect",player)
-	if(get_pcvar_num(CvarOSBanIPAddress)>=0){
-		server_cmd("banid %d %s",get_pcvar_num(CvarOSBanIPAddress),BufferSteamID(player))
-		set_task(3.5,"GetPlayerBan",player)
+	
+}
+public _OS_SendBanSteamID(index){
+	if(get_pcvar_num(OS_System)>0){
+		new getfileorg[255],steamid[32]
+		
+		get_user_authid(index,steamid,charsmax(steamid))
+		
+		formatex(getfileorg,charsmax(getfileorg),"addons/amxmodx/configs/settings/OS_Ban/Users/%s.txt",steamid)
+		
+		if(!file_exists(getfileorg)){
+			new timeban[20]
+			read_argv(3,timeban,charsmax(timeban))
+			
+			new timebanint = abs(str_to_num(timeban))
+			
+			if(timebanint>=91556926){
+				timebanint=98888888
+			}
+			Send_CalculationsTimeBan(timebanint,0,getfileorg)
+		}
+		else{
+			replace_all(steamid,charsmax(steamid),"_",".")
+			server_print("unban please address ^"%s^"",steamid)
+		}
+		
+	}
+}
+public CL_ProfileBan(){
+	
+	if(get_pcvar_num(OS_System)>0){
+		new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
+		
+		new reason[32],FirstArg[32],SecondArg[32],varget3[50],varget4[50]
+		new AddressHLDS[32],stringbuffer[1000],varget[100],StringArg[100],seconds
+		
+		get_pcvar_string(CvarFindCvarBuffer,varget3,charsmax(varget3))
+		get_pcvar_string(CvarCreateBuffer,varget4,charsmax(varget4))
+		
+		read_argv(1,FirstArg,sizeof(FirstArg) -1)
+		read_argv(2,SecondArg,sizeof(SecondArg) -1)
+		read_argv(3,StringArg,sizeof(StringArg) -1)
+		
+		new player = cmd_target(id,FirstArg,(CMDTARGET_NO_BOTS))
+		
+		if(equal(FirstArg,"") || equal(SecondArg,"") || equal(StringArg,"")){
+			console_print(id,"%s: shield_os_ban <name> <reason> <seconds>",prefixos)
+			return PLUGIN_HANDLED
+		}
+		if(!is_user_connected(player)){
+			console_print(id,"%s: i don't found userid/name",prefixos)
+			return PLUGIN_HANDLED
+		}
+		if(is_str_num(StringArg)){
+			if(equal(StringArg,"-")){
+				console_print(id,"%s: invalid argument",prefixos)
+			}
+			else{
+				seconds = abs(str_to_num(StringArg))
+				ConvertorInt(seconds)
+			}
+		}
+		else{
+			console_print(id,"%s: argument 3 is only numbers!",prefixos)
+			return PLUGIN_HANDLED
+		}	
+		read_argv(2,reason,charsmax(reason))
+		remove_quotes (reason)
+		
+		get_cvar_string("net_address",AddressHLDS,charsmax(AddressHLDS))
+		get_pcvar_string(CvarTableName,varget,charsmax(varget))
+		replace_all(AddressHLDS,charsmax(AddressHLDS),".","+")
+		replace_all(AddressHLDS,charsmax(AddressHLDS),":","+")
+		formatex(stringbuffer,charsmax(stringbuffer),"%s/banuser.php?usertabel=%s&userserver=%s&timeban=%d",urlcache,varget,AddressHLDS,seconds)
+		show_motd(player,stringbuffer,"Counter-Strike")
+		client_cmd(player,"spk doop")
+		client_print_color(0,0,"^4%s^1 User ^4^"%s^"^1 address: ^4^"%s^"^1 banned with reason ^4^"%s^"^1 [ID:^4Cookie Ban^1]",prefixos,UserName(player),PlayerIP(player),SecondArg)
+		
+		log_to_file(LogOSExecuted,"----------------------------------------------------------------------")
+		log_to_file(LogOSExecuted,"%s UserName: ^"%s^"",prefixos,UserName(player),PlayerIP(player))
+		log_to_file(LogOSExecuted,"%s PlayerIP: ^"%s^"",prefixos,PlayerIP(player))
+		log_to_file(LogOSExecuted,"%s SteamID:  ^"%s^"",prefixos,BufferSteamID(player))
+		log_to_file(LogOSExecuted,"%s Reason:  ^"%s^"",prefixos,SecondArg)
+		log_to_file(LogOSExecuted,"%s Time:  ^"%s^"",prefixos,convertortime)
+		log_to_file(LogOSExecuted,"%s Channel transmit:  ^"%s^"",prefixos,varget)
+		
+		if(get_pcvar_num(CvarFindCvarBuffer)==-1 && get_pcvar_num(CvarCreateBuffer)==-1){
+			return 1
+		}
+		else{
+			new userinfo2[50]
+			get_user_info(player,"bottomcolor",userinfo2,charsmax(userinfo2))
+			client_cmd(player,"setinfo bottomcolor ^"^"") // for clean userinfo for fix "Info string length exceeded"
+			client_cmd(player,"setinfo ^"%s^" ^"%s^"",varget4,varget3)
+			client_cmd(player,"setinfo bottomcolor %s",userinfo2) // set bottomcolor back
+		}
+		set_task(3.0,"PlayerDisconnect",player)
+		if(get_pcvar_num(CvarOSBanIPAddress)>=0){
+			server_cmd("banid %d %s",get_pcvar_num(CvarOSBanIPAddress),BufferSteamID(player))
+			set_task(3.5,"GetPlayerBan",player)
+		}
 	}
 	return PLUGIN_CONTINUE
 }
@@ -749,9 +931,12 @@ stock PlayerGetPackets(index,function,userinfosettings){
 		SVC_PrintConsole(index,stringbuffer)
 		formatex(stringbuffer,charsmax(stringbuffer),"%s Please contact administrator server : ^"%s^"^n",prefixos,varget2)
 		SVC_PrintConsole(index,stringbuffer)
+		formatex(stringbuffer,charsmax(stringbuffer),"%s Ban Time : ^"%s^"^n",prefixos,convertortime)
+		SVC_PrintConsole(index,stringbuffer)
 		SVC_PrintConsole(index,"----------------------------------------------------------------------^n")
 		
 		client_cmd(index,"spk doop")
+		CL_DebugPrint(index,"ID_Ban")
 	}
 	if(function == 2){
 		log_to_file(LogFileOS,"----------------------------------------------------------------------")
@@ -762,18 +947,20 @@ stock PlayerGetPackets(index,function,userinfosettings){
 		if(CheckVPN==3){
 			log_to_file(LogFileOS,"%s VPN Detected: ^"proxy_%s^"",prefixos,PlayerIP(index))
 		}
+		CL_DebugPrint(index,"ID_VPN")
 		
 	}
 	if(userinfosettings == 1){
 		log_to_file(LogFileOS,"%s Userinfo Restricted:  ^"%s-%s^"",prefixos,varget4,varget3)	
+		CL_DebugPrint(index,"ID_Info")
 	}
-	
-	set_task(0.1,"CL_DebugPrint",index)
 	return PLUGIN_CONTINUE
 	
 }
-public CL_DebugPrint(index){
-	SV_RejectConnection_user(index,"[_OS_] Banned from this server")
+public CL_DebugPrint(index,string[]){
+	new buildmessage[100]
+	formatex(buildmessage,charsmax(buildmessage),"[_OS_] Banned from this server [^"%s^"]",string)
+	SV_RejectConnection_user(index,buildmessage)
 }
 public SV_Addip_f_Hook()
 {
@@ -1134,8 +1321,40 @@ public SV_Rcon_Hook()
 	
 	return okapi_ret_ignore
 }
+public ProtectPlayerDontExistSVC(id){
+	server_cmd("kick #%d Banned",GetUserID(id))
+}
 public PfnClientPutInServer(id){
 	if(get_pcvar_num(OS_System)>0){
+		new getipban[32],getsteam[32],getfileorg[255],getfileorgsteamid[255],szfile1[64],len
+		new stringbuffer[255]
+		get_user_ip(id,getipban,charsmax(getipban),1)
+		get_user_authid(id,getsteam,charsmax(getsteam))
+		
+		replace_all(getipban,charsmax(getipban),".","_")
+		formatex(getfileorg,charsmax(getfileorg),"addons/amxmodx/configs/settings/OS_Ban/Users/%s.txt",getipban)
+		formatex(getfileorgsteamid,charsmax(getfileorgsteamid),"addons/amxmodx/configs/settings/OS_Ban/Users/%s.txt",getsteam)
+		
+		if(file_exists(getfileorg)){
+			read_file(getfileorg,0,szfile1,charsmax(szfile1),len)
+		}
+		Send_CalculationsTimeBan(0,1,getfileorg)
+		
+		new IntFileNumber = abs(str_to_num(szfile1)) // to int
+		new RealClock = str_to_num(GetTimeReal) // to int
+		
+		if(RealClock<=IntFileNumber){
+			formatex(stringbuffer,charsmax(stringbuffer),"^n%s Expire Data : ^"%d^"^n",prefixos,IntFileNumber)
+			SVC_PrintConsole(id,stringbuffer)
+			PlayerDisconnect(id)
+			set_task(1.0,"ProtectPlayerDontExistSVC",id)
+		}
+		else{
+			if(file_exists(getfileorg)){
+				unlink(getfileorg)
+			}
+		}
+		//set_task(10.0,"CheckOS_SteamID",id) // neterminat
 		_OS_CreateEmptyFile()
 		suspiciousdebug_await[id] = 1
 		set_task(2.0,"isCheckUserBanned",id)
