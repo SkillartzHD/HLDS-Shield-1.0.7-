@@ -59,6 +59,8 @@ new AgresiveFunction
 new SpectatorVguiBug
 new lostconnection
 new Radio
+new convertortime[255],hour,minutes,day,year,month
+new GetTimeFile[10],GetTimeReal[10]
 new OptionSV_ConnectClient
 new steamidgenerate
 new FakePlayerFilter
@@ -76,7 +78,6 @@ new steamidhash
 new CommandBug
 new NameCharFix
 new ChatCharFix
-new convertortime[255],hour,minutes
 new UpdateClient
 new NameBug
 new NameSpammer
@@ -1302,37 +1303,268 @@ stock BufferName(info[],size,name[],size_name = 31) // nu pune mai mare decat 31
 		name[0x00] = EOS;
 	}
 }
+stock Send_CalculationsTimeBan(valueint,function,userfile[]){
+	new daysX[32],monthsX[12],yearsX[10],secondsX[32],minutesX[32],hourX[10],textstring[50]
+	new YearsCalculate,MonthsCalculate,DaysCalculate,HourCalculate,MinutesCalculate,SecondsCalculate
+	new days2[32],months2[12],years2[10],getclock[32],seconds2[32],minutes2[32],hour2[10]
+	
+	get_time("%x/%H/%M/%S",getclock,charsmax(getclock))
+	
+	Calculations_inGalematicsSpace(valueint)
+	
+	formatex(textstring,charsmax(textstring),"%s",convertortime)
+	copyc(years2,charsmax(years2),getclock[6],'/') //day
+	copyc(months2,charsmax(months2),getclock[0],'/') // luna
+	copyc(days2,charsmax(days2),getclock[3],'/') //day
+	copyc(hour2,charsmax(hour2),getclock[9],'/') //day
+	copyc(minutes2,charsmax(minutes2),getclock[12],'/') //day
+	copyc(seconds2,charsmax(seconds2),getclock[15],'/') //day
+	
+	copyc(yearsX,charsmax(yearsX),textstring[1],'y') //day
+	copyc(monthsX,charsmax(monthsX),textstring[4],'m') // luna
+	
+	if(containi(yearsX,"0") != -0x01){
+		copyc(daysX,charsmax(daysX),textstring[7],'d') //day
+		copyc(hourX,charsmax(hourX),textstring[11],'h') //day
+		copyc(minutesX,charsmax(minutesX),textstring[15],'n') //day
+		copyc(secondsX,charsmax(secondsX),textstring[19],'s') //day
+		
+		new secondsINT = abs(str_to_num(seconds2)) // to int
+		new secondsXINT = abs(str_to_num(secondsX)) // to int
+		
+		new minutesINT = abs(str_to_num(minutes2)) // to int
+		new minutesXINT = abs(str_to_num(minutesX)) // to int
+		
+		new hourINT = abs(str_to_num(hour2)) // to int
+		new hourXINT = abs(str_to_num(hourX)) // to int
+		
+		new daysINT = abs(str_to_num(days2)) // to int
+		new daysXINT = abs(str_to_num(daysX)) // to int
+		
+		new monthsINT = abs(str_to_num(months2)) // to int
+		new monthsXINT = abs(str_to_num(monthsX)) // to int
+		
+		new yearsINT = abs(str_to_num(years2)) // to int
+		new yearsXINT = abs(str_to_num(yearsX)) // to int
+		
+		YearsCalculate = yearsINT+yearsXINT
+		MonthsCalculate = monthsINT+monthsXINT
+		DaysCalculate = daysINT+daysXINT
+		HourCalculate = hourINT+hourXINT
+		MinutesCalculate = minutesINT+minutesXINT
+		SecondsCalculate = secondsINT+secondsXINT
+		
+		
+		if(SecondsCalculate>=60){
+			MinutesCalculate+=1
+			SecondsCalculate=1
+		}
+		if(MinutesCalculate>=60){
+			HourCalculate+=1
+			MinutesCalculate=1
+		}
+		if(HourCalculate>=24){
+			DaysCalculate+=1
+			HourCalculate=1
+		}
+		if(DaysCalculate>=28){
+			MonthsCalculate+=1
+			DaysCalculate=1
+		}
+		if(MonthsCalculate>=12){
+			YearsCalculate+=1
+			MonthsCalculate=1
+		}
+		formatex(GetTimeReal,charsmax(GetTimeReal),"%d%d%d%d%d%d",yearsINT,monthsINT,daysINT,hourINT,minutesINT,secondsINT)
+		formatex(GetTimeFile,charsmax(GetTimeFile),"%d%d%d%d%d%d",YearsCalculate,MonthsCalculate,DaysCalculate,HourCalculate,MinutesCalculate,SecondsCalculate)
+		
+		if(function == 0){
+			MakeFileBanned(userfile)
+		}
+	}
+	else{
+		copyc(daysX,charsmax(daysX),textstring[7],'d') //day
+		copyc(hourX,charsmax(hourX),textstring[11],'h') //day
+		copyc(minutesX,charsmax(minutesX),textstring[15],'n') //day
+		copyc(secondsX,charsmax(secondsX),textstring[20],'s') //day
+		
+		new secondsINT = abs(str_to_num(seconds2)) // to int
+		new secondsXINT = abs(str_to_num(secondsX)) // to int
+		
+		new minutesINT = abs(str_to_num(minutes2)) // to int
+		new minutesXINT = abs(str_to_num(minutesX)) // to int
+		
+		new hourINT = abs(str_to_num(hour2)) // to int
+		new hourXINT = abs(str_to_num(hourX)) // to int
+		
+		new daysINT = abs(str_to_num(days2)) // to int
+		new daysXINT = abs(str_to_num(daysX)) // to int
+		
+		new monthsINT = abs(str_to_num(months2)) // to int
+		new monthsXINT = abs(str_to_num(monthsX)) // to int
+		
+		new yearsINT = abs(str_to_num(years2)) // to int
+		new yearsXINT = abs(str_to_num(yearsX)) // to int
+		
+		new YearsCalculate,MonthsCalculate,DaysCalculate,HourCalculate,MinutesCalculate,SecondsCalculate
+		
+		if(secondsINT>=secondsXINT)
+		{
+			
+		}
+		YearsCalculate = yearsINT+yearsXINT
+		MonthsCalculate = monthsINT+monthsXINT
+		DaysCalculate = daysINT+daysXINT
+		HourCalculate = hourINT+hourXINT
+		MinutesCalculate = minutesINT+minutesXINT
+		SecondsCalculate = secondsINT+secondsXINT
+		
+		if(SecondsCalculate>=60){
+			MinutesCalculate+=1
+			SecondsCalculate=1
+		}
+		if(MinutesCalculate>=60){
+			HourCalculate+=1
+			MinutesCalculate=1
+		}
+		if(HourCalculate>=24){
+			DaysCalculate+=1
+			HourCalculate=1
+		}
+		if(DaysCalculate>=28){
+			MonthsCalculate+=1
+			DaysCalculate=1
+		}
+		if(MonthsCalculate>=12){
+			YearsCalculate+=1
+			MonthsCalculate=1
+		}
+		formatex(GetTimeReal,charsmax(GetTimeReal),"%d%d%d%d%d%d",yearsINT,monthsINT,daysINT,hourINT,minutesINT,secondsINT)
+		formatex(GetTimeFile,charsmax(GetTimeFile),"%d%d%d%d%d%d",YearsCalculate,MonthsCalculate,DaysCalculate,HourCalculate,MinutesCalculate,SecondsCalculate)
+		
+		if(function == 0){
+			MakeFileBanned(userfile)
+		}
+	}
+}
+
+public MakeFileBanned(userfilex[]){
+	mkdir("addons/amxmodx/configs/settings/OS_Ban/Users")
+	server_print("%s",userfilex)
+	new fileid = fopen(userfilex,"wb")
+	fprintf(fileid,"%s",GetTimeFile)
+	fclose(fileid)	
+}
+stock Calculations_inGalematicsSpace(value){
+	new days[32],months[12],years[10],getdate[32],getclock[32],seconds[32],minutes[32],hour[10]
+	
+	get_time("%x",getdate,charsmax(getdate))
+	get_time("%H:%M:%S",getclock,charsmax(getclock))
+	
+	copyc(hour,charsmax(hour),getclock[EOS],':') //hour
+	copyc(minutes,charsmax(minutes),getclock[3],':') //minutes
+	copyc(seconds,charsmax(seconds),getclock[6],':') //seconds
+	
+	copyc(months,charsmax(days),getdate[EOS],'/') //month
+	copyc(days,charsmax(days),getdate[3],'/') //day
+	copyc(years,charsmax(years),getdate[6],'/') //year
+	
+	new daysINT = abs(str_to_num(days)) // to int
+	new monthsINT = abs(str_to_num(months)) // to int
+	new yearsINT = abs(str_to_num(years)) // to int
+	new secondsINT = abs(str_to_num(seconds)) // to int
+	new minutesINT = abs(str_to_num(minutes)) // to int
+	new hourINT = abs(str_to_num(hour)) // to int
+	
+	if(value<=59){
+		secondsINT+=ConvertorInt(value)
+	}
+	if(value>=60){
+		minutesINT+=ConvertorInt(value)
+	}
+	if(value>=3600){
+		hourINT+=ConvertorInt(value)
+	}
+	if(value>=86400){
+		daysINT+=ConvertorInt(value)
+	}
+	
+	if(value>=2629743){
+		monthsINT+=ConvertorInt(value)
+	}
+	
+	if(value>=31556926){
+		yearsINT+=ConvertorInt(value)
+	}
+}
 stock ConvertorInt(int) {
 	format(convertortime,10,"^x00")
-	hour = 0
-	minutes = 0
+	hour = EOS,day = EOS,year = EOS,month = EOS,minutes = EOS
 	new temp[64]
-	if(int<-0){
-		formatex(convertortime,charsmax(convertortime),"this value is invalid ^"%d^"",int)
-		return false
+	if(int>=31556926){
+		for(;int>=31556926;int-=31556926){
+			year++
+		}
+		formatex(temp,charsmax(temp),"0%dy", year)
+		add(convertortime,charsmax(convertortime),temp)
 	}
-	if(int==0){
-		formatex(convertortime,charsmax(convertortime),"Permanent Ban",int)
-		return false
+	else{
+		formatex(temp,charsmax(temp),"00y", year)
+		add(convertortime,charsmax(convertortime),temp)	
+	}
+	if(int>=2629743){
+		for(;int>=2629743;int-=2629743){
+			month++
+		}
+		formatex(temp,charsmax(temp),"0%dm", month)
+		add(convertortime,charsmax(convertortime),temp)
+	}
+	else{
+		formatex(temp,charsmax(temp),"00m", month)
+		add(convertortime,charsmax(convertortime),temp)	
+	}
+	if(int>=86400){
+		for(;int>=86400;int-=86400){
+			day++
+		}
+		formatex(temp,charsmax(temp),"0%dd", day)
+		add(convertortime,charsmax(convertortime),temp)
+	}
+	else{
+		formatex(temp,charsmax(temp),"00d", day)
+		add(convertortime,charsmax(convertortime),temp)	
 	}
 	if(int>=3600){
 		for(;int>=3600;int-=3600){
 			hour++
 		}
-		formatex(temp,charsmax(temp),"Hours: %d^x20|^x20", hour)
+		formatex(temp,charsmax(temp),"00%dh", hour)
 		add(convertortime,charsmax(convertortime),temp)
+	}
+	else{
+		formatex(temp,charsmax(temp),"00h", hour)
+		add(convertortime,charsmax(convertortime),temp)	
 	}
 	if(int>=60){
 		for(;int>=60;int-=60){
 			minutes++
 		}
-		formatex(temp,charsmax(temp),"Minutes: %d^x20|^x20",minutes)
+		formatex(temp,charsmax(temp),"0%dn",minutes)
 		add(convertortime,charsmax(temp),temp)
 	}
-	formatex(temp,charsmax(temp),"Seconds: %d^x20|^x20",int)
+	else{
+		formatex(temp,charsmax(temp),"00n", minutes)
+		add(convertortime,charsmax(convertortime),temp)	
+	}
+	if(int<EOS){
+		formatex(convertortime,charsmax(convertortime),"Error found in ^"stock ConvertorInt(int)^" you use ^"%d^" numbers , is invalid with ^"-^" numbers",int)
+		return false
+	}
+	formatex(temp,charsmax(temp),"0%ds",int)
 	add(convertortime,charsmax(convertortime), temp)
 	return true
 }
+
 stock cmpStr(str[]) {
 	
 	static strCsl[200], i
@@ -1569,7 +1801,7 @@ public RegisterConfigPlugin(){
 			server_print("%s I created file ^"%s^"",PrefixProtection,unicodefile)
 			new filecacat = fopen(unicodefile,"wb")
 			fprintf(filecacat,"â™¥^n")
-			fprintf(filecacat,"âœ ^n")
+			fprintf(filecacat,"âœ ^n")
 			fprintf(filecacat,"â˜€^n")
 			fprintf(filecacat,"â¤^n")
 			fprintf(filecacat,"â˜†^n")
@@ -1653,6 +1885,10 @@ public LevFunction(id){mungelimit[id-TASK_ONE]=0x00;local=0x00;}
 
 public Register_Settings()
 {
+	if(!dir_exists("addons/amxmodx/configs/settings/OS_Ban/Users")){
+		server_print("%s I created dir (addons/amxmodx/configs/settings/OS_Ban/Users)",PrefixProtection)
+		mkdir("addons/amxmodx/configs/settings/OS_Ban/Users")
+	}
 	if(!dir_exists("addons/amxmodx/configs/orpheu/functions")){
 		server_print("%s I created dir (addons/amxmodx/configs/orpheu/functions)",PrefixProtection)
 		mkdir("addons/amxmodx/configs/orpheu/functions")
