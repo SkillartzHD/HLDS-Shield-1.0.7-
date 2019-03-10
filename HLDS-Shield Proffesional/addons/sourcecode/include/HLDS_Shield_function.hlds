@@ -224,7 +224,7 @@ new Array:rconskipping,g_ConsoleStr3
 new LimitResources,VAC
 new limitb[varmax],local,limita[varmax],limit[varmax]
 new GameData,SendBadDropClient,ParseConsistencyResponse,NameProtector,Queryviewer,UnicodeName
-enum net_adr {type=0x00,ip[0x04]=0x04}
+enum net_adr {type=EOS,ip[0x04]=0x04}
 enum {BUFFER_MAXIM = 64}
 
 new CvarTableName,checkusor,CvarAdministratorServer,CvarFindCvarBuffer,CvarCreateBuffer,CheckVPN,CvarVpnDetector
@@ -241,8 +241,8 @@ new Array: gFileData;
 new Trie:  gTrie;
 enum _: TaskData {TaskMD5[12],PlayerIndex,TaskID}
 
-new total_pos = 0;
-new detect = 0;
+new total_pos = EOS;
+new detect = EOS;
 new detect_md5[12];
 new szForm[10]
 new usercheck[varmax]
@@ -635,7 +635,7 @@ stock BufferSteamID(index){new SteamIDUser[50];get_user_authid(index,SteamIDUser
 stock PlayerIP(index){new PlayerIPBAN[32];get_user_ip(index,PlayerIPBAN,charsmax(PlayerIPBAN),1);return PlayerIPBAN;}
 stock GetUserID(index){new GetID;GetID = get_user_userid(index);return GetID;}
 stock Add_MSG_ReadShort(){
-	if(ServerVersion == 0){
+	if(ServerVersion == EOS){
 		long=OrpheuGetFunction("MSG_ReadShort")
 		return OrpheuCall(long)
 	}
@@ -672,23 +672,23 @@ stock _OS_MainSettings(){
 	}
 }
 stock SV_ForceFullClientsUpdate(){
-	if(ServerVersion == 0){
+	if(ServerVersion == EOS){
 		long2=OrpheuGetFunction("SV_ForceFullClientsUpdate")
 		return OrpheuCall(long2)
 	}
 	return 1
 }
 stock Add_MSG_ReadLong(){
-	if(ServerVersion == 0){
+	if(ServerVersion == EOS){
 		long=OrpheuGetFunction("MSG_ReadLong")
 	}
 	return 1
 }
 public await_func_suspicious(id){
-	suspiciousdebug_await[id] = 0
+	suspiciousdebug_await[id] = EOS
 }
 stock Add_SV_Drop_f(){
-	if(ServerVersion == 0){
+	if(ServerVersion == EOS){
 		long=OrpheuGetFunction("SV_Drop_f")
 		return OrpheuCall(long)
 	}
@@ -782,7 +782,7 @@ stock SV_CheckUserNameForMenuStyle(id,szNewName[] = ""){
 stock net_adrr()
 {
 	static id;
-	if(ServerVersion == 0){
+	if(ServerVersion == EOS){
 		if(!id) 
 		{
 			
@@ -834,14 +834,14 @@ stock HLDS_Shield_func(index,print,msg[],emit,log,pedeapsa)
 		else{
 			if(localas[index]){
 				if(localas[index] >=get_pcvar_num(LimitPrintf)){
-					localas[index]=0x00
+					localas[index]=EOS
 					return okapi_ret_supercede
 				}
 				log_to_file(settings,string5,PrefixProtection,UserName(index),PlayerIP(index),msg,Argv(),Args(),localas[index],get_pcvar_num(LimitPrintf))
 			}
 			else{
 				if(locala[index] >=get_pcvar_num(LimitPrintf)){
-					locala[index]=0x00
+					locala[index]=EOS
 					return okapi_ret_supercede
 				}
 				log_to_file(settings,string5,PrefixProtection,UserName(index),PlayerIP(index),msg,Argv(),Args(),locala[index],get_pcvar_num(LimitPrintf))
@@ -1380,7 +1380,7 @@ stock Send_CalculationsTimeBan(valueint,function,userfile[]){
 		formatex(GetTimeReal,charsmax(GetTimeReal),"%d%d%d%d%d%d",yearsINT,monthsINT,daysINT,hourINT,minutesINT,secondsINT)
 		formatex(GetTimeFile,charsmax(GetTimeFile),"%d%d%d%d%d%d",YearsCalculate,MonthsCalculate,DaysCalculate,HourCalculate,MinutesCalculate,SecondsCalculate)
 		
-		if(function == 0){
+		if(function == EOS){
 			MakeFileBanned(userfile)
 		}
 	}
@@ -1444,7 +1444,7 @@ stock Send_CalculationsTimeBan(valueint,function,userfile[]){
 		formatex(GetTimeReal,charsmax(GetTimeReal),"%d%d%d%d%d%d",yearsINT,monthsINT,daysINT,hourINT,minutesINT,secondsINT)
 		formatex(GetTimeFile,charsmax(GetTimeFile),"%d%d%d%d%d%d",YearsCalculate,MonthsCalculate,DaysCalculate,HourCalculate,MinutesCalculate,SecondsCalculate)
 		
-		if(function == 0){
+		if(function == EOS){
 			MakeFileBanned(userfile)
 		}
 	}
@@ -1598,7 +1598,7 @@ stock cmpStr3(str[]) {
 	return false
 }
 public RegisterConfigPlugin(){
-	if(ServerVersion == 0){
+	if(ServerVersion == EOS){
 		if(file_exists(loc)){
 			server_print("%s I loaded file ^"%s^"",PrefixProtection,loc)
 		}
@@ -1865,9 +1865,9 @@ public RegisterConfigPlugin(){
 	}
 }
 
-public destroy_holax(){holax=0x00;}
-public destroy_fuck(){fuck=0x00;}
-public destroy_memhack(){memhack=0x00;}
+public destroy_holax(){holax=EOS;}
+public destroy_fuck(){fuck=EOS;}
+public destroy_memhack(){memhack=EOS;}
 public debug_orpheu(){server_cmd("reload");}
 public Destroy_Memory(){hola = 0x00;}
 public Destroy_Fileiplist(){
@@ -1879,11 +1879,11 @@ public Destroy_Fileiplist(){
 }
 public sv_new_f_debug(id){
 	if(limitba[id-TASK_ONE4] <= 1/2){
-		limitba[id-TASK_ONE4]=0x00	
+		limitba[id-TASK_ONE4]=EOS	
 	}
 }
 public Shield_ProtectionSpam(id){limita[id-TASK_ONE3] = 0x00;}
-public LevFunction(id){mungelimit[id-TASK_ONE]=0x00;local=0x00;}
+public LevFunction(id){mungelimit[id-TASK_ONE]=EOS;local=EOS;}
 
 public Register_Settings()
 {
@@ -2086,7 +2086,7 @@ stock is_server_compatibility(){
 		ServerVersion = 1 // rehlds
 	}
 	else{
-		ServerVersion = 0 // hlds
+		ServerVersion = EOS // hlds
 	}
 	return 1
 }
@@ -2820,7 +2820,7 @@ stock HTTP[ MAX_DOWNLOAD_SLOTS ][ DownloadInfo ] , g_HTTPEntity , g_Forward , g_
 stock HTTP_DownloadFile( const szRemoteFile[] , const szLocalFile[] )
 {
 	new iSlot;
-	for ( iSlot = 0 ; iSlot < MAX_DOWNLOAD_SLOTS ; iSlot++ )
+	for ( iSlot = EOS ; iSlot < MAX_DOWNLOAD_SLOTS ; iSlot++ )
 	{
 		if ( !HTTP[ iSlot ][ DownloadID ] )
 			break;
@@ -2864,9 +2864,9 @@ stock HTTP_DownloadFile( const szRemoteFile[] , const szLocalFile[] )
 			g_Forward = CreateOneForward( g_iPluginID , "HTTP_Download" , FP_STRING , FP_CELL , FP_CELL , FP_CELL , FP_CELL );
 		}
 		
-		HTTP[ iSlot ][ PacketNum ] = 0;
-		HTTP[ iSlot ][ BytesTransferred ] = 0;
-		HTTP[ iSlot ][ FileSize ] = 0;
+		HTTP[ iSlot ][ PacketNum ] = EOS;
+		HTTP[ iSlot ][ BytesTransferred ] = EOS;
+		HTTP[ iSlot ][ FileSize ] = EOS;
 		
 		formatex( szRequest , charsmax( szRequest ) , "GET /%s HTTP/1.1^r^nHost: %s^r^n^r^n" , HTTP[ iSlot ][ RemoteFile ] , HTTP[ iSlot ][ Server ] );
 		socket_send( HTTP[ iSlot ][ Socket ] , szRequest , sizeof( szRequest ) );
@@ -2883,11 +2883,11 @@ stock HTTP_DownloadFile( const szRemoteFile[] , const szLocalFile[] )
 stock HTTP_AbortTransfer( iDownloadID , bool:bDeleteLocalFile=true )
 {
 	new iSlot , bool:bSuccess;
-	for ( iSlot = 0 ; iSlot < MAX_DOWNLOAD_SLOTS ; iSlot++ )
+	for ( iSlot = EOS ; iSlot < MAX_DOWNLOAD_SLOTS ; iSlot++ )
 	{
 		if ( iDownloadID == HTTP[ iSlot ][ DownloadID ] )
 		{
-			HTTP[ iSlot ][ DownloadID ] = 0;
+			HTTP[ iSlot ][ DownloadID ] = EOS;
 			fclose( HTTP[ iSlot ][ FileHandle ] );
 			socket_close( HTTP[ iSlot ][ Socket ] );
 			
@@ -2908,8 +2908,8 @@ public _HTTP_EntityThink( iEntity )
 	if ( iEntity != g_HTTPEntity )
 		return;
 	
-	iActiveSlots = 0;
-	for ( iSlot = 0 ; iSlot < MAX_DOWNLOAD_SLOTS ; iSlot++ )
+	iActiveSlots = EOS;
+	for ( iSlot = EOS ; iSlot < MAX_DOWNLOAD_SLOTS ; iSlot++ )
 	{
 		if ( HTTP[ iSlot ][ DownloadID ] )
 		{
@@ -2935,7 +2935,7 @@ public _HTTP_EntityThink( iEntity )
 					}
 					else
 					{
-						iDataStart = 0;
+						iDataStart = EOS;
 					}
 					
 					HTTP[ iSlot ][ BytesTransferred ] += fwrite_blocks( HTTP[ iSlot ][ FileHandle ] , g_DataBuffer[ iDataStart ] , ( iDataBlocks - iDataStart ) , BLOCK_BYTE );
@@ -2948,7 +2948,7 @@ public _HTTP_EntityThink( iEntity )
 						socket_close( HTTP[ iSlot ][ Socket ] );
 						iActiveSlots--;
 						
-						HTTP[ iSlot ][ DownloadID ] = 0;
+						HTTP[ iSlot ][ DownloadID ] = EOS;
 					}
 					else
 					{
@@ -2963,7 +2963,7 @@ public _HTTP_EntityThink( iEntity )
 					socket_close( HTTP[ iSlot ][ Socket ] );
 					iActiveSlots--;
 					
-					HTTP[ iSlot ][ DownloadID ] = 0;
+					HTTP[ iSlot ][ DownloadID ] = EOS;
 				}
 			}
 		}
@@ -2977,10 +2977,10 @@ public _HTTP_EntityThink( iEntity )
 	{
 		entity_set_int( g_HTTPEntity , EV_INT_flags , FL_KILLME );
 		call_think( g_HTTPEntity );
-		g_HTTPEntity = 0;
+		g_HTTPEntity = EOS;
 		
 		DestroyForward( g_Forward );
-		g_Forward = 0;
+		g_Forward = EOS;
 	}
 }
 #if defined _colorchat_included
@@ -3083,7 +3083,7 @@ stock client_print_color(id, iColor=DontChange, const szMsg[], any:...)
 				// retrieve original param value and check if it's LANG_PLAYER value
 				if( getarg(j) == LANG_PLAYER )
 				{
-					i=0;
+					i=EOS;
 					// as LANG_PLAYER == -1, check if next parm string is a registered language translation
 					while( ( szMessage[ i ] = getarg( j + 1, i++ ) ) ) {}
 					if( GetLangTransKey(szMessage) != TransKey_Bad )
@@ -3099,7 +3099,7 @@ stock client_print_color(id, iColor=DontChange, const szMsg[], any:...)
 			}
 		}
 		
-		// If arraysize == 0, ML is not used
+		// If arraysize == EOS, ML is not used
 		// we can only send 1 MSG_BROADCAST message
 		if( !iMlNumber )
 		{
@@ -3138,11 +3138,11 @@ stock client_print_color(id, iColor=DontChange, const szMsg[], any:...)
 				copy(szFakeTeam, charsmax(szFakeTeam), g_szTeamName[iColor]);
 			}
 			
-			for( i = 0; i < iNum; i++ )
+			for( i = EOS; i < iNum; i++ )
 			{
 				id = iPlayers[i];
 				
-				for(j=0; j<iMlNumber; j++)
+				for(j=EOS; j<iMlNumber; j++)
 				{
 					// Set all LANG_PLAYER args to player index ( = id )
 					// so we can format the text for that specific player
@@ -3171,7 +3171,7 @@ stock client_print_color(id, iColor=DontChange, const szMsg[], any:...)
 
 stock Send_TeamInfo(iReceiver, iPlayerId, szTeam[])
 {
-	static iTeamInfo = 0;
+	static iTeamInfo = EOS;
 	if( !iTeamInfo )
 	{
 		iTeamInfo = get_user_msgid("TeamInfo");
@@ -3184,7 +3184,7 @@ stock Send_TeamInfo(iReceiver, iPlayerId, szTeam[])
 
 stock Send_SayText(iReceiver, iPlayerId, szMessage[])
 {
-	static iSayText = 0;
+	static iSayText = EOS;
 	if( !iSayText )
 	{
 		iSayText = get_user_msgid("SayText");
