@@ -11,6 +11,8 @@ Works on reHLDS ?
 What is _OS_Ban ?
 
 - you can block players with shield_os_ban <name> <reason> <time> via cookies (bypass random ip/bypass steamid random)
+  
+- you can block players (real time ban) on steamid & ip with shield_ban/shield_addban and for remove use shield_unban (only srvcmd api)
 
 What is VPNDetector ?
 
