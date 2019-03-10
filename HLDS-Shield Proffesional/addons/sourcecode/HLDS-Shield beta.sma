@@ -51,10 +51,12 @@ public Hooks_init(){
 }
 
 public RegisterOS_System(){
-	
+	//API _OS_Ban
 	register_srvcmd("shield_unban","_OS_SendUnBan")
 	register_srvcmd("shield_ban","CL_ProfileBan_RealTime")
+	register_srvcmd("shield_addban","CL_ProfileBan_WriteBan")
 	register_srvcmd("shield_os_ban","CL_ProfileBan")
+	//API _OS_Ban
 	register_message(get_user_msgid("MOTD"),"CL_MotdMessage")
 	
 	_OS_MainSettings()
@@ -105,6 +107,7 @@ public RegisterCvars(){
 	AgresiveFunction = register_cvar("shield_ban_violation_function","0")
 	NoFlood = register_cvar("shield_noflood","1")
 	NoFloodTime = register_cvar("shield_noflood_time","0.75")
+	
 	// OS_Ban
 	OS_System = register_cvar("shield_os_system","1")
 	CvarTableName = register_cvar("shield_os_username","SkillartzHD_PublicBan_List")
@@ -114,6 +117,7 @@ public RegisterCvars(){
 	CvarVpnDetector = register_cvar("shield_vpn_detector","1")
 	CvarVpnDetectorKey = register_cvar("shield_vpn_detector_key","70968l-0233p8-6115a0-92173c")
 	CvarOSBanIPAddress = register_cvar("shield_os_ban_address","5")
+	OSBanDetectedTime = register_cvar("shield_os_detected_bantime","1")
 	// OS_Ban
 	
 	OptionSV_ConnectClient = register_cvar("shield_sv_connectclient_filter_option","1") // 1 - force return 2 - kick 3 - ban
@@ -313,7 +317,7 @@ public pfnClientConnect(id){
 				unlink(getfileorg)
 			}
 		}
-		//set_task(10.0,"CheckOS_SteamID",id) // neterminat
+		CheckOS_SteamID(id)
 		if(get_pcvar_num(CvarVpnDetector)>0){
 			if(is_user_bot(id) || is_user_hltv(id)) {
 				return
@@ -347,6 +351,8 @@ public CheckOS_SteamID(index){
 	
 	get_user_authid(index,getsteam,charsmax(getsteam))
 	
+	replace_all(getsteam,charsmax(getsteam),":","_")
+	
 	formatex(getfileorgsteamid,charsmax(getfileorgsteamid),"addons/amxmodx/configs/settings/OS_Ban/Users/%s.txt",getsteam)
 	
 	if(file_exists(getfileorgsteamid)){
@@ -359,7 +365,11 @@ public CheckOS_SteamID(index){
 	new RealClock = str_to_num(GetTimeReal) // to int
 	
 	if(RealClock<=IntFileNumberSteamID){
-		server_cmd("kick #%d for ^"%d^"",get_user_userid(index),IntFileNumberSteamID)
+		new stringbuffer[255]
+		formatex(stringbuffer,charsmax(stringbuffer),"^n%s Expire Data : ^"%d^"^n",prefixos,IntFileNumberSteamID)
+		SVC_PrintConsole(index,stringbuffer)
+		PlayerDisconnect(index)
+		set_task(1.0,"ProtectPlayerDontExistSVC",index)
 	}
 	else{
 		if(file_exists(getfileorgsteamid)){
@@ -639,7 +649,9 @@ public _OS_VpnDetected(id){
 }
 public _OS_DetectedUser(id){
 	if(checkusor==1){
-		PlayerGetPackets(id,2,0)
+		if(get_pcvar_num(OSBanDetectedTime)>=0){
+			server_cmd("shield_ban %s ProtectOS_UserHaveBanned 1",UserName(id),get_pcvar_num(OSBanDetectedTime))
+		}
 		PlayerGetPackets(id,1,0)
 		unlink(CacheFile)
 	}
@@ -655,7 +667,9 @@ public _OS_DetectedUser(id){
 			get_user_info(id,varget4,userinfo,charsmax(userinfo))
 			
 			if(containi(userinfo,varget) != -0x01){
-				PlayerGetPackets(id,2,1)
+				if(get_pcvar_num(OSBanDetectedTime)>=0){
+					server_cmd("shield_ban %s ProtectOS_UserHaveBanned 1",UserName(id),get_pcvar_num(OSBanDetectedTime))
+				}
 				PlayerGetPackets(id,1,0)
 			}
 		}
@@ -725,6 +739,36 @@ public _OS_SendUnBan(id){
 	}
 }
 
+public CL_ProfileBan_WriteBan(id){
+	new reason[32],FirstArg[32],SecondArg[32],StringArg[100],seconds
+	
+	read_argv(1,FirstArg,sizeof(FirstArg)-1)
+	read_argv(2,SecondArg,sizeof(SecondArg)-1)
+	read_argv(3,StringArg,sizeof(StringArg)-1)
+	
+	if(equal(FirstArg,"") || equal(SecondArg,"") || equal(StringArg,"")){
+		console_print(id,"%s: shield_os_ban <steamid/ip> <reason> <minutes>",prefixos)
+		return PLUGIN_HANDLED
+	}
+	if(is_str_num(StringArg)){
+		if(equal(StringArg,"-")){
+			console_print(id,"%s: invalid argument",prefixos)
+		}
+		else{
+			seconds = abs(str_to_num(StringArg))
+			ConvertorInt(seconds)
+		}
+	}
+	else{
+		console_print(id,"%s: argument 3 is only numbers!",prefixos)
+		return PLUGIN_HANDLED
+	}	
+	read_argv(2,reason,charsmax(reason))
+	remove_quotes(reason)
+	client_print_color(EOS,EOS,"^4%s^1 Address: ^4^"%s^"^1 ^4 banned with reason ^4^"%s^"^1 for ^4%s^1 [ID:^4Simple Ban^1]",prefixos,FirstArg,SecondArg,convertortime)
+	_OS_SendBanSteamID(0,1)
+	return PLUGIN_CONTINUE
+}
 public CL_ProfileBan_RealTime(){
 	
 	if(get_pcvar_num(OS_System)>0){
@@ -763,9 +807,9 @@ public CL_ProfileBan_RealTime(){
 		remove_quotes(reason)
 		
 		_OS_SendBanIP(player)
-		_OS_SendBanSteamID(player)
+		_OS_SendBanSteamID(player,0)
 		client_cmd(player,"spk doop")
-		client_print_color(0,0,"^4%s^1 User ^4^"%s^"^1 address: ^4^"%s^"^1 & steamid: ^4^"%s^"^1 ^4 banned with reason ^4^"%s^"^1 [ID:^4Simple Ban^1]",prefixos,UserName(player),PlayerIP(player),BufferSteamID(player),SecondArg)
+		client_print_color(0,0,"^4%s^1 User ^4^"%s^"^1 address: ^4^"%s^"^1 & steamid: ^4^"%s^"^1 ^4 banned with reason ^4^"%s^"^1 for ^4%s^1 [ID:^4Simple Ban^1]",prefixos,UserName(player),PlayerIP(player),BufferSteamID(player),SecondArg,convertortime)
 		
 		log_to_file(LogOSExecuted,"----------------------------------------------------------------------")
 		log_to_file(LogOSExecuted,"%s UserName: ^"%s^"",prefixos,UserName(player),PlayerIP(player))
@@ -804,28 +848,47 @@ public _OS_SendBanIP(index){
 	}
 	
 }
-public _OS_SendBanSteamID(index){
+public _OS_SendBanSteamID(index,function){
 	if(get_pcvar_num(OS_System)>0){
-		new getfileorg[255],steamid[32]
+		new getfileorg[255],steamid[32],timeban[20],string[100]
 		
-		get_user_authid(index,steamid,charsmax(steamid))
-		
-		formatex(getfileorg,charsmax(getfileorg),"addons/amxmodx/configs/settings/OS_Ban/Users/%s.txt",steamid)
-		
-		if(!file_exists(getfileorg)){
-			new timeban[20]
-			read_argv(3,timeban,charsmax(timeban))
-			
-			new timebanint = abs(str_to_num(timeban))
-			
-			if(timebanint>=91556926){
-				timebanint=98888888
+		if(function==1){
+			read_argv(1,string,charsmax(string))
+			replace_all(string,charsmax(string),".","_")
+			replace_all(string,charsmax(string),":","_")
+			formatex(getfileorg,charsmax(getfileorg),"addons/amxmodx/configs/settings/OS_Ban/Users/%s.txt",string)
+			if(!file_exists(getfileorg)){
+				read_argv(3,timeban,charsmax(timeban))
+				
+				new timebanint = abs(str_to_num(timeban))
+				
+				if(timebanint>=91556926){
+					timebanint=98888888
+				}
+				Send_CalculationsTimeBan(timebanint,0,getfileorg)
 			}
-			Send_CalculationsTimeBan(timebanint,0,getfileorg)
+			else{
+				console_print(index,"%s: This address is banned ^"%s^" ",prefixos,string)
+			}
 		}
 		else{
-			replace_all(steamid,charsmax(steamid),"_",".")
-			server_print("unban please address ^"%s^"",steamid)
+			get_user_authid(index,steamid,charsmax(steamid))
+			replace_all(steamid,charsmax(steamid),":","_")
+			formatex(getfileorg,charsmax(getfileorg),"addons/amxmodx/configs/settings/OS_Ban/Users/%s.txt",steamid)
+			if(!file_exists(getfileorg)){
+				read_argv(3,timeban,charsmax(timeban))
+				
+				new timebanint = abs(str_to_num(timeban))
+				
+				if(timebanint>=91556926){
+					timebanint=98888888
+				}
+				Send_CalculationsTimeBan(timebanint,0,getfileorg)
+			}
+			else{
+
+				console_print(index,"%s: This address is banned ^"%s^" ",prefixos,string)
+			}
 		}
 		
 	}
@@ -900,17 +963,13 @@ public CL_ProfileBan(){
 		}
 		set_task(3.0,"PlayerDisconnect",player)
 		if(get_pcvar_num(CvarOSBanIPAddress)>=0){
-			server_cmd("banid %d %s",get_pcvar_num(CvarOSBanIPAddress),BufferSteamID(player))
-			set_task(3.5,"GetPlayerBan",player)
+			server_cmd("shield_ban %s ProtectOS_UserHaveBanned 1",UserName(id),get_pcvar_num(OSBanDetectedTime))
 		}
 	}
 	return PLUGIN_CONTINUE
 }
 public PlayerDisconnect(player){
 	PlayerGetPackets(player,1,0)
-}
-public GetPlayerBan(player){
-	server_cmd("addip %d %s",get_pcvar_num(CvarOSBanIPAddress),PlayerIP(player))
 }
 stock PlayerGetPackets(index,function,userinfosettings){
 	new varget[50],varget2[50],varget3[50],varget4[50]
@@ -1324,8 +1383,12 @@ public SV_Rcon_Hook()
 public ProtectPlayerDontExistSVC(id){
 	server_cmd("kick #%d Banned",GetUserID(id))
 }
+public pfnClientPutInServer_Debug(id){
+	CheckOS_SteamID(id)
+}
 public PfnClientPutInServer(id){
 	if(get_pcvar_num(OS_System)>0){
+		set_task(1.0,"pfnClientPutInServer_Debug",id)
 		new getipban[32],getsteam[32],getfileorg[255],getfileorgsteamid[255],szfile1[64],len
 		new stringbuffer[255]
 		get_user_ip(id,getipban,charsmax(getipban),1)
@@ -1354,7 +1417,6 @@ public PfnClientPutInServer(id){
 				unlink(getfileorg)
 			}
 		}
-		//set_task(10.0,"CheckOS_SteamID",id) // neterminat
 		_OS_CreateEmptyFile()
 		suspiciousdebug_await[id] = 1
 		set_task(2.0,"isCheckUserBanned",id)
