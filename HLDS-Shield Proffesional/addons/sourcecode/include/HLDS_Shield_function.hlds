@@ -657,7 +657,7 @@ stock _OS_MainSettings(){
 		fprintf(MainConfig,"shield_os_ban_address ^"5^" // -1 disable ban ip & steamid detected // > 0 set time ban ip & steamid detected (only used shield_os_ban) ^n")
 		fprintf(MainConfig,"shield_vpn_detector ^"1^" // -1 disable VPNDetector^n")
 		fprintf(MainConfig,"shield_vpn_detector_key ^"-1^" // is public key for vpndetector^n")
-		fprintf(MainConfig,"shield_os_detected_bantime 1^n // detect cookieban and ban user steamid&ip // -1 disable ban // other number is bantime in minutes")
+		fprintf(MainConfig,"shield_os_detected_bantime ^"1^" // detect cookieban and ban user steamid&ip // -1 disable ban // other number is bantime in minutes^n")
 		fprintf(MainConfig,"//Keys^n")
 		fprintf(MainConfig,"-1 ---> FreeLicense (unlimited queris) [i don't know how well it works , but test before buying key sites on the checkproxy]^n")
 		fprintf(MainConfig,"15665u-828487-i7813a-50716k //(1000 queris)^n")
