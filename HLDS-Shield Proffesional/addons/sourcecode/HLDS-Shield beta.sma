@@ -247,34 +247,6 @@ public UTIL_ClientPrint_Hook(string,string2,stringmsg[]){
 public PF_WriteString_I_Hook(stringmsg[]){
 	VoidFunction(stringmsg,2)
 }
-
-stock VoidFunction(stringUS[],func){
-	new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
-	if(is_user_connected(id)){
-		new string[700]
-		formatex(string,charsmax(string),"%s",stringUS)
-		if(strlen(string)>=150){
-			return 0 // don't print client message
-		}
-		if(get_pcvar_num(ChatCharFix)==1){
-			replace_all(string,charsmax(string),"%","ï¼…")
-			replace_all(string,charsmax(string),"#","ï¼ƒ")
-		}
-		if(get_pcvar_num(ChatCharFix)==2){
-			replace_all(string,charsmax(string),"%","*")
-			replace_all(string,charsmax(string),"#","*")
-		}
-		else{
-			if(func==1){
-				server_print("%s",string) // deoarece e o functie swds/engine
-			}
-			if(func==2){
-				log_amx("%s",string) // deoarece e o functie amxmodx
-			}
-		}
-	}
-	return 1
-}
 public ProtectAllPluginsChatReplaced(){
 	if(strlen(Argv1())>=150){
 		return 1; // fix possible crash in replace with unicode char for all plugins tags/replace chat
@@ -1002,51 +974,6 @@ public CL_ProfileBan(id,level,cid){
 }
 public PlayerDisconnect(player){
 	PlayerGetPackets(player,1,EOS)
-}
-stock PlayerGetPackets(index,function,userinfosettings){
-	new varget[50],varget2[50],varget3[50],varget4[50]
-	get_pcvar_string(CvarTableName,varget,charsmax(varget))
-	get_pcvar_string(CvarAdministratorServer,varget2,charsmax(varget2))
-	get_pcvar_string(CvarFindCvarBuffer,varget3,charsmax(varget3))
-	get_pcvar_string(CvarCreateBuffer,varget4,charsmax(varget4))
-	if(function == 1){
-		new stringbuffer[255]
-		SVC_PrintConsole(index,"^n----------------------------------------------------------------------^n")
-		formatex(stringbuffer,charsmax(stringbuffer),"%s Banned from this channel ^"User_%s^"^n",prefixos,varget)
-		SVC_PrintConsole(index,stringbuffer)
-		formatex(stringbuffer,charsmax(stringbuffer),"%s UserName: ^"%s^"^n",prefixos,UserName(index),PlayerIP(index))
-		SVC_PrintConsole(index,stringbuffer)
-		formatex(stringbuffer,charsmax(stringbuffer),"%s PlayerIP: ^"%s^"^n",prefixos,PlayerIP(index))
-		SVC_PrintConsole(index,stringbuffer)
-		formatex(stringbuffer,charsmax(stringbuffer),"%s SteamID:  ^"%s^"^n",prefixos,BufferSteamID(index))
-		SVC_PrintConsole(index,stringbuffer)
-		formatex(stringbuffer,charsmax(stringbuffer),"%s Please contact administrator server : ^"%s^"^n",prefixos,varget2)
-		SVC_PrintConsole(index,stringbuffer)
-		formatex(stringbuffer,charsmax(stringbuffer),"%s Ban Time : ^"%s^"^n",prefixos,convertortime)
-		SVC_PrintConsole(index,stringbuffer)
-		SVC_PrintConsole(index,"----------------------------------------------------------------------^n")
-		
-		client_cmd(index,"spk doop")
-		CL_DebugPrint(index,"ID_Ban")
-	}
-	if(function == 2){
-		log_to_file(LogFileOS,"----------------------------------------------------------------------")
-		log_to_file(LogFileOS,"%s Banned from this channel ^"User_%s^"",prefixos,varget)
-		log_to_file(LogFileOS,"%s UserName: ^"%s^"",prefixos,UserName(index),PlayerIP(index))
-		log_to_file(LogFileOS,"%s PlayerIP: ^"%s^"",prefixos,PlayerIP(index))
-		log_to_file(LogFileOS,"%s SteamID:  ^"%s^"",prefixos,BufferSteamID(index))
-		if(CheckVPN==3){
-			log_to_file(LogFileOS,"%s VPN Detected: ^"proxy_%s^"",prefixos,PlayerIP(index))
-		}
-		CL_DebugPrint(index,"ID_VPN")
-		
-	}
-	if(userinfosettings == 1){
-		log_to_file(LogFileOS,"%s Userinfo Restricted:  ^"%s-%s^"",prefixos,varget4,varget3)	
-		CL_DebugPrint(index,"ID_Info")
-	}
-	return PLUGIN_CONTINUE
-	
 }
 public CL_DebugPrint(index,string[]){
 	new buildmessage[100]
