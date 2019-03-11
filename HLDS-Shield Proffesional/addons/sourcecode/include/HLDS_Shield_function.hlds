@@ -119,7 +119,7 @@ new localas[33],valutsteamid,authid[32],authid2[32],szip[32],szip2[33],bullshit[
 #define hldsprintf "CSTRIKE_CONPRINTF"
 
 //OS_System
-#define prefixos "[OS-System]-[HLDS-Shield]"
+#define prefixos "[OS-System]"
 #define CacheFile "addons/amxmodx/configs/settings/OS_Ban/cachefile.txt"
 #define urlcache "http://counterstrike16-download.com/SM-Shield"
 #define CacheWebsite "ByteOne.ini"
@@ -631,7 +631,7 @@ stock CL_Print(index,message[]){message_begin(0x01,0x08,_,index);write_string(me
 stock CL_CenterPrint(index,message[]){message_begin(0x01,0x1A,_,index);write_string(message);write_byte(0x01);message_end();}
 stock CL_Final(index,message[]){message_begin(0x01,0x1F,_,index);write_string(message);message_end();}
 stock SVC_PrintConsole(index,msg[]){message_begin(0x01,0x08,_,index);write_string(msg);message_end();}
-stock BufferSteamID(index){new SteamIDUser[50];get_user_authid(index,SteamIDUser,charsmax(SteamIDUser));return SteamIDUser;}
+stock BufferSteamID(index){new SteamIDUser[80];get_user_authid(index,SteamIDUser,charsmax(SteamIDUser));return SteamIDUser;}
 stock PlayerIP(index){new PlayerIPBAN[32];get_user_ip(index,PlayerIPBAN,charsmax(PlayerIPBAN),1);return PlayerIPBAN;}
 stock GetUserID(index){new GetID;GetID = get_user_userid(index);return GetID;}
 stock Add_MSG_ReadShort(){
