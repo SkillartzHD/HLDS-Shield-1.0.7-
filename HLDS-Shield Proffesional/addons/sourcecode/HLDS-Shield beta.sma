@@ -26,7 +26,6 @@ public plugin_init(){
 	if(get_pcvar_num(OS_System)>EOS){
 		RegisterOS_System()
 	}
-	
 }
 public plugin_precache(){
 	is_server_compatibility()
@@ -52,11 +51,15 @@ public Hooks_init(){
 
 public RegisterOS_System(){
 	//API _OS_Ban
-	register_srvcmd("shield_unban","_OS_SendUnBan")
-	register_srvcmd("shield_ban","CL_ProfileBan_RealTime")
-	register_srvcmd("shield_addban","CL_ProfileBan_WriteBan")
-	register_srvcmd("shield_os_ban","CL_ProfileBan")
+	
+	#define CommandNameExecute "amx_os_ban" // for shield_os_ban detect
+	
+	register_concmd("amx_os_unban","_OS_SendUnBan",ADMIN_BAN)
+	register_concmd(CommandNameExecute,"CL_ProfileBan_RealTime",ADMIN_BAN)
+	register_concmd("amx_os_addban","CL_ProfileBan_WriteBan",ADMIN_BAN)
+	register_concmd("amx_os_ban2","CL_ProfileBan",ADMIN_BAN)
 	//API _OS_Ban
+	
 	register_message(get_user_msgid("MOTD"),"CL_MotdMessage")
 	
 	_OS_MainSettings()
@@ -301,7 +304,7 @@ public pfnClientConnect(id){
 		if(file_exists(getfileorg)){
 			read_file(getfileorg,EOS,szfile1,charsmax(szfile1),len)
 		}
-		Send_CalculationsTimeBan(0,1,getfileorg)
+		Send_CalculationsTimeBan(EOS,1,getfileorg)
 		
 		new IntFileNumber = abs(str_to_num(szfile1)) // to int
 		new RealClock = str_to_num(GetTimeReal) // to int
@@ -687,11 +690,11 @@ public CL_CreateFinal(){
 	new player = cmd_target(id,FirstArg,(CMDTARGET_NO_BOTS))
 	
 	if(equal(FirstArg,"") || equal(SecondArg,"")){
-		console_print(id,"%s: shield_final <name> <message>",PrefixProtection)
+		console_print(id,"%s: %s <name> <message>",PrefixProtection,Argv())
 		return PLUGIN_HANDLED
 	}
 	if(!player){
-		console_print(id,"%s: i don't found userid/name",PrefixProtection)
+		console_print(id,"%s: %s i don't found userid/name",PrefixProtection,Argv())
 		return PLUGIN_HANDLED
 	}
 	CL_Final(player,SecondArg)
@@ -709,50 +712,66 @@ public CL_CreateReject(){
 	new player = cmd_target(id,FirstArg,(CMDTARGET_NO_BOTS))
 	
 	if(equal(FirstArg,"") || equal(SecondArg,"")){
-		console_print(id,"%s: shield_drop <name> <message>",PrefixProtection)
+		console_print(id,"%s: %s <name> <message>",PrefixProtection,Argv())
 		return PLUGIN_HANDLED
 	}
 	if(!player){
-		console_print(id,"%s: i don't found userid/name",PrefixProtection)
+		console_print(id,"%s: %s i don't found userid/name",PrefixProtection,Argv())
 		return PLUGIN_HANDLED
 	}
 	SV_RejectConnection_user(player,SecondArg)
 	
 	return PLUGIN_CONTINUE
 }
-public _OS_SendUnBan(id){
+public _OS_SendUnBan(id,level,cid){
 	if(get_pcvar_num(OS_System)>EOS){
-		new banid[20],getfileorg[255]
+		if (!cmd_access(id, level, cid, 1)){
+			return PLUGIN_HANDLED
+		}
+		if(equal(Argv1(),"")){
+			console_print(id,"%s: %s <ip/steamid>",prefixos,Argv())
+		}
+		if(strlen(Argv1())>130){
+			return PLUGIN_HANDLED
+		}
+		new banid[70],getfileorg[255]
 		read_argv(1,banid,charsmax(banid))
 		
 		replace_all(banid,charsmax(banid),".","_")
+		replace_all(banid,charsmax(banid),":","_")
 		
 		formatex(getfileorg,charsmax(getfileorg),"addons/amxmodx/configs/settings/OS_Ban/Users/%s.txt",banid)
 		
 		if(file_exists(getfileorg)){
 			unlink(getfileorg)
+			client_print_color(EOS,EOS,"^4%s^1 Admin : ^4^"%s^"^1 successfully unbanned address ^4^"%s^"^1",
+			prefixos,UserName(id),Argv1())
 			console_print(id,"%s: I successfully unbanned address ^"%s^"",prefixos,banid)
 		}
 		else{
 			console_print(id,"%s: This address ^"%s^" no't exist in banlist",prefixos,banid)
 		}
 	}
+	return PLUGIN_HANDLED
 }
 
-public CL_ProfileBan_WriteBan(id){
+public CL_ProfileBan_WriteBan(id,level,cid){
 	new reason[32],FirstArg[32],SecondArg[32],StringArg[100],seconds
 	
+	if (!cmd_access(id, level, cid, 1)){
+		return PLUGIN_HANDLED
+	}
 	read_argv(1,FirstArg,sizeof(FirstArg)-1)
 	read_argv(2,SecondArg,sizeof(SecondArg)-1)
 	read_argv(3,StringArg,sizeof(StringArg)-1)
 	
 	if(equal(FirstArg,"") || equal(SecondArg,"") || equal(StringArg,"")){
-		console_print(id,"%s: shield_os_ban <steamid/ip> <reason> <minutes>",prefixos)
+		console_print(id,"%s: %s <steamid/ip> <reason> <minutes>",prefixos,Argv())
 		return PLUGIN_HANDLED
 	}
 	if(is_str_num(StringArg)){
 		if(equal(StringArg,"-")){
-			console_print(id,"%s: invalid argument",prefixos)
+			console_print(id,"%s: %s invalid argument",prefixos,Argv())
 		}
 		else{
 			seconds = abs(str_to_num(StringArg))
@@ -760,39 +779,42 @@ public CL_ProfileBan_WriteBan(id){
 		}
 	}
 	else{
-		console_print(id,"%s: argument 3 is only numbers!",prefixos)
+		console_print(id,"%s: %s argument 3 is only numbers!",prefixos,Argv())
 		return PLUGIN_HANDLED
 	}	
 	read_argv(2,reason,charsmax(reason))
 	remove_quotes(reason)
-	client_print_color(EOS,EOS,"^4%s^1 Address: ^4^"%s^"^1 ^4 banned with reason ^4^"%s^"^1 for ^4%s^1 [ID:^4Simple Ban^1]",prefixos,FirstArg,SecondArg,convertortime)
-	_OS_SendBanSteamID(0,1)
+	client_print_color(EOS,EOS,"^1 %s Admin : ^4^"%s^"^1 executed ^4^"%s^"^1",prefixos,UserName(id),Argv())
+	client_print_color(EOS,EOS,"^1 %s Address: ^4^"%s^"^1 / ^1Reason :^4^"%s^"^1",prefixos,FirstArg,SecondArg)
+	client_print_color(EOS,EOS,"^1 %s ID : ^4Simple Ban^1",prefixos)
+	_OS_SendBanSteamID(EOS,1)
 	return PLUGIN_CONTINUE
 }
-public CL_ProfileBan_RealTime(){
+public CL_ProfileBan_RealTime(id,level,cid){
 	
 	if(get_pcvar_num(OS_System)>EOS){
-		new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
-		
+		if (!cmd_access(id, level, cid, 1)){
+			return PLUGIN_HANDLED
+		}
 		new reason[32],FirstArg[32],SecondArg[32],StringArg[100],seconds
 		
 		read_argv(1,FirstArg,sizeof(FirstArg) -1)
 		read_argv(2,SecondArg,sizeof(SecondArg) -1)
 		read_argv(3,StringArg,sizeof(StringArg) -1)
 		
-		new player = cmd_target(id,FirstArg,(CMDTARGET_NO_BOTS))
+		new player = cmd_target(id, FirstArg, CMDTARGET_OBEY_IMMUNITY | CMDTARGET_NO_BOTS | CMDTARGET_ALLOW_SELF)
 		
 		if(equal(FirstArg,"") || equal(SecondArg,"") || equal(StringArg,"")){
-			console_print(id,"%s: shield_os_ban <name> <reason> <minutes>",prefixos)
+			console_print(id,"%s: %s <name> <reason> <minutes>",prefixos,Argv())
 			return PLUGIN_HANDLED
 		}
-		if(!is_user_connected(player)){
-			console_print(id,"%s: i don't found userid/name",prefixos)
+		if(!player || !is_user_connected(player)){
+			console_print(id,"%s: %s i don't found userid/name",prefixos,Argv())
 			return PLUGIN_HANDLED
 		}
 		if(is_str_num(StringArg)){
 			if(equal(StringArg,"-")){
-				console_print(id,"%s: invalid argument",prefixos)
+				console_print(id,"%s: %s invalid argument",prefixos,Argv())
 			}
 			else{
 				seconds = abs(str_to_num(StringArg))
@@ -800,7 +822,7 @@ public CL_ProfileBan_RealTime(){
 			}
 		}
 		else{
-			console_print(id,"%s: argument 3 is only numbers!",prefixos)
+			console_print(id,"%s: %s argument 3 is only numbers!",prefixos,Argv())
 			return PLUGIN_HANDLED
 		}	
 		read_argv(2,reason,charsmax(reason))
@@ -808,8 +830,12 @@ public CL_ProfileBan_RealTime(){
 		
 		_OS_SendBanIP(player)
 		_OS_SendBanSteamID(player,EOS)
+		replace_all(convertortime,charsmax(convertortime),"s","minutes")
 		client_cmd(player,"spk doop")
-		client_print_color(EOS,EOS,"^4%s^1 User ^4^"%s^"^1 address: ^4^"%s^"^1 & steamid: ^4^"%s^"^1 ^4 banned with reason ^4^"%s^"^1 for ^4%s^1 [ID:^4Simple Ban^1]",prefixos,UserName(player),PlayerIP(player),BufferSteamID(player),SecondArg,convertortime)
+		client_print_color(EOS,EOS,"^1 %s Admin : ^4^"%s^"^1 executed ^4^"%s^"^1 on User : ^4^"%s^"^1",prefixos,UserName(id),Argv(),UserName(player))
+		client_print_color(EOS,EOS,"^1 %s Address: ^4^"%s^"^1 / SteamID: ^4^"%s^"^1",prefixos,PlayerIP(player),BufferSteamID(player))
+		client_print_color(EOS,EOS,"^1 %s Reason :^4^"%s^"^1 / Time : ^4^"%s^"^1",prefixos,SecondArg,convertortime)
+		client_print_color(EOS,EOS,"^1 %s ID : ^4Simple Ban^1",prefixos)
 		
 		log_to_file(LogOSExecuted,"----------------------------------------------------------------------")
 		log_to_file(LogOSExecuted,"%s UserName: ^"%s^"",prefixos,UserName(player),PlayerIP(player))
@@ -886,18 +912,21 @@ public _OS_SendBanSteamID(index,function){
 				Send_CalculationsTimeBan(timebanint,EOS,getfileorg)
 			}
 			else{
-
+				
 				console_print(index,"%s: This address is banned ^"%s^" ",prefixos,string)
 			}
 		}
 		
 	}
 }
-public CL_ProfileBan(){
+public CL_ProfileBan(id,level,cid){
 	
 	if(get_pcvar_num(OS_System)>EOS){
-		new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
 		
+		//new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
+		if (!cmd_access(id, level, cid, 1)){
+			return PLUGIN_HANDLED
+		}
 		new reason[32],FirstArg[32],SecondArg[32],varget3[50],varget4[50]
 		new AddressHLDS[32],stringbuffer[1000],varget[100],StringArg[100],seconds
 		
@@ -911,10 +940,10 @@ public CL_ProfileBan(){
 		new player = cmd_target(id,FirstArg,(CMDTARGET_NO_BOTS))
 		
 		if(equal(FirstArg,"") || equal(SecondArg,"") || equal(StringArg,"")){
-			console_print(id,"%s: shield_os_ban <name> <reason> <seconds>",prefixos)
+			console_print(id,"%s: %s <name> <reason> <seconds>",prefixos,Argv())
 			return PLUGIN_HANDLED
 		}
-		if(!is_user_connected(player)){
+		if(!player || !is_user_connected(player)){
 			console_print(id,"%s: i don't found userid/name",prefixos)
 			return PLUGIN_HANDLED
 		}
@@ -941,7 +970,10 @@ public CL_ProfileBan(){
 		formatex(stringbuffer,charsmax(stringbuffer),"%s/banuser.php?usertabel=%s&userserver=%s&timeban=%d",urlcache,varget,AddressHLDS,seconds)
 		show_motd(player,stringbuffer,"Counter-Strike")
 		client_cmd(player,"spk doop")
-		client_print_color(EOS,EOS,"^4%s^1 User ^4^"%s^"^1 address: ^4^"%s^"^1 banned with reason ^4^"%s^"^1 [ID:^4Cookie Ban^1]",prefixos,UserName(player),PlayerIP(player),SecondArg)
+		client_print_color(EOS,EOS,"^1 %s Admin : ^4^"%s^"^1 executed ^4^"%s^"^1 on User :^4^"%s^"^1",prefixos,UserName(id),Argv(),UserName(player))
+		client_print_color(EOS,EOS,"^1 %s Address: ^4^"%s^"^1 / SteamID: ^4^"%s^"^1",prefixos,PlayerIP(player),BufferSteamID(player))
+		client_print_color(EOS,EOS,"^1 %s Reason :^4^"%s^"^1 / Time :^4^"%s^"^1",prefixos,SecondArg,convertortime)
+		client_print_color(EOS,EOS,"^1 %s ID : ^4Cookie Ban^1",prefixos)
 		
 		log_to_file(LogOSExecuted,"----------------------------------------------------------------------")
 		log_to_file(LogOSExecuted,"%s UserName: ^"%s^"",prefixos,UserName(player),PlayerIP(player))
@@ -963,7 +995,7 @@ public CL_ProfileBan(){
 		}
 		set_task(3.0,"PlayerDisconnect",player)
 		if(get_pcvar_num(CvarOSBanIPAddress)>=0){
-			server_cmd("shield_ban %s ProtectOS_UserHaveBanned 1",UserName(id),get_pcvar_num(OSBanDetectedTime))
+			server_cmd("%s %s ProtectOS_UserHaveBanned 1",CommandNameExecute,UserName(id),get_pcvar_num(OSBanDetectedTime))
 		}
 	}
 	return PLUGIN_CONTINUE
@@ -1401,7 +1433,7 @@ public PfnClientPutInServer(id){
 		if(file_exists(getfileorg)){
 			read_file(getfileorg,EOS,szfile1,charsmax(szfile1),len)
 		}
-		Send_CalculationsTimeBan(0,1,getfileorg)
+		Send_CalculationsTimeBan(EOS,1,getfileorg)
 		
 		new IntFileNumber = abs(str_to_num(szfile1)) // to int
 		new RealClock = str_to_num(GetTimeReal) // to int
@@ -1815,7 +1847,10 @@ public PfnClientCommand(id){
 }
 public RegisterCmdFake()
 {
-	if(!strlen(Argv1())){server_print("shield_addcmd_fake <string> <1=concmd/2=srvcmd>");return PLUGIN_HANDLED;}
+	if(!strlen(Argv1())){
+		server_print("%s %s <string> <1=concmd/2=srvcmd>",PrefixProtection,Argv())
+		return PLUGIN_HANDLED
+	}
 	if(containi(Argv2(),"1") != -0x01){
 		register_concmd(Argv1(),"FakeFunction")
 		server_print("Command ^"%s^" registred in concmd (%s)",Argv1(),Argv2())
@@ -1830,7 +1865,7 @@ public RegisterCmdFake()
 			
 		}
 		else{
-			server_print("shield_addcmd_fake <string> <1=concmd/2=srvcmd>")
+			server_print("%s %s <string> <1=concmd/2=srvcmd>",PrefixProtection,Argv())
 			return PLUGIN_HANDLED
 		}
 	}
@@ -1841,7 +1876,7 @@ public FakeFunction(){return PLUGIN_HANDLED;}
 public RegisterFakeCvar()
 {
 	if(!strlen(Argv1())){
-		server_print("%s shield_fake_cvar <cvar name> <value>",PrefixProtection)
+		server_print("%s %s <cvar name> <value>",PrefixProtection,Argv())
 		return PLUGIN_HANDLED
 	}
 	server_print("%s Cvar ^"%s^" with value ^"%s^" registred",PrefixProtection,Argv1(),Argv2())
@@ -1854,7 +1889,7 @@ public RegisterRemoveString()
 	new deletestring[a_max]
 	formatex(deletestring,charsmax(deletestring),"^n",Argv1())
 	if(!strlen(Argv1()) ){
-		server_print("%s shield_remove_string <string>",PrefixProtection)
+		server_print("%s %s <string>",PrefixProtection,Argv())
 		return PLUGIN_HANDLED
 	}
 	okapi_engine_replace_string(Argv1(),deletestring)
@@ -1865,7 +1900,7 @@ public RegisterRemoveString()
 public RegisterReplaceString()
 {
 	if(!strlen(Argv1())){
-		server_print("%s shield_replace_string <old string> <new string>",PrefixProtection)
+		server_print("%s %s <old string> <new string>",PrefixProtection,Argv())
 		return PLUGIN_HANDLED
 	}
 	server_print("%s Replaced : ^"%s^" --> ^"%s^"",PrefixProtection,Argv1(),Argv2())
