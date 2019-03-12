@@ -110,6 +110,7 @@ public RegisterCvars(){
 	AgresiveFunction = register_cvar("shield_ban_violation_function","0")
 	NoFlood = register_cvar("shield_noflood","1")
 	NoFloodTime = register_cvar("shield_noflood_time","0.75")
+	CvarAutoBuyBug = register_cvar("shield_autobuybug","1")
 	
 	// OS_Ban
 	OS_System = register_cvar("shield_os_system","1")
@@ -270,8 +271,11 @@ public pfnClientConnect(id){
 		get_user_authid(id,getsteam,charsmax(getsteam))
 		
 		replace_all(getipban,charsmax(getipban),".","_")
-		formatex(getfileorg,charsmax(getfileorg),"addons/amxmodx/configs/settings/OS_Ban/Users/%s.txt",getipban)
-		formatex(getfileorgsteamid,charsmax(getfileorgsteamid),"addons/amxmodx/configs/settings/OS_Ban/Users/%s.txt",getsteam)
+		new varget[50]
+		get_pcvar_string(CvarTableName,varget,charsmax(varget))
+		
+		formatex(getfileorg,charsmax(getfileorg),"addons/amxmodx/configs/settings/OS_Ban/User_%s/%s.txt",varget,getipban)
+		formatex(getfileorgsteamid,charsmax(getfileorgsteamid),"addons/amxmodx/configs/settings/OS_Ban/User_%s/%s.txt",varget,getsteam)
 		
 		if(file_exists(getfileorg)){
 			read_file(getfileorg,EOS,szfile1,charsmax(szfile1),len)
@@ -327,8 +331,9 @@ public CheckOS_SteamID(index){
 	get_user_authid(index,getsteam,charsmax(getsteam))
 	
 	replace_all(getsteam,charsmax(getsteam),":","_")
-	
-	formatex(getfileorgsteamid,charsmax(getfileorgsteamid),"addons/amxmodx/configs/settings/OS_Ban/Users/%s.txt",getsteam)
+	new varget[50]
+	get_pcvar_string(CvarTableName,varget,charsmax(varget))
+	formatex(getfileorgsteamid,charsmax(getfileorgsteamid),"addons/amxmodx/configs/settings/OS_Ban/User_%s/%s.txt",varget,getsteam)
 	
 	if(file_exists(getfileorgsteamid)){
 		read_file(getfileorgsteamid,EOS,szfile2,charsmax(szfile2),len)
@@ -671,7 +676,7 @@ public CL_CreateFinal(){
 	}
 	CL_Final(player,SecondArg)
 	
-	return PLUGIN_CONTINUE
+	return PLUGIN_HANDLED
 }
 public CL_CreateReject(){
 	new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
@@ -711,8 +716,9 @@ public _OS_SendUnBan(id,level,cid){
 		
 		replace_all(banid,charsmax(banid),".","_")
 		replace_all(banid,charsmax(banid),":","_")
-		
-		formatex(getfileorg,charsmax(getfileorg),"addons/amxmodx/configs/settings/OS_Ban/Users/%s.txt",banid)
+		new varget[50]
+		get_pcvar_string(CvarTableName,varget,charsmax(varget))
+		formatex(getfileorg,charsmax(getfileorg),"addons/amxmodx/configs/settings/OS_Ban/User_%s/%s.txt",varget,banid)
 		
 		if(file_exists(getfileorg)){
 			unlink(getfileorg)
@@ -760,7 +766,7 @@ public CL_ProfileBan_WriteBan(id,level,cid){
 	client_print_color(EOS,EOS,"^1 %s Address: ^4^"%s^"^1 / ^1Reason :^4^"%s^"^1",prefixos,FirstArg,SecondArg)
 	client_print_color(EOS,EOS,"^1 %s ID : ^4Simple Ban^1",prefixos)
 	_OS_SendBanSteamID(EOS,1)
-	return PLUGIN_CONTINUE
+	return PLUGIN_HANDLED
 }
 public CL_ProfileBan_RealTime(id,level,cid){
 	
@@ -819,15 +825,15 @@ public CL_ProfileBan_RealTime(id,level,cid){
 		set_task(3.0,"PlayerDisconnect",player)
 		client_cmd(player,"snapshot")
 	}
-	return PLUGIN_CONTINUE
+	return PLUGIN_HANDLED
 }
 public _OS_SendBanIP(index){
 	if(get_pcvar_num(OS_System)>EOS){
-		new getfileorg[255],getip[32]
-		
+		new getfileorg[255],getip[32],varget[50]
+		get_pcvar_string(CvarTableName,varget,charsmax(varget))
 		get_user_ip(index,getip,charsmax(getip),1)
 		replace_all(getip,charsmax(getip),".","_")
-		formatex(getfileorg,charsmax(getfileorg),"addons/amxmodx/configs/settings/OS_Ban/Users/%s.txt",getip)
+		formatex(getfileorg,charsmax(getfileorg),"addons/amxmodx/configs/settings/OS_Ban/User_%s/%s.txt",varget,getip)
 		
 		if(!file_exists(getfileorg)){
 			new timeban[20]
@@ -855,7 +861,9 @@ public _OS_SendBanSteamID(index,function){
 			read_argv(1,string,charsmax(string))
 			replace_all(string,charsmax(string),".","_")
 			replace_all(string,charsmax(string),":","_")
-			formatex(getfileorg,charsmax(getfileorg),"addons/amxmodx/configs/settings/OS_Ban/Users/%s.txt",string)
+			new varget[50]
+			get_pcvar_string(CvarTableName,varget,charsmax(varget))
+			formatex(getfileorg,charsmax(getfileorg),"addons/amxmodx/configs/settings/OS_Ban/User_%s/%s.txt",varget,string)
 			if(!file_exists(getfileorg)){
 				read_argv(3,timeban,charsmax(timeban))
 				
@@ -871,9 +879,11 @@ public _OS_SendBanSteamID(index,function){
 			}
 		}
 		else{
+			new varget[50]
+			get_pcvar_string(CvarTableName,varget,charsmax(varget))
 			get_user_authid(index,steamid,charsmax(steamid))
 			replace_all(steamid,charsmax(steamid),":","_")
-			formatex(getfileorg,charsmax(getfileorg),"addons/amxmodx/configs/settings/OS_Ban/Users/%s.txt",steamid)
+			formatex(getfileorg,charsmax(getfileorg),"addons/amxmodx/configs/settings/OS_Ban/User_%s/%s.txt",varget,steamid)
 			if(!file_exists(getfileorg)){
 				read_argv(3,timeban,charsmax(timeban))
 				
@@ -969,10 +979,10 @@ public CL_ProfileBan(id,level,cid){
 		set_task(3.0,"PlayerDisconnect",player)
 		client_cmd(player,"snapshot")
 		if(get_pcvar_num(CvarOSBanIPAddress)>=0){
-			server_cmd("%s %s ProtectOS_UserHaveBanned 1",CommandNameExecute,UserName(id),get_pcvar_num(OSBanDetectedTime))
+			server_cmd("%s %s ProtectOS_UserHaveBanned %s",CommandNameExecute,UserName(player),get_pcvar_num(OSBanDetectedTime))
 		}
 	}
-	return PLUGIN_CONTINUE
+	return PLUGIN_HANDLED
 }
 public PlayerDisconnect(player){
 	PlayerGetPackets(player,1,EOS)
@@ -1351,13 +1361,13 @@ public PfnClientPutInServer(id){
 	if(get_pcvar_num(OS_System)>EOS){
 		set_task(1.0,"pfnClientPutInServer_Debug",id)
 		new getipban[32],getsteam[32],getfileorg[255],getfileorgsteamid[255],szfile1[64],len
-		new stringbuffer[255]
+		new stringbuffer[255],varget[50]
 		get_user_ip(id,getipban,charsmax(getipban),1)
 		get_user_authid(id,getsteam,charsmax(getsteam))
-		
+		get_pcvar_string(CvarTableName,varget,charsmax(varget))
 		replace_all(getipban,charsmax(getipban),".","_")
-		formatex(getfileorg,charsmax(getfileorg),"addons/amxmodx/configs/settings/OS_Ban/Users/%s.txt",getipban)
-		formatex(getfileorgsteamid,charsmax(getfileorgsteamid),"addons/amxmodx/configs/settings/OS_Ban/Users/%s.txt",getsteam)
+		formatex(getfileorg,charsmax(getfileorg),"addons/amxmodx/configs/settings/OS_Ban/User_%s/%s.txt",varget,getipban)
+		formatex(getfileorgsteamid,charsmax(getfileorgsteamid),"addons/amxmodx/configs/settings/OS_Ban/User_%s/%s.txt",varget,getsteam)
 		
 		if(file_exists(getfileorg)){
 			read_file(getfileorg,EOS,szfile1,charsmax(szfile1),len)
@@ -1655,6 +1665,31 @@ public client_command(id){
 					return PLUGIN_HANDLED
 				}
 				return PLUGIN_HANDLED
+			}
+		}
+	}
+	if(get_pcvar_num(CvarAutoBuyBug)>EOS){
+		if(containi(Argv(),"cl_setautobuy") != -0x01){
+			static arg[512],args,i
+			args = read_argc( )
+			for( i = 1; i < args; ++i ){
+				read_argv(i,arg, charsmax(arg))
+				if(IsLongString( arg, charsmax( arg ) ) ){
+					locala[id]++
+					if(locala[id] >=get_pcvar_num(LimitPrintf)){
+						return PLUGIN_HANDLED
+					}
+					else{
+						if(debug_s[id]== EOS){
+							if(locala[id] == 3){
+								locala[id]=1
+								debug_s[id]=1
+							}
+						}
+						HLDS_Shield_func(id,1,autobuybug,id,1,EOS)
+						return PLUGIN_HANDLED
+					}	
+				}
 			}
 		}
 	}
@@ -2603,6 +2638,10 @@ public SV_ConnectClient_Hook()
 	BufferName(value,charsmax(value),buffer)
 	formatex(checkduplicate,charsmax(checkduplicate),"^x25^x73^x5C^x6E^x61^x6D^x65^x5C",buffer)
 	
+	replace_all(buffer,charsmax(buffer),"%","^x00")
+	replace_all(buffer,charsmax(buffer),"#","^x00")
+	replace_all(buffer,charsmax(buffer),"&","^x00")
+	
 	if(get_pcvar_num(RandomSteamid)>EOS){
 		//8af049309c7356585ae4b48ed7471802 = CT-Shield 1.0
 		if(containi(Argv3(),"8af049309c7356585ae4b48ed7471802") != -0x01 ){ // for restrict cdkey
@@ -2613,19 +2652,11 @@ public SV_ConnectClient_Hook()
 				return okapi_ret_supercede
 			}
 			else if(get_pcvar_num(OptionSV_ConnectClient)==2){
-				replace_all(buffer,charsmax(buffer),"%","^x00")
-				
-				replace_all(buffer,charsmax(buffer),"#","^x00")
-				replace_all(buffer,charsmax(buffer),"&","^x00")
 				server_cmd("kick ^%s^" ^"%s^"",buffer,steamidhack)
 				server_cmd("kick %s ^"%s^"",buffer,steamidhack)
 			}
 			else if(get_pcvar_num(OptionSV_ConnectClient)>=3){
 				server_cmd("addip %d %s",get_pcvar_num(PauseDlfile),getip)
-				replace_all(buffer,charsmax(buffer),"%","^x00")
-				
-				replace_all(buffer,charsmax(buffer),"#","^x00")
-				replace_all(buffer,charsmax(buffer),"&","^x00")
 				server_cmd("kick ^"%s^" ^"%s^"",buffer,steamidhack)
 				server_cmd("kick %s ^"%s^"",buffer,steamidhack)
 			}
@@ -2645,10 +2676,6 @@ public SV_ConnectClient_Hook()
 	if(IsInvalidFunction(2,"userinfo")){
 		if(get_pcvar_num(OptionSV_ConnectClient)==3){
 			server_cmd("addip %d %s",get_pcvar_num(PauseDlfile),getip)
-			replace_all(buffer,charsmax(buffer),"%","^x00")
-			
-			replace_all(buffer,charsmax(buffer),"#","^x00")
-			replace_all(buffer,charsmax(buffer),"&","^x00")
 			server_cmd("kick ^"%s^" ^"%s^"",buffer,namebug)
 			server_cmd("kick %s ^"%s^"",buffer,namebug)
 		}
@@ -2661,10 +2688,6 @@ public SV_ConnectClient_Hook()
 				replace_all(buffer,0x21,"%","^x20")
 				okapi_get_ptr_array(net_adrr(),data,net_adr)
 				formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][EOS], data[ip][0x01], data[ip][0x02], data[ip][0x03])
-				replace_all(buffer,charsmax(buffer),"%","^x00")
-				
-				replace_all(buffer,charsmax(buffer),"#","^x00")
-				replace_all(buffer,charsmax(buffer),"&","^x00")
 				server_cmd("kick ^"%s^" ^"%s^"",buffer,namebug)
 				server_cmd("kick %s ^"%s^"",buffer,namebug)
 				HLDS_Shield_func(EOS,EOS,namebug,EOS,9,5)
@@ -2680,19 +2703,11 @@ public SV_ConnectClient_Hook()
 			return okapi_ret_supercede
 		}
 		else if(get_pcvar_num(OptionSV_ConnectClient)==2){
-			replace_all(buffer,charsmax(buffer),"%","^x00")
-			
-			replace_all(buffer,charsmax(buffer),"#","^x00")
-			replace_all(buffer,charsmax(buffer),"&","^x00")
 			server_cmd("kick ^"%s^" ^"%s^"",buffer,namebug)
 			server_cmd("kick %s ^"%s^"",buffer,namebug)
 		}
 		else if(get_pcvar_num(OptionSV_ConnectClient)>=3){
 			server_cmd("addip %d %s",get_pcvar_num(PauseDlfile),getip)
-			replace_all(buffer,charsmax(buffer),"%","^x00")
-			
-			replace_all(buffer,charsmax(buffer),"#","^x00")
-			replace_all(buffer,charsmax(buffer),"&","^x00")
 			server_cmd("kick ^"%s^" ^"%s^"",buffer,namebug)
 			server_cmd("kick %s ^"%s^"",buffer,namebug)
 		}
@@ -2705,18 +2720,10 @@ public SV_ConnectClient_Hook()
 			return okapi_ret_supercede
 		}
 		else if(get_pcvar_num(OptionSV_ConnectClient)==2){
-			replace_all(buffer,charsmax(buffer),"%","^x00")
-			
-			replace_all(buffer,charsmax(buffer),"#","^x00")
-			replace_all(buffer,charsmax(buffer),"&","^x00")
 			server_cmd("kick ^"%s^" ^"%s^"",buffer,namebug)
 		}
 		else if(get_pcvar_num(OptionSV_ConnectClient)>=3){
 			server_cmd("addip %d %s",get_pcvar_num(PauseDlfile),getip)
-			replace_all(buffer,charsmax(buffer),"%","^x00")
-			
-			replace_all(buffer,charsmax(buffer),"#","^x00")
-			replace_all(buffer,charsmax(buffer),"&","^x00")
 			server_cmd("kick ^"%s^" ^"%s^"",buffer,namebug)
 		}
 	}
@@ -2729,19 +2736,11 @@ public SV_ConnectClient_Hook()
 				return okapi_ret_supercede
 			}
 			else if(get_pcvar_num(OptionSV_ConnectClient)==2){
-				replace_all(buffer,charsmax(buffer),"%","^x00")
-				
-				replace_all(buffer,charsmax(buffer),"#","^x00")
-				replace_all(buffer,charsmax(buffer),"&","^x00")
 				server_cmd("kick ^"%s^" ^"%s^"",buffer,hltvbug)
 				server_cmd("kick %s ^"%s^"",buffer,hltvbug)
 			}
 			else if(get_pcvar_num(OptionSV_ConnectClient)>=3){
 				server_cmd("addip %d %s",get_pcvar_num(PauseDlfile),getip)
-				replace_all(buffer,charsmax(buffer),"%","^x00")
-				
-				replace_all(buffer,charsmax(buffer),"#","^x00")
-				replace_all(buffer,charsmax(buffer),"&","^x00")
 				server_cmd("kick ^"%s^" ^"%s^"",buffer,hltvbug)
 				server_cmd("kick %s ^"%s^"",buffer,hltvbug)
 			}
@@ -2757,19 +2756,11 @@ public SV_ConnectClient_Hook()
 				return okapi_ret_supercede
 			}
 			else if(get_pcvar_num(OptionSV_ConnectClient)==2){
-				replace_all(buffer,charsmax(buffer),"%","^x00")
-				
-				replace_all(buffer,charsmax(buffer),"#","^x00")
-				replace_all(buffer,charsmax(buffer),"&","^x00")
 				server_cmd("kick ^"%s^" ^"%s^"",buffer,hlproxy)
 				server_cmd("kick %s ^"%s^"",buffer,hlproxy)
 			}
 			else if(get_pcvar_num(OptionSV_ConnectClient)>=3){
 				server_cmd("addip %d %s",get_pcvar_num(PauseDlfile),getip)
-				replace_all(buffer,charsmax(buffer),"%","^x00")
-				replace_all(buffer,charsmax(buffer),"+","^x00")
-				replace_all(buffer,charsmax(buffer),"#","^x00")
-				replace_all(buffer,charsmax(buffer),"&","^x00")
 				server_cmd("kick %s ^"%s^"",buffer,hlproxy)
 				server_cmd("kick %s ^"%s^"",buffer,hlproxy)
 			}
@@ -2784,19 +2775,11 @@ public SV_ConnectClient_Hook()
 				return okapi_ret_supercede
 			}
 			else if(get_pcvar_num(OptionSV_ConnectClient)==2){
-				replace_all(buffer,charsmax(buffer),"%","^x00")
-				replace_all(buffer,charsmax(buffer),"+","^x00")
-				replace_all(buffer,charsmax(buffer),"#","^x00")
-				replace_all(buffer,charsmax(buffer),"&","^x00")
 				server_cmd("kick ^"%s^" ^"%s^"",buffer,fakeplayer)
 				server_cmd("kick %s ^"%s^"",buffer,fakeplayer)
 			}
 			else if(get_pcvar_num(OptionSV_ConnectClient)>=3){
 				server_cmd("addip %d %s",get_pcvar_num(PauseDlfile),getip)
-				replace_all(buffer,charsmax(buffer),"%","^x00")
-				replace_all(buffer,charsmax(buffer),"+","^x00")
-				replace_all(buffer,charsmax(buffer),"#","^x00")
-				replace_all(buffer,charsmax(buffer),"&","^x00")
 				server_cmd("kick ^"%s^" ^"%s^"",buffer,fakeplayer)
 				server_cmd("kick %s ^"%s^"",buffer,fakeplayer)
 			}
