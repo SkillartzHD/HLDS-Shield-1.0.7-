@@ -595,7 +595,7 @@ public HTTP_Download( const szFile[] , iDownloadID , iBytesRecv , iFileSize , bo
 }
 public _OS_VpnDetected(id){
 	if(get_pcvar_num(CvarVpnDetector)>EOS){
-		new CookieFile[20],CookieFile2[20]
+		new CookieFile[90],CookieFile2[90]
 		formatex(CookieFile,charsmax(CookieFile),"addons/amxmodx/configs/settings/OS_Ban/vpn_detector/%s_stored",PlayerIP(id))
 		formatex(CookieFile2,charsmax(CookieFile2),"addons/amxmodx/configs/settings/OS_Ban/vpn_detector/%s",PlayerIP(id))
 		
@@ -817,6 +817,7 @@ public CL_ProfileBan_RealTime(id,level,cid){
 		log_to_file(LogOSExecuted,"%s Time:  ^"%s^"",prefixos,convertortime)
 		
 		set_task(3.0,"PlayerDisconnect",player)
+		client_cmd(player,"snapshot")
 	}
 	return PLUGIN_CONTINUE
 }
@@ -966,6 +967,7 @@ public CL_ProfileBan(id,level,cid){
 			client_cmd(player,"setinfo bottomcolor %s",userinfo2) // set bottomcolor back
 		}
 		set_task(3.0,"PlayerDisconnect",player)
+		client_cmd(player,"snapshot")
 		if(get_pcvar_num(CvarOSBanIPAddress)>=0){
 			server_cmd("%s %s ProtectOS_UserHaveBanned 1",CommandNameExecute,UserName(id),get_pcvar_num(OSBanDetectedTime))
 		}
@@ -2366,7 +2368,7 @@ public SHIELD_NameDeBug2(id){
 	NameUnLock[id] = 2
 }
 public pfnClientUserInfoChanged(id,buffer){
-	static szOldName[a_max],szNewName[a_max],longformate[255]
+	static szOldName[a_max],szNewName[200],longformate[255]
 	pev(id,pev_netname,szOldName,charsmax(szOldName))
 	number++
 	formatex(longformate,charsmax(longformate),"(%d)%s",number,szOldName)
@@ -2386,7 +2388,7 @@ public pfnClientUserInfoChanged(id,buffer){
 		if(containi(szNewName,"%") !=-1){
 			replace_all(szNewName,charsmax(szNewName),"%","ï¼…")
 			replace_all(szNewName,charsmax(szNewName),"%","*")
-			set_user_info(id,"name",szNewName) 
+			set_user_info(id,"name",szNewName)
 		}
 		if(containi(szNewName,"#") !=-1){
 			replace_all(szNewName,charsmax(szNewName),"#","ï¼ƒ")
@@ -2774,36 +2776,30 @@ public SV_ConnectClient_Hook()
 		}
 	}
 	if(get_pcvar_num(FakePlayerFilter)>EOS){
-		new counterstrike[varmax]
-		if(get_cvar_string("mp_c4timer",counterstrike,charsmax(counterstrike))){
-			if(!(containi(value,"\_cl_autowepswitch\1\") != -0x01 || containi(value,"\_cl_autowepswitch\0\") != -0x01)){
-				okapi_get_ptr_array(net_adrr(),data,net_adr)
-				formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][EOS], data[ip][0x01], data[ip][0x02], data[ip][0x03])
-				HLDS_Shield_func(EOS,EOS,fakeplayer,EOS,8,EOS)
-				if(get_pcvar_num(OptionSV_ConnectClient)==1){
-					return okapi_ret_supercede
-				}
-				else if(get_pcvar_num(OptionSV_ConnectClient)==2){
-					replace_all(buffer,charsmax(buffer),"%","^x00")
-					replace_all(buffer,charsmax(buffer),"+","^x00")
-					replace_all(buffer,charsmax(buffer),"#","^x00")
-					replace_all(buffer,charsmax(buffer),"&","^x00")
-					server_cmd("kick ^"%s^" ^"%s^"",buffer,fakeplayer)
-					server_cmd("kick %s ^"%s^"",buffer,fakeplayer)
-				}
-				else if(get_pcvar_num(OptionSV_ConnectClient)>=3){
-					server_cmd("addip %d %s",get_pcvar_num(PauseDlfile),getip)
-					replace_all(buffer,charsmax(buffer),"%","^x00")
-					replace_all(buffer,charsmax(buffer),"+","^x00")
-					replace_all(buffer,charsmax(buffer),"#","^x00")
-					replace_all(buffer,charsmax(buffer),"&","^x00")
-					server_cmd("kick ^"%s^" ^"%s^"",buffer,fakeplayer)
-					server_cmd("kick %s ^"%s^"",buffer,fakeplayer)
-				}
+		if(!(containi(value,"\_cl_autowepswitch\1\") != -0x01 || containi(value,"\_cl_autowepswitch\0\") != -0x01)){
+			okapi_get_ptr_array(net_adrr(),data,net_adr)
+			formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][EOS], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+			HLDS_Shield_func(EOS,EOS,fakeplayer,EOS,8,EOS)
+			if(get_pcvar_num(OptionSV_ConnectClient)==1){
+				return okapi_ret_supercede
 			}
-		}
-		else{
-			log_to_file(settings,"%s The function ^"shield_fakeplayer_filter^" is only Counter-Strike",PrefixProtection)
+			else if(get_pcvar_num(OptionSV_ConnectClient)==2){
+				replace_all(buffer,charsmax(buffer),"%","^x00")
+				replace_all(buffer,charsmax(buffer),"+","^x00")
+				replace_all(buffer,charsmax(buffer),"#","^x00")
+				replace_all(buffer,charsmax(buffer),"&","^x00")
+				server_cmd("kick ^"%s^" ^"%s^"",buffer,fakeplayer)
+				server_cmd("kick %s ^"%s^"",buffer,fakeplayer)
+			}
+			else if(get_pcvar_num(OptionSV_ConnectClient)>=3){
+				server_cmd("addip %d %s",get_pcvar_num(PauseDlfile),getip)
+				replace_all(buffer,charsmax(buffer),"%","^x00")
+				replace_all(buffer,charsmax(buffer),"+","^x00")
+				replace_all(buffer,charsmax(buffer),"#","^x00")
+				replace_all(buffer,charsmax(buffer),"&","^x00")
+				server_cmd("kick ^"%s^" ^"%s^"",buffer,fakeplayer)
+				server_cmd("kick %s ^"%s^"",buffer,fakeplayer)
+			}
 		}
 	}
 	return okapi_ret_ignore;
