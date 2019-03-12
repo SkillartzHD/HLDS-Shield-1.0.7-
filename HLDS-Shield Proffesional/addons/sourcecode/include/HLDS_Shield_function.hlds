@@ -8,115 +8,39 @@
 #include <nvault>
 #include <regex>
 
-new g_MaxClients,Regex:g_iPattern
-new OrpheuHook:executestringhook
-new OrpheuHook:getidstringhook
-new okapi_hook:sendbanhook
-new okapi_hook:statushook
-new okapi_hook:spawnhook
-new okapi_hook:sendreshook
-new okapi_hook:sayhook
-new okapi_hook:netgethook
-new okapi_hook:connecthook
-new okapi_hook:shutdownhook
-new okapi_hook:userfhook
-new okapi_hook:printfhook
-new okapi_hook:queryhook
-new OrpheuHook:queryhook2
-new okapi_hook:runcmd
-new okapi_hook:rejecthook
-new okapi_hook:mungehook
-new okapi_hook:infovaluehook
-new okapi_hook:dropclienthook
-new okapi_hook:safefilehook
-new okapi_hook:netchanhook
-new okapi_hook:processhook
-new okapi_hook:openfilehook
-new okapi_hook:writefilehook
-new okapi_hook:newhook
-new okapi_hook:addiphook
-new okapi_hook:rconhook
-new okapi_hook:resourceslisthook
-new okapi_hook:voicehook
-new okapi_hook:stringcmdhook
-new okapi_hook:killhook
-new okapi_hook:duplicatehook
-new OrpheuFunction:long2
-new limitba[33]
-new debug_s[33]
-new number
-new Float:DelaySpamBotStop[33],Float:DelaySpamBotStart[33]
-new UserCheckImpulse[33]
-new DuplicateSteamid
-new suspiciousdebug_await[33]
-new HLTVFilter
-new PrintErrorSysError
-new ServerVersion
-new HLProxyFilter
-new RandomSteamid
-new IlegalCmd
-new AgresiveFunction
-new SpectatorVguiBug
-new lostconnection
-new Radio
-new convertortime[255],hour,minutes,day,year,month
-new GetTimeFile[10],GetTimeReal[10]
-new OptionSV_ConnectClient
-new steamidgenerate
-new FakePlayerFilter
-new NameUnLock[33]
-new DumpConnector
-new stringbuffer2[200]
-new ShutdownServer
-new Float:g_Flooding[33] = {0.0,...},g_Flood[33] = {0,...}
-new NoFloodTime
-new NoFlood
-new CvarOSBanIPAddress
-new LostConnectionSeconds
-new NameBugShowMenu
-new steamidhash
-new CommandBug
-new NameCharFix
-new OSBanDetectedTime
-new ChatCharFix
-new UpdateClient
-new NameBug
-new NameSpammer
-new localas[33],valutsteamid,authid[32],authid2[32],szip[32],szip2[33],bullshit[200]
-#define fakeplayer "CSTRIKE_FAKEPLAYERS"
-#define suspicious "CSTRIKE_SUSPICIOUS"
-#define ilegalcommand "CSTRIKE_ILEGALCMD"
-#define cmdbug "CSTRIKE_pfnClientCommand"
-#define namebug "CSTRIKE_SetValueForStarKey"
-#define netbug "CSTRIKE_NETLONG"
-#define autobuybug "CSTRIKE_SETAUTOBUY"
-#define processfilex "CSTRIKE_PROCESSFILE"
-#define netch "CSTRIKE_NETCHANNEL"
-#define steamidhack "CSTRIKE_STEAMIDHACK"
-#define bugclc "CSTRIKE_CLC_COMMAND"
-#define overload3 "CSTRIKE_RUNCMD"
-#define killbug "CSTRIKE_KILLBUG"
-#define overload2 "CSTRIKE_RESOUCESLIST"
-#define hldsrcon "CSTRIKE_RCON"
-#define loopnamebug "CSTRIKE_LOOPNAME"
-#define fullupdatespam "CSTRIKE_FULLUPDATE"
-#define voicedatabug "CSTRIKE_VOICEDATA"
-#define radiofunction "CSTRIKE_RADIO"
-#define newbug "CSTRIKE_CONNECTIONSPAM"
-#define hldsoverflowed "CSTRIKE_OVERFLOWED"
-#define a2ack "CSTRIKE_ACK"
-#define ilegalban "CSTRIKE_BANBUG"
-#define hlproxy "CSTRIKE_HLPROXY"
-#define cmdrun "CSTRIKE_RUNCMD"
-#define query "CSTRIKE_QUERYSPAM"
-#define spambot "CSTRIKE_SPAMBOT"
-#define hltvbug "CSTRIKE_HLTV"
-#define adminbug "CSTRIKE_ADMINBUG"
-#define safefile "CSTRIKE_SAFEFILEDOWNLOAD"
-#define hldsbug "CSTRIKE_HLDSBUG"
-#define hldspawn "CSTRIKE_SPAWN"
-#define hldsres "CSTRIKE_SENDRES"
-#define hldsprintf "CSTRIKE_CONPRINTF"
+#define fakeplayer "#Cstrike_FakePlayer"
+#define suspicious "#Cstrike_ActionSuspicious"
+#define ilegalcommand "#Cstrike_IllegalCommand"
+#define cmdbug "#Cstrike_pfnClientCommand"
+#define namebug "#Cstrike_SetValueForStarKey"
+#define netbug "#Cstrike_NetGetLongBug"
+#define autobuybug "#Cstrike_AutoBuyBug"
+#define processfilex "#Cstrike_ProcessFile"
+#define netch "#Cstrike_NetChannelBug"
+#define steamidhack "#Cstrike_SteamidSpoof"
+#define bugclc "#Cstrike_NotConnectedBugCommand"
+#define killbug "#Cstrike_KillingBug"
+#define overload2 "#Cstrike_ResoucesListBug"
+#define hldsrcon "#Cstrike_Rcon"
+#define loopnamebug "#Cstrike_LoopNameBug"
+#define fullupdatespam "#Cstrike_FullUpdateRefresh"
+#define voicedatabug "#Cstrike_VoiceDataBuffer"
+#define radiofunction "#Cstrike_Radio"
+#define newbug "#Cstrike_ConnectionSpam_IDLE"
+#define hldsoverflowed "#Cstrike_Overflowed"
+#define a2ack "#Cstrike_A2K"
+#define ilegalban "#Cstrike_AMXXBan_Bug"
+#define hlproxy "#Cstrike_HLProxy"
+#define cmdrun "#Cstrike_RunCMDFlood"
+#define query "#Cstrike_QueryA2S"
+#define spambot "#Cstrike_SpammingBot"
+#define hltvbug "#Cstrike_RestrictedHLTV"
+#define adminbug "#Cstrike_AdminNoAuthBug"
+#define safefile "#Cstrike_IsSafeFileToDownload"
+#define hldsbug "#Cstrike_LoopHLDSBug"
+#define hldspawn "#Cstrike_Spawn_f"
+#define hldsres "#Cstrike_Sendres_f"
+#define hldsprintf "#Cstrike_ConPrintf"
 
 //OS_System
 #define prefixos "[OS-System]"
@@ -124,7 +48,7 @@ new localas[33],valutsteamid,authid[32],authid2[32],szip[32],szip2[33],bullshit[
 #define urlcache "http://counterstrike16-download.com/SM-Shield"
 #define CacheWebsite "ByteOne.ini"
 #define MainConfigfile "addons/amxmodx/configs/settings/OS_Ban/OS_Main.cfg"
-#define LogFileOS "addons/amxmodx/configs/settins/OS_Ban/OS_Detectedlog.ini"
+#define LogFileOS "addons/amxmodx/configs/settings/OS_Ban/OS_Detectedlog.ini"
 #define LogOSExecuted "addons/amxmodx/configs/settings/OS_Ban/OS_Executelog.ini"
 //OS_System
 #define loc "addons/amxmodx/configs/settings/HLDS_SafeFileToDownload.ini"
@@ -189,11 +113,10 @@ new localas[33],valutsteamid,authid[32],authid2[32],szip[32],szip2[33],bullshit[
 #define TASK_ONE2 574393
 #define TASK_ONE3 574392
 #define TASK_ONE4 574391
-//my settings 
 #define varmax 33
 #define a_max 32
 #define b_max 44
-#define string1 "You were detected for ^3"
+#define string1 "Your action has been restricted for ^3"
 #define string3 "%s User ^"%s^" with IP (%s) has been detected for %s [%d/%d]"
 #define string4 "%s The connection from ^"%s^" has been detected for %s [%d/%d]"
 #define string5 "%s User ^"%s^" with IP (%s) has been detected for %s ||| Argument : %s %s [%d/%d]"
@@ -212,51 +135,42 @@ new localas[33],valutsteamid,authid[32],authid2[32],szip[32],szip2[33],bullshit[
 #define V4nr 0x04
 #define MAX_BUFFER_IP 32
 #define console_max 255
-//
 
 
-//globalll
-new PrintUnknown
+new OrpheuHook:executestringhook,OrpheuHook:getidstringhook,okapi_hook:sendbanhook,okapi_hook:statushook;
+new okapi_hook:spawnhook,okapi_hook:sendreshook,okapi_hook:sayhook,okapi_hook:netgethook,okapi_hook:connecthook,okapi_hook:shutdownhook,okapi_hook:userfhook;
+new okapi_hook:printfhook,okapi_hook:queryhook,OrpheuHook:queryhook2,okapi_hook:runcmd,okapi_hook:rejecthook,okapi_hook:mungehook,okapi_hook:infovaluehook;
+new okapi_hook:dropclienthook,okapi_hook:safefilehook,okapi_hook:netchanhook,okapi_hook:processhook,okapi_hook:openfilehook,okapi_hook:writefilehook,okapi_hook:newhook;
+new okapi_hook:addiphook,okapi_hook:rconhook,okapi_hook:resourceslisthook,okapi_hook:voicehook,okapi_hook:stringcmdhook,okapi_hook:killhook,okapi_hook:duplicatehook
+new OrpheuFunction:long2
+new limitba[33],debug_s[33],number,g_MaxClients,Regex:g_iPattern
+new Float:DelaySpamBotStop[33],Float:DelaySpamBotStart[33]
+new UserCheckImpulse[33],DuplicateSteamid,suspiciousdebug_await[33],HLTVFilter,PrintErrorSysError,ServerVersion,HLProxyFilter,RandomSteamid,IlegalCmd,AgresiveFunction
+new Radio,convertortime[255],hour,minutes,day,year,month
+new GetTimeFile[10],GetTimeReal[10]
+new OptionSV_ConnectClient,steamidgenerate,FakePlayerFilter,NameUnLock[33],DumpConnector,stringbuffer2[200],ShutdownServer
+new Float:g_Flooding[33] = {0.0,...},g_Flood[33] = {0,...}
+new NoFloodTime,NoFlood,CvarOSBanIPAddress,LostConnectionSeconds,NameBugShowMenu,steamidhash,CommandBug,NameCharFix
+new OSBanDetectedTime,ChatCharFix,UpdateClient,NameBug,NameSpammer,SpectatorVguiBug,lostconnection
+new localas[33],valutsteamid,authid[32],authid2[32],szip[32],szip2[33],bullshit[200],PrintUnknown
 new mungelimit[varmax],getip[varmax],getip2[varmax],memory,memory2,holax,SV_RconCvar,LimitPrintfRcon
-new Array:cslBlock, g_ConsoleStr,hola,fuck,memhack
-new Array:unicodenameblock,g_ConsoleStr2
-new Array:rconskipping,g_ConsoleStr3
-new LimitResources,VAC
-new limitb[varmax],local,limita[varmax],limit[varmax]
+new Array:cslBlock, g_ConsoleStr,hola,fuck,memhack,Array:unicodenameblock,g_ConsoleStr2,Array:rconskipping,g_ConsoleStr3
+new LimitResources,VAC,limitb[varmax],local,limita[varmax],limit[varmax]
 new GameData,SendBadDropClient,ParseConsistencyResponse,NameProtector,Queryviewer,UnicodeName
 enum net_adr {type=EOS,ip[0x04]=0x04}
 enum {BUFFER_MAXIM = 64}
-
 new CvarTableName,checkusor,CvarAdministratorServer,CvarFindCvarBuffer,CvarCreateBuffer,CheckVPN,CvarVpnDetector
-new CvarVpnDetectorKey,OS_System
-new overflowed[varmax];
-new savefilename[100],savedata[100]
-new Array: g_aArray,Array: g_blackList;
-new PrintUnMunge
+new CvarVpnDetectorKey,OS_System,overflowed[varmax],savefilename[100],savedata[100]
+new Array: g_aArray,Array: g_blackList,PrintUnMunge
 new OrpheuFunction: global_msgReadBits;
-
 enum _: FileData
 {FileName[32],FileMD5[34],FileDetect[64]}
 new Array: gFileData;
 new Trie:  gTrie;
 enum _: TaskData {TaskMD5[12],PlayerIndex,TaskID}
-
-new total_pos = EOS;
-new detect = EOS;
-new detect_md5[12];
-new szForm[10]
-new usercheck[varmax]
-new checkuser[varmax]
-new MaxOverflowed;
-new limitexecute[varmax]
-new tralala;
-new TimeNameChange;
-new RconSkippingCommand;
-new CmdLimitVar;
-new CmdlimitDestroy;
-new CmdLimitMax;
-new LimitExploit,LimitQuery,LimitImpulse,locala[varmax],LimitPrintf,LimitMunge,PauseDlfile,BanTime;
-new KillBug;
+new total_pos = EOS,detect = EOS,detect_md5[12],szForm[10],usercheck[varmax],checkuser[varmax],MaxOverflowed
+new limitexecute[varmax],tralala,TimeNameChange,RconSkippingCommand,CmdLimitVar,CmdlimitDestroy,CmdLimitMax
+new LimitExploit,LimitQuery,LimitImpulse,locala[varmax],LimitPrintf,LimitMunge,PauseDlfile,BanTime,KillBug;
 new OrpheuFunction:long
 
 new const MessageHook[][]={
@@ -420,9 +334,6 @@ new const ShieldServerCvarBlock[][]={
 
 //WINDOWS SIGNATURE
 new SV_Spawn_f[] = {
-	//0x55,0x8B,0xEC,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0x23,0xDEF,0xDEF,0xDEF,
-	//0xDEF,0xDEF,0xDEF,0x45,0xDEF,0xDEF,0xDEF,0x50,0xDEF,
-	//0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF
 	0x55,0x8B,0xEC,0xDEF,0x14,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0x45,0xDEF,0xDEF,0xDEF,0x50,0xDEF,0xDEF,0xDEF,
 	0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0x83,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF
 }
@@ -504,9 +415,6 @@ new SV_Rcon[] = {
 new Netchan_CheckForCompletion[] = {
 	0x55,0x8B,0xEC,0x83,0xDEF,0xDEF,0xDEF,0x45,0xDEF,0x53,0x56,0x57,0xDEF,0xDEF,0xDEF,0x33,
 	0xDEF,0x8B,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0x85,0xDEF,0x74,0x48,0x33,0xDEF,0x43,0xDEF
-	//0x55,0x8B,0xEC,0xDEF,0xDEF,0xDEF,0xDEF,0x45,0xDEF,0xDEF,0xDEF,0xDEF,0x53,
-	//0x56,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0x57,0x33,0xDEF,0x33,0xDEF,0xDEF,
-	//0xDEF,0x74,0x55,0xDEF,0x56
 }
 
 new Netchan_CheckForCompletion4554[] = {
@@ -535,10 +443,6 @@ new SVC_PingSignature[] = {
 new IsSafeFileDownload6153[] = {
 	0x55,0x8B,0xEC,0x81,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0x45,0xDEF,0x57,0x85,0xDEF,0xDEF,
 	0x84,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0x50,0xDEF,0x85,0xDEF,0xDEF,0xDEF
-	//0x55,0x8B,0xEC,0xDEF,0xDEF,0xDEF,0xDEF,0x00,0x00,0xDEF,0x45,0xDEF,0x57,0xDEF,0xDEF,0xDEF,
-	//0xDEF,0x71,0xDEF,0x00,0x00,0x68,0xDEF,0xDEF,0x00,0x00,0x50,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,
-	//0xDEF,0x50,0xDEF,0xDEF,0x65,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0x51,0xDEF,0xDEF,
-	//0x6A,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF
 }
 new Host_Status_f[] = {
 	0x55,0x8B,0xEC,0x81,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,
@@ -563,15 +467,7 @@ new SV_New_fw6153[] = {
 	0x50,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF
 }
 new COM_UnMunges4554[] = {
-	//0x55,0x8B,0xEC,0x83,0xDEF,0xDEF,0xDEF,0x45,0xDEF,0xDEF,0x45,0xDEF,0x00,0x00,0x00,0x00 // com_munge
-	//0x55,0x8B,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0x54,0xDEF,0xDEF,0xDEF,0x33,0xDEF,0x53,0xDEF //process
 	0x55,0x8B,0xEC,0x51,0xDEF,0x45,0xDEF,0x53,0x24,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF //com_unmunge
-	//0x55,0x8B,0xEC,0xDEF,0x55,0xDEF,0xDEF,0x45,0xDEF,0x53,0xDEF,0xDEF,0xDEF,0x56,0x57,0xDEF validate
-	//0x55,0x8B,0xEC,0x51,0xDEF,0x45,0xDEF,0x53,0x24,0xDEF,0x33,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF // com_munge2
-	//0x55,0x8B,0xEC,0xDEF,0xDEF,0xDEF,0xDEF,0x45,0xDEF,0xDEF,0x45,0xDEF,0x00,0x00,0x00,0x00 // com_unmunge2
-	//0x55,0x8B,0xEC,0x83,0xEC,0x24,0x53,0x56,0x57,0xE8,0xDEF,0xDEF,0xDEF,0xDEF,0x8B,0xF0,0xA1 // sv_parseResourceList
-	//0x55,0x8B,0xEC,0xDEF,0xDEF,0xDEF,0xDEF,0x45,0xDEF,0x53,0x56,0x57,0xDEF,0x38,0xDEF,0x74 // sv_processfile
-	//0x55,0x8B,0xEC,0xDEF,0xDEF,0x34,0xDEF,0x00,0x00,0x53,0x56,0x57,0xDEF,0xDEF,0xDEF,0x33 //netchan
 }
 new SV_ParseStringCommand[] = {
 	0xDEF
@@ -586,12 +482,6 @@ new FS_Open[] = {
 }
 new COM_UnMunges6153[] = {
 	0x55,0x8B,0xEC,0xDEF,0x45,0xDEF,0x56,0xDEF,0x75,0xDEF,0x57,0xDEF,0xDEF,0xDEF,0x56,0x50
-	//0x55,0x8B,0xEC,0x83,0xDEF,0xDEF,0xDEF,0x45,0xDEF,0xDEF,0x45,0xDEF,0x00,0x00,0x00,0x00 // com_munge
-	//0x55,0x8B,0xEC,0x51,0xDEF,0x45,0xDEF,0x53,0x24,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF //com_unmunge
-	//0x55,0x8B,0xEC,0x51,0xDEF,0x45,0xDEF,0x53,0x24,0xDEF,0x33,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF // com_munge2
-	//0x55,0x8B,0xEC,0xDEF,0x45,0xDEF,0x56,0xDEF,0x75,0xDEF,0x57,0xDEF,0xDEF,0xDEF,0x56,0x50
-	//0x55,0x8B,0xEC,0x81,0xEC,0xDEF,0xDEF,0xDEF,0xDEF,0x56,0xB1,0xDEF, //sv_begindownload
-	//0xB0,0xDEF,0x57,0xC6,0xDEF,0xDEF,0xDEF,0xC6,0xDEF,0xDEF,0xDEF,0xC6,0xDEF,0xDEF,0xDEF,0x88 // end
 }
 new Host_Say_f[] = {
 	0x55,0x8b,0xec,0x81,0xec,0xDEF,0xDEF,0xDEF,0xDEF,0xa1,
@@ -760,7 +650,7 @@ stock RconRandom()
 	server_print("%s I changed rcon old password : ^"%s^"  with new password : ^"%s^"",PrefixProtection,RconVar,bullshit)
 }
 stock SV_CheckUserNameForMenuStyle(id,szNewName[] = ""){
-	new GetName[32]
+	new GetName[200]
 	if(szNewName[0]){
 		copy(GetName,charsmax(GetName),szNewName)
 	}
@@ -768,12 +658,12 @@ stock SV_CheckUserNameForMenuStyle(id,szNewName[] = ""){
 		get_user_name(id,GetName,charsmax(GetName))
 	}
 	
-	new iNum,szSubStr[3],szNewTxtPart[3]
+	new iNum,szSubStr[3],szNewTxtPart[200]
 	
 	while(regex_match_c(GetName,g_iPattern,iNum)){
 		regex_substr(g_iPattern,0,szSubStr,2)
-		copy(szNewTxtPart,2,szSubStr)
-		replace(szNewTxtPart,2,"+","+.")
+		copy(szNewTxtPart,charsmax(szNewTxtPart),szSubStr)
+		replace(szNewTxtPart,charsmax(szNewTxtPart),"+","+.")
 		replace_all(GetName,charsmax(GetName),szSubStr,szNewTxtPart)
 		set_user_info(id,"name",GetName)
 	}
@@ -783,14 +673,12 @@ stock net_adrr()
 {
 	static id;
 	if(ServerVersion == EOS){
-		if(!id) 
-		{
+		if(!id) {
 			
 			if((id = okapi_engine_get_symbol_ptr(SVC_PingSignature_linux))){return id;}
 			new funcAddress = okapi_engine_find_sig(SVC_PingSignature,sizeof SVC_PingSignature);
-			if(funcAddress)
-			{
-				new bytes[0x44];
+			if(funcAddress){
+				new bytes[0x44]
 				okapi_get_ptr_array( funcAddress,bytes,sizeof bytes)
 				new address = okapi_engine_ptr_find_byte_at( funcAddress,0xBE)
 				if(address){return okapi_get_ptr_int(address+1);}
@@ -1511,8 +1399,8 @@ stock VoidFunction(stringUS[],func){
 			return 0 // don't print client message
 		}
 		if(get_pcvar_num(ChatCharFix)==1){
-			replace_all(string,charsmax(string),"%","ï¼…")
-			replace_all(string,charsmax(string),"#","ï¼ƒ")
+			replace_all(string,charsmax(string),"%","％")
+			replace_all(string,charsmax(string),"#","＃")
 		}
 		if(get_pcvar_num(ChatCharFix)==2){
 			replace_all(string,charsmax(string),"%","*")
@@ -1959,17 +1847,26 @@ public LevFunction(id){mungelimit[id-TASK_ONE]=EOS;local=EOS;}
 
 public Register_Settings()
 {
-	if(!dir_exists("addons/amxmodx/configs/settings/OS_Ban/Users")){
-		server_print("%s I created dir (addons/amxmodx/configs/settings/OS_Ban/Users)",PrefixProtection)
-		mkdir("addons/amxmodx/configs/settings/OS_Ban/Users")
+	new dirstring[255],vargetx[90];
+
+	#define orpheudirname "addons/amxmodx/configs/orpheu/functions"
+	#define orpheudirname2 "addons/amxmodx/configs/orpheu"
+	#define dirmax "addons/amxmodx/configs/settings"
+
+	get_pcvar_string(CvarTableName,vargetx,charsmax(vargetx))
+	formatex(dirstring,charsmax(dirstring),"addons/amxmodx/configs/settings/OS_Ban/User_%s",vargetx)
+
+	if(!dir_exists(dirstring)){
+		server_print("%s I created dir (%s)",PrefixProtection,dirstring)
+		mkdir(dirstring)
 	}
-	if(!dir_exists("addons/amxmodx/configs/orpheu/functions")){
-		server_print("%s I created dir (addons/amxmodx/configs/orpheu/functions)",PrefixProtection)
-		mkdir("addons/amxmodx/configs/orpheu/functions")
+	if(!dir_exists(orpheudirname)){
+		server_print("%s I created dir (%s)",PrefixProtection,orpheudirname)
+		mkdir(orpheudirname)
 	}
-	if(!dir_exists("addons/amxmodx/configs/orpheu")){
-		server_print("%s I created dir (addons/amxmodx/configs/orpheu)",PrefixProtection)
-		mkdir("addons/amxmodx/configs/orpheu")
+	if(!dir_exists(orpheudirname2)){
+		server_print("%s I created dir (%s)",PrefixProtection,orpheudirname2)
+		mkdir(orpheudirname2)
 	}
 	if(get_pcvar_num(CmdLimitVar)>0){
 		if(file_exists(limitfilecmd)){
@@ -2003,7 +1900,6 @@ public Register_Settings()
 			server_print("%s I created file ^"%s^"",PrefixProtection,locatie)
 			new filecacat = fopen(locatie,"wb")
 			fprintf(filecacat,";Get MD5 file : https://emn178.github.io/online-tools/md5_checksum.html^n")
-			//fprintf(filecacat,";^"file.txt^" MD5 ^"shield_os_ban %userid% File Detected 221^"^n")
 			fclose(filecacat)
 		}
 		if(file_exists(cmd_restricted)){
@@ -2017,7 +1913,6 @@ public Register_Settings()
 			fclose(filecacat)
 		}
 		}
-	#define dirmax "addons/amxmodx/configs/settings"
 
 	if(!dir_exists(dirmax)){
 		server_print("%s I created dir (%s)",PrefixProtection,dirmax)
@@ -2139,10 +2034,7 @@ public Register_Settings()
 		
 		fclose(FileVar)
 	}
-	if(file_exists(settings)){
-		//server_print("%s I loaded file (%s)",PrefixProtection,settings)
-	}
-	else{
+	if(!file_exists(settings)){
 		server_print("%s I created file (%s)",PrefixProtection,settings)
 		new FileVar = fopen(settings,"wb")
 		fprintf(FileVar,"")
@@ -2859,9 +2751,6 @@ public RegisterOkapiWindows_unfreeze3(){
 	}
 	else{ErrorSignature();memory=27;}
 }
-
-//http
-
 /*	
 HTTP
 v0.4b
@@ -2889,11 +2778,9 @@ enum DownloadInfo {Server[ 64 ],RemoteFile[ 128 ],LocalFile[ 128 ],FileHandle,So
 
 stock HTTP[ MAX_DOWNLOAD_SLOTS ][ DownloadInfo ] , g_HTTPEntity , g_Forward , g_iDownloadID , g_iPluginID = INVALID_PLUGIN_ID , g_DataBuffer[ BUFFER_SIZE ];
 
-stock HTTP_DownloadFile( const szRemoteFile[] , const szLocalFile[] )
-{
+stock HTTP_DownloadFile( const szRemoteFile[] , const szLocalFile[] ){
 	new iSlot;
-	for ( iSlot = EOS ; iSlot < MAX_DOWNLOAD_SLOTS ; iSlot++ )
-	{
+	for ( iSlot = EOS ; iSlot < MAX_DOWNLOAD_SLOTS ; iSlot++ ){
 		if ( !HTTP[ iSlot ][ DownloadID ] )
 			break;
 		else if ( iSlot == ( MAX_DOWNLOAD_SLOTS - 1 ) ) 
@@ -2906,26 +2793,22 @@ stock HTTP_DownloadFile( const szRemoteFile[] , const szLocalFile[] )
 	trim( HTTP[ iSlot ][ Server ] );
 	
 	copy( HTTP[ iSlot ][ LocalFile ] , charsmax( HTTP[][ LocalFile ] ) , szLocalFile );
-	if ( !( HTTP[ iSlot ][ FileHandle ] = fopen( HTTP[ iSlot ][ LocalFile ] , "wb" ) ) )
-	{
+	if ( !( HTTP[ iSlot ][ FileHandle ] = fopen( HTTP[ iSlot ][ LocalFile ] , "wb" ) ) ){
 		//log_amx( "HTTP: Error creating local file" );
 		return 0;
 	}
 	
 	new iError;
-	if ( ( HTTP[ iSlot ][ Socket ] = socket_open( HTTP[ iSlot ][ Server ] , 80 , SOCKET_TCP , iError ) ) && !iError )
-	{
+	if ( ( HTTP[ iSlot ][ Socket ] = socket_open( HTTP[ iSlot ][ Server ] , 80 , SOCKET_TCP , iError ) ) && !iError ){
 		new szRequest[ 27 + charsmax( HTTP[][ Server ] ) + charsmax( HTTP[][ RemoteFile ] ) ];
 		
-		if ( g_iPluginID == INVALID_PLUGIN_ID )
-		{
+		if ( g_iPluginID == INVALID_PLUGIN_ID ){
 			new szFile[ 64 ] , szTmp[ 1 ];
 			get_plugin( -1 , szFile , charsmax( szFile ) , szTmp , 0 , szTmp , 0, szTmp , 0 , szTmp , 0 );
 			g_iPluginID = find_plugin_byfile( szFile , 0 );
 		}
 		
-		if ( !g_HTTPEntity )
-		{
+		if ( !g_HTTPEntity ){
 			g_HTTPEntity = create_entity( "info_target" );
 			entity_set_string( g_HTTPEntity , EV_SZ_classname , "http_entity" );
 			entity_set_float( g_HTTPEntity , EV_FL_nextthink , get_gametime() + THINK_INTERVAL );
@@ -2943,12 +2826,10 @@ stock HTTP_DownloadFile( const szRemoteFile[] , const szLocalFile[] )
 		formatex( szRequest , charsmax( szRequest ) , "GET /%s HTTP/1.1^r^nHost: %s^r^n^r^n" , HTTP[ iSlot ][ RemoteFile ] , HTTP[ iSlot ][ Server ] );
 		socket_send( HTTP[ iSlot ][ Socket ] , szRequest , sizeof( szRequest ) );
 	}
-	else
-	{
+	else{
 		//log_amx( "HTTP: Error creating socket [Error=%d]" , iError );
 		return 0;
 	}
-	
 	return ( ( HTTP[ iSlot ][ DownloadID ] = ++g_iDownloadID ) );
 }
 
@@ -3060,7 +2941,6 @@ public _HTTP_EntityThink( iEntity )
 #endif
 #define _colorchat_included
 
-/* ColorChat Support */
 #define NORMAL DontChange
 #define GREEN DontChange
 #define TEAM_COLOR DontChange
@@ -3068,79 +2948,61 @@ public _HTTP_EntityThink( iEntity )
 #define BLUE Blue
 #define GREY Grey
 #define ColorChat client_print_color
-/* ColorChat Support */
 
 enum _:Colors {DontChange,Red,Blue,Grey}
 
 stock const g_szTeamName[Colors][] = {"UNASSIGNED","TERRORIST","CT","SPECTATOR"}
 
-stock client_print_color(id, iColor=DontChange, const szMsg[], any:...)
-{
-	// check if id is different from 0
-	if( id && !is_user_connected(id) )
-	{
+stock client_print_color(id, iColor=DontChange, const szMsg[], any:...){
+	if( id && !is_user_connected(id) ){
 		return 0;
 	}
-	
-	if( iColor > Grey )
-	{
+	if( iColor > Grey ){
 		iColor = DontChange;
 	}
-	
 	new szMessage[192];
-	if( iColor == DontChange )
-	{
+	if( iColor == DontChange ){
 		szMessage[0] = 0x04;
 	}
-	else
-	{
+	else{
 		szMessage[0] = 0x03;
 	}
-	
 	new iParams = numargs();
-	// Specific player code
-	if(id)
-	{
-		if( iParams == 3 )
-		{
+	if(id){
+		if( iParams == 3 ){
 			copy(szMessage[1], charsmax(szMessage)-1, szMsg);
 		}
-		else
-		{
+		else{
 			vformat(szMessage[1], charsmax(szMessage)-1, szMsg, 4);
 		}
 		
-		if( iColor )
-		{
-			new szTeam[11]; // store current team so we can restore it
-			get_user_team(id, szTeam, charsmax(szTeam));
-			
-			// set id TeamInfo in consequence
-			// so SayText msg gonna show the right color
-			Send_TeamInfo(id, id, g_szTeamName[iColor]);
-			
-			// Send the message
-			Send_SayText(id, id, szMessage);
-			
-			// restore TeamInfo
-			Send_TeamInfo(id, id, szTeam);
+		if( iColor ){
+			new szTeam[11]; 
+			replace_all(szMessage,128,"%","％")
+			replace_all(szMessage,128,"#","＃")
+
+			if(strlen(szMessage)>=189){ // fix for possible Refusing to send user message SayText of 193 bytes to client, user message size limit is 192 bytes
+				get_user_team(id, szTeam, charsmax(szTeam));
+				Send_TeamInfo(id, id, g_szTeamName[iColor]);
+				Send_SayText(id, id, "Error limit printf message long");
+				Send_TeamInfo(id, id, szTeam);
+			}
+			else{
+				get_user_team(id, szTeam, charsmax(szTeam));
+				Send_TeamInfo(id, id, g_szTeamName[iColor]);
+				Send_SayText(id, id, szMessage);
+				Send_TeamInfo(id, id, szTeam);
+			}
 		}
-		else
-		{
+		else{
 			Send_SayText(id, id, szMessage);
 		}
 	} 
 	
-	// Send message to all players
-	else
-	{
-		// Figure out if at least 1 player is connected
-		// so we don't send useless message if not
-		// and we gonna use that player as team reference (aka SayText message sender) for color change
+	else{
 		new iPlayers[32], iNum;
 		get_players(iPlayers, iNum, "ch");
-		if( !iNum )
-		{
+		if( !iNum ){
 			return 0;
 		}
 		
@@ -3148,90 +3010,58 @@ stock client_print_color(id, iColor=DontChange, const szMsg[], any:...)
 		
 		new iMlNumber, i, j;
 		new Array:aStoreML = ArrayCreate();
-		if( iParams >= 5 ) // ML can be used
-		{
-			for(j=4; j<iParams; j++)
-			{
-				// retrieve original param value and check if it's LANG_PLAYER value
-				if( getarg(j) == LANG_PLAYER )
-				{
+		if( iParams >= 5 ){
+			for(j=4; j<iParams; j++){
+				if( getarg(j) == LANG_PLAYER ){
 					i=EOS;
-					// as LANG_PLAYER == -1, check if next parm string is a registered language translation
 					while( ( szMessage[ i ] = getarg( j + 1, i++ ) ) ) {}
-					if( GetLangTransKey(szMessage) != TransKey_Bad )
-					{
-						// Store that arg as LANG_PLAYER so we can alter it later
+					if( GetLangTransKey(szMessage) != TransKey_Bad ){
 						ArrayPushCell(aStoreML, j++);
-						
-						// Update ML array saire so we'll know 1st if ML is used,
-						// 2nd how many args we have to alterate
 						iMlNumber++;
 					}
 				}
 			}
 		}
-		
-		// If arraysize == EOS, ML is not used
-		// we can only send 1 MSG_BROADCAST message
-		if( !iMlNumber )
-		{
-			if( iParams == 3 )
-			{
+		if( !iMlNumber ){
+			if( iParams == 3 ){
 				copy(szMessage[1], charsmax(szMessage)-1, szMsg);
 			}
-			else
-			{
+			else{
 				vformat(szMessage[1], charsmax(szMessage)-1, szMsg, 4);
 			}
-			
-			if( iColor )
-			{
+			if( iColor ){
 				new szTeam[11];
 				get_user_team(iFool, szTeam, charsmax(szTeam));
 				Send_TeamInfo(0, iFool, g_szTeamName[iColor]);
 				Send_SayText(0, iFool, szMessage);
 				Send_TeamInfo(0, iFool, szTeam);
 			}
-			else
-			{
+			else{
 				Send_SayText(0, iFool, szMessage);
 			}
 		}
-		
-		// ML is used, we need to loop through all players,
-		// format text and send a MSG_ONE_UNRELIABLE SayText message
-		else
-		{
+		else{
 			new szTeam[11], szFakeTeam[10];
 			
-			if( iColor )
-			{
+			if( iColor ){
 				get_user_team(iFool, szTeam, charsmax(szTeam));
 				copy(szFakeTeam, charsmax(szFakeTeam), g_szTeamName[iColor]);
 			}
 			
-			for( i = EOS; i < iNum; i++ )
-			{
+			for( i = EOS; i < iNum; i++ ){
 				id = iPlayers[i];
 				
-				for(j=EOS; j<iMlNumber; j++)
-				{
-					// Set all LANG_PLAYER args to player index ( = id )
-					// so we can format the text for that specific player
+				for(j=EOS; j<iMlNumber; j++){
 					setarg(ArrayGetCell(aStoreML, j), _, id);
 				}
-				
-				// format string for specific player
 				vformat(szMessage[1], charsmax(szMessage)-1, szMsg, 4);
 				
-				if( iColor )
-				{
+				if( iColor ){
 					Send_TeamInfo(id, iFool, szFakeTeam);
 					Send_SayText(id, iFool, szMessage);
 					Send_TeamInfo(id, iFool, szTeam);
 				}
-				else
-				{
+				else{
 					Send_SayText(id, iFool, szMessage);
 				}
 			}
@@ -3244,8 +3074,7 @@ stock client_print_color(id, iColor=DontChange, const szMsg[], any:...)
 stock Send_TeamInfo(iReceiver, iPlayerId, szTeam[])
 {
 	static iTeamInfo = EOS;
-	if( !iTeamInfo )
-	{
+	if( !iTeamInfo ){
 		iTeamInfo = get_user_msgid("TeamInfo");
 	}
 	message_begin(iReceiver ? MSG_ONE_UNRELIABLE : MSG_BROADCAST, iTeamInfo, .player=iReceiver);
@@ -3254,11 +3083,9 @@ stock Send_TeamInfo(iReceiver, iPlayerId, szTeam[])
 	message_end();
 }
 
-stock Send_SayText(iReceiver, iPlayerId, szMessage[])
-{
+stock Send_SayText(iReceiver, iPlayerId, szMessage[]){
 	static iSayText = EOS;
-	if( !iSayText )
-	{
+	if( !iSayText ){
 		iSayText = get_user_msgid("SayText");
 	}
 	message_begin(iReceiver ? MSG_ONE_UNRELIABLE : MSG_BROADCAST, iSayText, .player=iReceiver);
@@ -3269,38 +3096,31 @@ stock Send_SayText(iReceiver, iPlayerId, szMessage[])
 
 stock register_dictionary_colored(const filename[])
 {
-	if( !register_dictionary(filename) )
-	{
+	if( !register_dictionary(filename) ){
 		return 0;
 	}
-	
 	new szFileName[256];
 	get_localinfo("amxx_datadir", szFileName, charsmax(szFileName));
 	format(szFileName, charsmax(szFileName), "%s/lang/%s", szFileName, filename);
 	new fp = fopen(szFileName, "rt");
-	if( !fp )
-	{
+	if( !fp ){
 		log_amx("Failed to open %s", szFileName);
 		return 0;
 	}
 	
 	new szBuffer[512], szLang[3], szKey[64], szTranslation[256], TransKey:iKey;
 	
-	while( !feof(fp) )
-	{
+	while( !feof(fp) ){
 		fgets(fp, szBuffer, charsmax(szBuffer));
 		trim(szBuffer);
 		
-		if( szBuffer[0] == '[' )
-		{
+		if( szBuffer[0] == '[' ){
 			strtok(szBuffer[1], szLang, charsmax(szLang), szBuffer, 1, ']');
 		}
-		else if( szBuffer[0] )
-		{
+		else if( szBuffer[0] ){
 			strbreak(szBuffer, szKey, charsmax(szKey), szTranslation, charsmax(szTranslation));
 			iKey = GetLangTransKey(szKey);
-			if( iKey != TransKey_Bad )
-			{
+			if( iKey != TransKey_Bad ){
 				while( replace(szTranslation, charsmax(szTranslation), "!g", "^4") ){}
 				while( replace(szTranslation, charsmax(szTranslation), "!t", "^3") ){}
 				while( replace(szTranslation, charsmax(szTranslation), "!n", "^1") ){}
@@ -3312,3 +3132,23 @@ stock register_dictionary_colored(const filename[])
 	fclose(fp);
 	return 1;
 }
+/*
+Other Functions for windows
+	//0x55,0x8B,0xEC,0xDEF,0xDEF,0xDEF,0xDEF,0x00,0x00,0xDEF,0x45,0xDEF,0x57,0xDEF,0xDEF,0xDEF, // ???
+	//0xDEF,0x71,0xDEF,0x00,0x00,0x68,0xDEF,0xDEF,0x00,0x00,0x50,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF, // ???
+	//0xDEF,0x50,0xDEF,0xDEF,0x65,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0x51,0xDEF,0xDEF, // ???
+	//0x6A,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF // ???
+	//0x55,0x8B,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0x54,0xDEF,0xDEF,0xDEF,0x33,0xDEF,0x53,0xDEF //sv_process
+	//0x55,0x8B,0xEC,0xDEF,0x55,0xDEF,0xDEF,0x45,0xDEF,0x53,0xDEF,0xDEF,0xDEF,0x56,0x57,0xDEF validate
+	//0x55,0x8B,0xEC,0x51,0xDEF,0x45,0xDEF,0x53,0x24,0xDEF,0x33,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF // ???
+	//0x55,0x8B,0xEC,0xDEF,0xDEF,0xDEF,0xDEF,0x45,0xDEF,0xDEF,0x45,0xDEF,0x00,0x00,0x00,0x00 // com_unmunge2
+	//0x55,0x8B,0xEC,0x83,0xEC,0x24,0x53,0x56,0x57,0xE8,0xDEF,0xDEF,0xDEF,0xDEF,0x8B,0xF0,0xA1 // sv_parseResourceList
+	//0x55,0x8B,0xEC,0xDEF,0xDEF,0xDEF,0xDEF,0x45,0xDEF,0x53,0x56,0x57,0xDEF,0x38,0xDEF,0x74 // sv_processfile
+	//0x55,0x8B,0xEC,0xDEF,0xDEF,0x34,0xDEF,0x00,0x00,0x53,0x56,0x57,0xDEF,0xDEF,0xDEF,0x33 //netchan
+	//0x55,0x8B,0xEC,0x83,0xDEF,0xDEF,0xDEF,0x45,0xDEF,0xDEF,0x45,0xDEF,0x00,0x00,0x00,0x00 // com_munge
+	//0x55,0x8B,0xEC,0x51,0xDEF,0x45,0xDEF,0x53,0x24,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF //com_unmunge
+	//0x55,0x8B,0xEC,0x51,0xDEF,0x45,0xDEF,0x53,0x24,0xDEF,0x33,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF // com_munge2
+	//0x55,0x8B,0xEC,0xDEF,0x45,0xDEF,0x56,0xDEF,0x75,0xDEF,0x57,0xDEF,0xDEF,0xDEF,0x56,0x50 // ???
+	//0x55,0x8B,0xEC,0x81,0xEC,0xDEF,0xDEF,0xDEF,0xDEF,0x56,0xB1,0xDEF, //sv_begindownload
+	//0xB0,0xDEF,0x57,0xC6,0xDEF,0xDEF,0xDEF,0xC6,0xDEF,0xDEF,0xDEF,0xC6,0xDEF,0xDEF,0xDEF,0x88 // ???
+*/
