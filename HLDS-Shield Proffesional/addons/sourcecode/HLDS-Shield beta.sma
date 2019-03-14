@@ -361,6 +361,23 @@ new CheckOS = EOS
 public RegisterOrpheu(){
 	if(ServerVersion == EOS){
 		RegisterFixChars()
+		if(file_exists(orpheufile8)){
+			global_msgReadBits = OrpheuGetFunction("MSG_ReadBits")
+		}
+		else{
+			log_to_file(settings,"%s Injected successfully %s",PrefixProtection,orpheufile8)
+			Create_Signature("MSG_ReadBits")
+			set_task(1.0,"debug_orpheu")
+		}
+		if(file_exists(orpheufile9)){
+			OrpheuRegisterHook(OrpheuGetFunction("SV_ParseConsistencyResponse"), "SV_ParseConsistencyResponse_fix", OrpheuHookPre)
+			memory2++
+		}
+		else{
+			log_to_file(settings,"%s Injected successfully %s",PrefixProtection,orpheufile9)
+			Create_Signature("SV_ParseConsistencyResponse")
+			set_task(1.0,"debug_orpheu")
+		}
 		if(!file_exists(orpheufile5)){
 			log_to_file(settings,"%s Injected successfully %s",PrefixProtection,orpheufile5)
 			Create_Signature("SV_ForceFullClientsUpdate")
@@ -400,24 +417,6 @@ public RegisterOrpheu(){
 		else{
 			log_to_file(settings,"%s Injected successfully %s",PrefixProtection,orpheufile1)
 			Create_Signature("Cmd_ExecuteString")
-			set_task(1.0,"debug_orpheu")
-		}
-		
-		if(file_exists(orpheufile8)){
-			global_msgReadBits = OrpheuGetFunction("MSG_ReadBits")
-		}
-		else{
-			log_to_file(settings,"%s Injected successfully %s",PrefixProtection,orpheufile8)
-			Create_Signature("MSG_ReadBits")
-			set_task(1.0,"debug_orpheu")
-		}
-		if(file_exists(orpheufile9)){
-			OrpheuRegisterHook(OrpheuGetFunction("SV_ParseConsistencyResponse"), "SV_ParseConsistencyResponse_fix", OrpheuHookPre)
-			memory2++
-		}
-		else{
-			log_to_file(settings,"%s Injected successfully %s",PrefixProtection,orpheufile9)
-			Create_Signature("SV_ParseConsistencyResponse")
 			set_task(1.0,"debug_orpheu")
 		}
 		
@@ -493,8 +492,15 @@ public RegisterFixChars(){
 			set_task(1.0,"debug_orpheu")
 		}
 		else{
-			OrpheuRegisterHook(OrpheuGetFunction("UTIL_ClientPrint"),"UTIL_ClientPrint_Hook")
-			memory2++
+			new build[varmax]
+			get_cvar_string("sv_version",build,charsmax(build))
+			if(!equali(build,"1.1.2.6,48,4554")){
+				OrpheuRegisterHook(OrpheuGetFunction("UTIL_ClientPrint"),"UTIL_ClientPrint_Hook")
+				memory2++
+			}
+			else{
+				log_to_file(settings,"%s Function ^"UTIL_ClientPrint^" not supported for your engine (is very old)",PrefixProtection)
+			}
 		}
 	}
 	
@@ -1543,6 +1549,40 @@ public SV_Drop_function(index){
 }
 
 public client_command(id){
+	if(get_pcvar_num(ChatCharFix)==1){
+		new StringBuffer[500]
+		if(containi(Argv1(),"#")!= -0x01 || containi(Argv1(),"%")!= -0x01){
+			if(containi(Argv(),"say")!= -0x01 || containi(Argv(),"say_team")!= -0x01){
+				read_argv(1,StringBuffer,charsmax(StringBuffer))
+				if(StringBuffer[0]=='@'){
+					return PLUGIN_HANDLED
+				}
+				if(strlen(StringBuffer)>=150){
+					return PLUGIN_HANDLED
+				}
+				replace_all(StringBuffer,charsmax(StringBuffer),"%","ï¼…")
+				replace_all(StringBuffer,charsmax(StringBuffer),"#","ï¼ƒ")
+				engclient_cmd(id,Argv(),StringBuffer)
+			}
+		}
+	}
+	if(get_pcvar_num(ChatCharFix)>=2){
+		new StringBuffer[500]
+		if(containi(Argv1(),"#")!= -0x01 || containi(Argv1(),"%")!= -0x01){
+			if(containi(Argv(),"say")!= -0x01 || containi(Argv(),"say_team")!= -0x01){
+				read_argv(1,StringBuffer,charsmax(StringBuffer))
+				if(StringBuffer[0]=='@'){
+					return PLUGIN_HANDLED
+				}
+				if(strlen(StringBuffer)>=150){
+					return PLUGIN_HANDLED
+				}
+				replace_all(StringBuffer,charsmax(StringBuffer),"%","*")
+				replace_all(StringBuffer,charsmax(StringBuffer),"#","*")
+				engclient_cmd(id,Argv(),StringBuffer)
+			}
+		}
+	}
 	if(get_pcvar_num(NoFlood)>1){
 		if(containi(Argv(),"say") != -0x01 || 
 		containi(Argv(),"say_team") != -0x01||
@@ -1731,8 +1771,6 @@ public client_command(id){
 }
 
 public PfnClientCommand(id){
-	new StringBuffer[700]
-	
 	if(is_user_connected(id)){
 		UserCheckImpulse[id] = 1
 		if(get_pcvar_num(UpdateClient)>EOS){
@@ -1772,38 +1810,6 @@ public PfnClientCommand(id){
 				set_pdata_int(id,205,EOS)
 				engclient_cmd(id, "jointeam", "6")
 				return FMRES_SUPERCEDE
-			}
-		}
-	}
-	if(get_pcvar_num(ChatCharFix)==1){
-		if(containi(Argv1(),"#")!= -0x01 || containi(Argv1(),"%")!= -0x01){
-			if(containi(Argv(),"say")!= -0x01 || containi(Argv(),"say_team")!= -0x01){
-				read_argv(1,StringBuffer,charsmax(StringBuffer))
-				if(StringBuffer[0]=='@'){
-					return FMRES_IGNORED
-				}
-				if(strlen(StringBuffer)>=150){
-					return FMRES_SUPERCEDE
-				}
-				replace_all(StringBuffer,charsmax(StringBuffer),"%","ï¼…")
-				replace_all(StringBuffer,charsmax(StringBuffer),"#","ï¼ƒ")
-				engclient_cmd(id,Argv(),StringBuffer)
-			}
-		}
-	}
-	if(get_pcvar_num(ChatCharFix)==2){
-		if(containi(Argv1(),"#")!= -0x01 || containi(Argv1(),"%")!= -0x01){
-			if(containi(Argv(),"say")!= -0x01 || containi(Argv(),"say_team")!= -0x01){
-				read_argv(1,StringBuffer,charsmax(StringBuffer))
-				if(StringBuffer[0]=='@'){
-					return FMRES_IGNORED
-				}
-				if(strlen(StringBuffer)>=150){
-					return FMRES_SUPERCEDE
-				}
-				replace_all(StringBuffer,charsmax(StringBuffer),"%","*")
-				replace_all(StringBuffer,charsmax(StringBuffer),"#","*")
-				engclient_cmd(id,Argv(),StringBuffer)
 			}
 		}
 	}
@@ -2405,8 +2411,7 @@ public SHIELD_NameDeBug2(id){
 public pfnClientUserInfoChanged(id,buffer){
 	static szOldName[a_max],szNewName[200],longformate[255]
 	pev(id,pev_netname,szOldName,charsmax(szOldName))
-	number++
-	formatex(longformate,charsmax(longformate),"(%d)%s",number,szOldName)
+	formatex(longformate,charsmax(longformate),"(#%d)%s",GetUserID(id),szOldName)
 	get_user_info(id,"name",szNewName,charsmax(szNewName))
 	new lastname[a_max]
 	if(is_user_admin(id)){
