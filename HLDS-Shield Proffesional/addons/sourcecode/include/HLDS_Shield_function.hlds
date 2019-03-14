@@ -143,7 +143,7 @@ new okapi_hook:printfhook,okapi_hook:queryhook,OrpheuHook:queryhook2,okapi_hook:
 new okapi_hook:dropclienthook,okapi_hook:safefilehook,okapi_hook:netchanhook,okapi_hook:processhook,okapi_hook:openfilehook,okapi_hook:writefilehook,okapi_hook:newhook;
 new okapi_hook:addiphook,okapi_hook:rconhook,okapi_hook:resourceslisthook,okapi_hook:voicehook,okapi_hook:stringcmdhook,okapi_hook:killhook,okapi_hook:duplicatehook
 new OrpheuFunction:long2
-new limitba[33],debug_s[33],number,g_MaxClients,Regex:g_iPattern
+new limitba[33],debug_s[33],g_MaxClients,Regex:g_iPattern
 new Float:DelaySpamBotStop[33],Float:DelaySpamBotStart[33]
 new UserCheckImpulse[33],DuplicateSteamid,suspiciousdebug_await[33],HLTVFilter,PrintErrorSysError,ServerVersion,HLProxyFilter,RandomSteamid,IlegalCmd,AgresiveFunction
 new Radio,convertortime[255],hour,minutes,day,year,month
@@ -2677,7 +2677,14 @@ public RegisterWindows2_unfreeze(){
 	}
 	else{ErrorSignature();memory=16;}
 	if(runcmdx){
-		runcmd = okapi_add_hook(okapi_build_function(runcmdx,arg_int),"SV_RunCmd_Hook")
+		new build[varmax]
+		get_cvar_string("sv_version",build,charsmax(build))
+		if(!equali(build,"1.1.2.6,48,4554")){
+			runcmd = okapi_add_hook(okapi_build_function(runcmdx,arg_int),"SV_RunCmd_Hook")
+		}
+		else{
+			log_to_file(settings,"%s Function ^"SV_RunCmd_Hook^" not supported for your engine (is very old)",PrefixProtection)
+		}
 		memory2++
 	}
 	else{ErrorSignature();memory=17;}
