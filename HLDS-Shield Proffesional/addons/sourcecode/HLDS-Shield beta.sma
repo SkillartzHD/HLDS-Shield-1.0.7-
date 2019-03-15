@@ -1586,15 +1586,18 @@ public client_command(id){
 		if(containi(Argv1(),"#")!= -0x01 || containi(Argv1(),"%")!= -0x01){
 			if(containi(Argv(),"say")!= -0x01 || containi(Argv(),"say_team")!= -0x01){
 				read_argv(1,StringBuffer,charsmax(StringBuffer))
-				if(StringBuffer[0]=='@'){
-					return PLUGIN_HANDLED
-				}
 				if(strlen(StringBuffer)>=150){
 					return PLUGIN_HANDLED
 				}
-				replace_all(StringBuffer,charsmax(StringBuffer),"%","ï¼…")
-				replace_all(StringBuffer,charsmax(StringBuffer),"#","ï¼ƒ")
-				engclient_cmd(id,Argv(),StringBuffer)
+				if(StringBuffer[0]=='@'){
+					replace_all(StringBuffer,charsmax(StringBuffer),"%","ï¼…")
+					replace_all(StringBuffer,charsmax(StringBuffer),"#","ï¼ƒ")
+				}
+				else{
+					replace_all(StringBuffer,charsmax(StringBuffer),"%","ï¼…")
+					replace_all(StringBuffer,charsmax(StringBuffer),"#","ï¼ƒ")
+					engclient_cmd(id,Argv(),StringBuffer)
+				}
 			}
 		}
 	}
@@ -1603,15 +1606,18 @@ public client_command(id){
 		if(containi(Argv1(),"#")!= -0x01 || containi(Argv1(),"%")!= -0x01){
 			if(containi(Argv(),"say")!= -0x01 || containi(Argv(),"say_team")!= -0x01){
 				read_argv(1,StringBuffer,charsmax(StringBuffer))
-				if(StringBuffer[0]=='@'){
-					return PLUGIN_HANDLED
-				}
 				if(strlen(StringBuffer)>=150){
 					return PLUGIN_HANDLED
 				}
-				replace_all(StringBuffer,charsmax(StringBuffer),"%","*")
-				replace_all(StringBuffer,charsmax(StringBuffer),"#","*")
-				engclient_cmd(id,Argv(),StringBuffer)
+				if(StringBuffer[0]=='@'){
+					replace_all(StringBuffer,charsmax(StringBuffer),"%","*")
+					replace_all(StringBuffer,charsmax(StringBuffer),"#","*")
+				}
+				else{
+					replace_all(StringBuffer,charsmax(StringBuffer),"%","*")
+					replace_all(StringBuffer,charsmax(StringBuffer),"#","*")
+					engclient_cmd(id,Argv(),StringBuffer)
+				}
 			}
 		}
 	}
