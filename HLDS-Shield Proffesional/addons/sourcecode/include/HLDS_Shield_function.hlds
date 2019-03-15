@@ -76,37 +76,145 @@
 #define orpheufile10 "addons/amxmodx/configs/orpheu/functions/PF_WriteString_I"
 #define orpheufile11 "addons/amxmodx/configs/orpheu/functions/UTIL_ClientPrint"
 
-#define Host_Status_f_linux "Host_Status_f"
-#define SV_SendBan_linux "SV_FilterPacket"
-#define SV_Spawn_f_linux "SV_Spawn_f"
-#define Host_Say_f_linux "Host_Say_f"
-#define Host_Say_f_team_linux "Host_Say_Team_f"
-#define SVC_PingSignature_linux "net_from"
-#define SV_ParseStringCommand_linux "SV_ParseStringCommand"
-#define SV_SendRes_f_linux "SV_SendRes_f"
-#define SV_ConnectClient_f_linux "SV_ConnectClient"
-#define SV_DropClient_linux "SV_DropClient"
-#define Host_kill_f_linux "Host_Kill_f"
-#define NET_GetLong_linux "NET_GetLong"
-#define SV_voicedatalinux "SV_ParseVoiceData"
-#define SV_Reslinux "SV_ParseResourceList"
-#define Info_ValueForKey_linux "Info_SetValueForStarKey"
-#define SV_CheckForDuplicateNames_linux "SV_CheckForDuplicateNames"
-#define SV_ConnectionlessPacket_linux "SV_ConnectionlessPacket"
-#define Con_Printf_linux "Con_Printf"
-#define COM_UnMunge_linux "COM_UnMunge"
-#define SafeFileDownload_linux "IsSafeFileToDownload"
 #define SV_RejectConnection_linux "SV_RejectConnection"
-#define COM_FileWrite_linux "COM_WriteFile"
-#define SV_ProcessFile_linux "SV_ProcessFile"
 #define FS_Open_linux "FS_Open"
-#define Netchan_CheckForCompletion_linux "Netchan_CheckForCompletion" // Netchan_CopyFileFragments
+#define Netchan_CheckForCompletion_linux "Netchan_CheckForCompletion"
 #define SV_RunCmd_linux "SV_RunCmd"
-#define SV_New_f_linux "SV_New_f"
-#define SV_AddIP_f_linux "SV_AddIP_f"
-#define SV_Rcon_f_linux "SV_Rcon"
-#define Host_user_flinux "SV_Users_f"
-#define Host_shutdown_linux "Host_ShutdownServer"
+#define SVC_PingSignature_linux "net_from"
+#define NET_GetLong_linux "NET_GetLong"
+#define SV_SendBan_linux "SV_FilterPacket"
+
+#if ReverseHLDS_Compatibility == 1
+		#define Host_Status_f_linux "_Z13Host_Status_fv"
+	#else
+		#define Host_Status_f_linux "Host_Status_f"
+#endif
+#if ReverseHLDS_Compatibility == 1
+		#define SV_Spawn_f_linux "_Z10SV_Spawn_fv"
+	#else
+		#define SV_Spawn_f_linux "SV_Spawn_f"
+#endif
+
+#if ReverseHLDS_Compatibility == 1
+		#define Host_Say_f_linux "_Z10Host_Say_fv"
+	#else
+		#define Host_Say_f_linux "Host_Say_f"
+#endif
+
+#if ReverseHLDS_Compatibility == 1
+		#define Host_Say_f_team_linux "_Z15Host_Say_Team_fv"
+	#else
+		#define Host_Say_f_team_linux "Host_Say_Team_f"
+#endif
+
+#if ReverseHLDS_Compatibility == 1
+		#define SV_SendRes_f_linux "_Z12SV_SendRes_fv"
+	#else
+		#define SV_SendRes_f_linux "SV_SendRes_f"
+#endif
+
+#if ReverseHLDS_Compatibility == 1
+		#define SV_ConnectClient_f_linux "_Z25SV_ConnectClient_internalv"
+	#else
+		#define SV_ConnectClient_f_linux "SV_ConnectClient"
+#endif
+
+#if ReverseHLDS_Compatibility == 1
+		#define SV_DropClient_linux "_Z22SV_DropClient_internalP8client_siPKc"
+	#else
+		#define SV_DropClient_linux "SV_DropClient"
+#endif
+
+#if ReverseHLDS_Compatibility == 1
+		#define Host_kill_f_linux "_Z11Host_Kill_fv"
+	#else
+		#define Host_kill_f_linux "Host_Kill_f"
+#endif
+
+#if ReverseHLDS_Compatibility == 1
+		#define SV_Reslinux "_Z20SV_ParseResourceListP8client_s"
+	#else
+		#define SV_Reslinux "SV_ParseResourceList"
+#endif
+
+#if ReverseHLDS_Compatibility == 1
+		#define SV_ParseStringCommand_linux "SV_ParseStringCommand"
+	#else
+		#define SV_ParseStringCommand_linux "SV_ParseStringCommand"
+#endif
+
+#if ReverseHLDS_Compatibility == 1
+		#define SV_voicedatalinux "_Z17SV_ParseVoiceDataP8client_s "
+	#else
+		#define SV_voicedatalinux "SV_ParseVoiceData"
+#endif
+#if ReverseHLDS_Compatibility == 1
+		#define Info_ValueForKey_linux "_Z23Info_SetValueForStarKeyPcPKcS1_i "
+	#else
+		#define Info_ValueForKey_linux "Info_SetValueForStarKey"
+#endif
+#if ReverseHLDS_Compatibility == 1
+		#define SV_CheckForDuplicateNames_linux "_Z25SV_CheckForDuplicateNamesPcii"
+	#else
+		#define SV_CheckForDuplicateNames_linux "SV_CheckForDuplicateNames"
+#endif
+
+#if ReverseHLDS_Compatibility == 1
+		#define SV_ConnectionlessPacket_linux "_Z23SV_ConnectionlessPacketv"
+	#else
+		#define SV_ConnectionlessPacket_linux "SV_ConnectionlessPacket"
+#endif
+#if ReverseHLDS_Compatibility == 1
+		#define Con_Printf_linux "_Z10Con_PrintfPKcz"
+	#else
+		#define Con_Printf_linux "Con_Printf"
+#endif
+#if ReverseHLDS_Compatibility == 1
+		#define SafeFileDownload_linux "_Z20IsSafeFileToDownloadPKc"
+	#else
+		#define SafeFileDownload_linux "IsSafeFileToDownload"
+#endif
+#if ReverseHLDS_Compatibility == 1
+		#define COM_UnMunge_linux "_Z12COM_UnMunge2Phii"
+	#else
+		#define COM_UnMunge_linux "COM_UnMunge"
+#endif
+#if ReverseHLDS_Compatibility == 1
+		#define COM_FileWrite_linux "?????????????"
+	#else
+		#define COM_FileWrite_linux "COM_WriteFile"
+#endif
+#if ReverseHLDS_Compatibility == 1
+		#define SV_ProcessFile_linux "_Z14SV_ProcessFileP8client_sPc"
+	#else
+		#define SV_ProcessFile_linux "SV_ProcessFile"
+#endif
+
+#if ReverseHLDS_Compatibility == 1
+		#define SV_New_f_linux "_Z8SV_New_fv"
+	#else
+		#define SV_New_f_linux "SV_New_f"
+#endif
+#if ReverseHLDS_Compatibility == 1
+		#define SV_AddIP_f_linux "_Z10SV_AddIP_fv"
+	#else
+		#define SV_AddIP_f_linux "SV_AddIP_f"
+#endif
+#if ReverseHLDS_Compatibility == 1
+		#define SV_Rcon_f_linux "?????????????"
+	#else
+		#define SV_Rcon_f_linux "SV_Rcon"
+#endif
+#if ReverseHLDS_Compatibility == 1
+		#define Host_user_flinux "_Z10SV_Users_fv"	
+	#else
+		#define Host_user_flinux "SV_Users_f"
+#endif
+#if ReverseHLDS_Compatibility == 1
+		#define Host_shutdown_linux "_Z13Host_Shutdownv"	
+	#else
+		#define Host_shutdown_linux "Host_ShutdownServer"
+#endif
 
 #define TASK_ONE 574397
 #define TASK_Detect 574399
@@ -610,7 +718,7 @@ stock ErrorSignature()
 			case 6:log_to_file(settings,"%s SV_RejectConnection",function)
 			case 7:log_to_file(settings,"%s Con_Printf",function)
 			case 8:log_to_file(settings,"%s SV_ConnectionlessPacket",function)
-			case 9:log_to_file(settings,"%s Set_ValueForKey",function)
+			case 9:log_to_file(settings,"%s Info_ValueForKey_Hook",function)
 			case 10:log_to_file(settings,"%s SV_DropClient",function)
 			case 11:log_to_file(settings,"%s COM_UnMunge",function)
 			case 12:log_to_file(settings,"%s IsSafeFileToDownload",function)
@@ -746,8 +854,13 @@ stock HLDS_Shield_func(index,print,msg[],emit,log,pedeapsa)
 		}
 	}
 	else if(log==0x02){
-		okapi_get_ptr_array(net_adrr(),data,net_adr)
-		formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+		if(ServerVersion == EOS){
+			okapi_get_ptr_array(net_adrr(),data,net_adr)
+			formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+		}
+		else{
+			formatex(getip,charsmax(getip),"not supported for rehlds")
+		}
 		if(locala[index]==get_pcvar_num(LimitPrintf)){
 			return PLUGIN_HANDLED
 		}
@@ -756,8 +869,18 @@ stock HLDS_Shield_func(index,print,msg[],emit,log,pedeapsa)
 		}
 	}
 	else if(log==0x03){
-		okapi_get_ptr_array(net_adrr(),data,net_adr)
-		formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+		if(ServerVersion == EOS){
+			if(ServerVersion == EOS){
+				okapi_get_ptr_array(net_adrr(),data,net_adr)
+				formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+			}
+			else{
+				formatex(getip,charsmax(getip),"not supported for rehlds")
+			}
+		}
+		else{
+			formatex(getip,charsmax(getip),"not supported for rehlds")
+		}
 		if(locala[index]==get_pcvar_num(LimitPrintf)){
 			return 0
 		}
@@ -772,13 +895,23 @@ stock HLDS_Shield_func(index,print,msg[],emit,log,pedeapsa)
 	}
 	else if(log==0x08){
 		if(!strlen(buffer)){
-			okapi_get_ptr_array(net_adrr(),data,net_adr)
-			formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+			if(ServerVersion == EOS){
+				okapi_get_ptr_array(net_adrr(),data,net_adr)
+				formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+			}
+			else{
+				formatex(getip,charsmax(getip),"not supported for rehlds")
+			}
 			log_to_file(settings,string72,PrefixProtection,getip,msg)
 			return 0
 		}
-		okapi_get_ptr_array(net_adrr(),data,net_adr)
-		formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+		if(ServerVersion == EOS){
+			okapi_get_ptr_array(net_adrr(),data,net_adr)
+			formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+		}
+		else{
+			formatex(getip,charsmax(getip),"not supported for rehlds")
+		}
 		log_to_file(settings,string7,PrefixProtection,buffer,getip,msg)
 		return 1;
 	}
@@ -786,16 +919,26 @@ stock HLDS_Shield_func(index,print,msg[],emit,log,pedeapsa)
 		log_to_file(settings,string17,PrefixProtection,PlayerIP(index),msg,savedata)
 	}
 	else if(log==0x09){
-		okapi_get_ptr_array(net_adrr(),data,net_adr)
-		formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+		if(ServerVersion == EOS){
+			okapi_get_ptr_array(net_adrr(),data,net_adr)
+			formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+		}
+		else{
+			formatex(getip,charsmax(getip),"not supported for rehlds")
+		}
 		log_to_file(settings,string8,PrefixProtection,buffer,getip,msg)
 	}
 	else if(log==10){
 		log_to_file(settings,string6,PrefixProtection,msg,Argv(),Args(),hola,get_pcvar_num(LimitPrintf))
 	}
 	else if(log==11){
-		okapi_get_ptr_array(net_adrr(),data,net_adr)
-		formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+		if(ServerVersion == EOS){
+			okapi_get_ptr_array(net_adrr(),data,net_adr)
+			formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+		}
+		else{
+			formatex(getip,charsmax(getip),"not supported for rehlds")
+		}
 		log_to_file(settings,string4,PrefixProtection,getip,msg,hola,get_pcvar_num(LimitPrintf))
 	}
 	else if(log==12){
@@ -805,8 +948,13 @@ stock HLDS_Shield_func(index,print,msg[],emit,log,pedeapsa)
 		log_to_file(settings,"%s I found a bug in SV_AddIP_f , returned",PrefixProtection)
 	}
 	else if(log==14){
-		okapi_get_ptr_array(net_adrr(),data,net_adr)
-		formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+		if(ServerVersion == EOS){
+			okapi_get_ptr_array(net_adrr(),data,net_adr)
+			formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+		}
+		else{
+			formatex(getip,charsmax(getip),"not supported for rehlds")
+		}
 		log_to_file(settings,string9,PrefixProtection,getip,msg,Args(),hola,get_pcvar_num(LimitPrintfRcon))
 	}
 	else if(log==15){
@@ -823,8 +971,13 @@ stock HLDS_Shield_func(index,print,msg[],emit,log,pedeapsa)
 		server_cmd("addip %d %s",get_pcvar_num(BanTime),PlayerIP(index))
 		server_cmd("banid %d ^"%s^"",get_pcvar_num(BanTime),BufferSteamID(index))
 		if(containi(PlayerIP(index),AddressHLDS) != -0x01){ // for sv_connectclient blabla
-			okapi_get_ptr_array(net_adrr(),data,net_adr)
-			formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+			if(ServerVersion == EOS){
+				okapi_get_ptr_array(net_adrr(),data,net_adr)
+				formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+			}
+			else{
+				formatex(getip,charsmax(getip),"not supported for rehlds")
+			}
 			server_cmd("addip %d %s",get_pcvar_num(BanTime),getip)
 		}
 	}
@@ -844,8 +997,13 @@ stock HLDS_Shield_func(index,print,msg[],emit,log,pedeapsa)
 		server_cmd("kick ^"%s^" %s",buffer,bomba)
 	}
 	else if(pedeapsa==0x04){
-		okapi_get_ptr_array(net_adrr(),data,net_adr)
-		formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+		if(ServerVersion == EOS){
+			okapi_get_ptr_array(net_adrr(),data,net_adr)
+			formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+		}
+		else{
+			formatex(getip,charsmax(getip),"not supported for rehlds")
+		}
 		server_cmd("addip %d %s",get_pcvar_num(BanTime),getip)
 	}
 	else if(pedeapsa==0x05){
@@ -2061,13 +2219,17 @@ public ThisCommandNow(){ server_print("%s This function ^"%s^" is disabled",Pref
 stock is_server_compatibility(){
 	new rehlds_support[32]
 	if(get_cvar_string("sv_rehlds_local_gametime",rehlds_support,charsmax(rehlds_support))){
-		log_to_file(settings,"%s Don't is support for rehlds , the plugin runs only in compatibility with server , please install HLDS for use this plugin",PrefixProtection,orpheufile2)
+		if(is_linux_server()){
+			log_to_file(settings,"%s Supported rehlds 50% for linux , the plugin runs only in compatibility with server (runs under certain conditions, does not work all) , please install HLDS for use this plugin correctly",PrefixProtection)
+		}
+		else{
+			log_to_file(settings,"%s Don't is support for rehlds for windows , the plugin runs only in compatibility with server , please install HLDS for use this plugin",PrefixProtection)
+		}
 		ServerVersion = 1 // rehlds
 	}
 	else{
 		ServerVersion = EOS // hlds
 	}
-	return 1
 }
 public RegisterRemoveFunction(){
 	
@@ -2408,16 +2570,18 @@ public RegisterOkapiLinux()
 		if(queryserver6153linux){
 			//nu stiu de da crash in 6153 linux dupa changelevel/reload 
 			//queryhook = okapi_add_hook(okapi_build_function(queryserver6153linux,arg_void),"SV_ConnectionlessPacket_Hook")
-			if(file_exists(orpheufile6)){
-				queryhook2 = OrpheuRegisterHook(OrpheuGetFunction("SV_ConnectionlessPacket"),"SV_ConnectionlessPacket_Hook")
-				memory2++
-			}
-			else{
-				log_to_file(settings,"%s Injected successfully %s",PrefixProtection,orpheufile6)
-				Create_Signature("SV_ConnectionslessPacket")
-				set_task(1.0,"debug_orpheu")
-			}
-		}	
+			if(ServerVersion == EOS){
+				if(file_exists(orpheufile6)){
+					queryhook2 = OrpheuRegisterHook(OrpheuGetFunction("SV_ConnectionlessPacket"),"SV_ConnectionlessPacket_Hook")
+					memory2++
+				}
+				else{
+					log_to_file(settings,"%s Injected successfully %s",PrefixProtection,orpheufile6)
+					Create_Signature("SV_ConnectionslessPacket")
+					set_task(1.0,"debug_orpheu")
+					}
+				}
+			}	
 		else{ErrorSignature();memory=8;}
 		if(infokeylinux){
 			infovaluehook = okapi_add_hook(okapi_build_function(infokeylinux,arg_string,arg_string,arg_string,arg_int),"Info_ValueForKey_Hook")
