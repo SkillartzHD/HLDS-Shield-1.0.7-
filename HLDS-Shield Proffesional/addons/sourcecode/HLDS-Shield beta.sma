@@ -2892,8 +2892,8 @@ public SV_CheckProtocolSpamming(bruteforce){
 					formatex(getip2,charsmax(getip2),"%d%d%d%d",data[ip][EOS], data[ip][0x01], data[ip][0x02], data[ip][0x03])
 				}
 				else{
-					formatex(getip,charsmax(getip),"not supported for rehlds",data[ip][EOS], data[ip][0x01], data[ip][0x02], data[ip][0x03])
-					formatex(getip2,charsmax(getip2),"not supported for rehlds",data[ip][EOS], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+					formatex(getip,charsmax(getip),"not supported for rehlds")
+					formatex(getip2,charsmax(getip2),"not supported for rehlds")
 				}
 			}
 		}
