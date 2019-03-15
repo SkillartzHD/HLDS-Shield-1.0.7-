@@ -416,13 +416,30 @@ public RegisterOrpheu(){
 			memory2++
 		}
 		if(file_exists(orpheufile1)){
-			executestringhook = OrpheuRegisterHook(OrpheuGetFunction("Cmd_ExecuteString"),"Cmd_ExecuteString_Fix")
-			memory2++
+			if(!is_linux_server()){
+				if(GetEngineVersion()<=8000){
+					executestringhook = OrpheuRegisterHook(OrpheuGetFunction("Cmd_ExecuteString"),"Cmd_ExecuteString_Fix")
+					memory2++
+				}
+			}
+			else{
+				executestringhook = OrpheuRegisterHook(OrpheuGetFunction("Cmd_ExecuteString"),"Cmd_ExecuteString_Fix")
+				memory2++
+			}
 		}
 		else{
-			log_to_file(settings,"%s Injected successfully %s",PrefixProtection,orpheufile1)
-			Create_Signature("Cmd_ExecuteString")
-			set_task(1.0,"debug_orpheu")
+			if(!is_linux_server()){
+				if(GetEngineVersion()<=8000){
+					log_to_file(settings,"%s Injected successfully %s",PrefixProtection,orpheufile1)
+					Create_Signature("Cmd_ExecuteString")
+					set_task(1.0,"debug_orpheu")
+				}
+			}
+			else{
+				log_to_file(settings,"%s Injected successfully %s",PrefixProtection,orpheufile1)
+				Create_Signature("Cmd_ExecuteString")
+				set_task(1.0,"debug_orpheu")
+			}
 		}
 		
 		if(file_exists(orpheufile7)){
