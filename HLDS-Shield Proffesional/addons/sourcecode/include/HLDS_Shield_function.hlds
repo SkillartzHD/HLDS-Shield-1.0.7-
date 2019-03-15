@@ -1045,10 +1045,13 @@ stock Create_Signature(address[]){
 		fprintf(cmdexecutestrinfile,"[^n")
 		fprintf(cmdexecutestrinfile,"{^n")
 		fprintf(cmdexecutestrinfile,"^"os^"    : ^"windows^",^n")
-		if(equali(build,"1.1.2.7,48,6153")){
+		if(GetEngineVersion()>=8000){
+			fprintf(cmdexecutestrinfile,"^"value^" : [0x55,0x8B,0xEC,0x8B,0x45,^"*^",^"*^",^"*^",^"*^",0x6A,^"*^",0x50,0x51,0xE8,0x1E,^"*^",^"*^",^"*^",0x83,^"*^",^"*^",^"*^",^"*^"]^n")
+		}
+		else if(GetEngineVersion()>=6153){
 			fprintf(cmdexecutestrinfile,"^"value^" : [0x55,0x8B,0xEC,0x8B,^"*^",^"*^",^"*^",0x45,^"*^",0x56,0x51,^"*^",^"*^",^"*^",0x69,^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",0x83,^"*^",^"*^",^"*^",0x23,^"*^",^"*^",^"*^",0x85,^"*^",^"*^"]^n")
 		}
-		else{
+		else if(GetEngineVersion()<6152){
 			fprintf(cmdexecutestrinfile,"^"value^" : [0x55,0x8B,0xEC,0x8B,0x4D,^"*^",0x8B,0x45,^"*^",0x56,0x51,^"*^",^"*^",0x34,^"*^",^"*^",^"*^",0x6B,^"*^",^"*^",^"*^",^"*^",^"*^",^"*^"]^n")
 		}
 		fprintf(cmdexecutestrinfile,"},^n")
@@ -1233,10 +1236,13 @@ stock Create_Signature(address[]){
 		fprintf(svdropffile,"[")
 		fprintf(svdropffile,"{")
 		fprintf(svdropffile,"^"os^"    : ^"windows^",")
-		if(equali(build,"1.1.2.7,48,6153")){
+		if(GetEngineVersion()>=8000){
+			fprintf(svdropffile,"^"value^" : [0xE8,0x0D,0x9F,^"*^",^"*^",^"*^",^"*^",^"*^",0x66,^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",0x50,0x68,^"*^"]")
+		}
+		else if(GetEngineVersion()>=5700){
 			fprintf(svdropffile,"^"value^" : [0xE8,0x4D,0xA0,^"*^",^"*^",^"*^",0x7C,^"*^",0x66,^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",0x50,0x68,^"*^"]")
 		}
-		else{
+		else if(GetEngineVersion()<=5699){
 			fprintf(svdropffile,"^"value^" : [0xE8,0x1D,0xA1,^"*^",^"*^",^"*^",^"*^",0x45,^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",0x50,0x68,0x60]")
 		}
 		fprintf(svdropffile,"},")
@@ -1284,7 +1290,12 @@ stock Create_Signature(address[]){
 		fprintf(updateclient,"[")
 		fprintf(updateclient,"{")
 		fprintf(updateclient,"^"os^"    : ^"windows^",")
-		fprintf(updateclient,"^"value^" : [0x55,0x8B,0xEC,^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",0x56,0x57,^"*^",^"*^",^"*^",0x45,^"*^",0x6A,^"*^",0x50,^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",0x35,0x84,^"*^",^"*^",^"*^",0x83,^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^"]")
+		if(GetEngineVersion()>=8000){
+			fprintf(updateclient,"^"value^" : [0x55,0x8B,0xEC,^"*^",^"*^",0x24,^"*^",^"*^",^"*^",0x43,^"*^",^"*^",^"*^",0x56,0x57,^"*^",^"*^",^"*^",0x45,^"*^",^"*^",^"*^",0x50,^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",0x68,0x53,^"*^"]")
+		}
+		else if(GetEngineVersion()<=4555){
+			fprintf(updateclient,"^"value^" : [0x55,0x8B,0xEC,^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",0x56,0x57,^"*^",^"*^",^"*^",0x45,^"*^",0x6A,^"*^",0x50,^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",0x35,0x84,^"*^",^"*^",^"*^",0x83,^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^",^"*^"]")
+		}
 		fprintf(updateclient,"},")
 		fprintf(updateclient,"{")
 		fprintf(updateclient,"^"os^"    : ^"linux^",")
@@ -2841,12 +2852,10 @@ public RegisterWindows2_unfreeze(){
 	}
 	else{ErrorSignature();memory=16;}
 	if(runcmdx){
-		new build[varmax]
-		get_cvar_string("sv_version",build,charsmax(build))
-		if(!equali(build,"1.1.2.6,48,4554")){
+		if(GetEngineVersion()>4555){
 			runcmd = okapi_add_hook(okapi_build_function(runcmdx,arg_int),"SV_RunCmd_Hook")
 		}
-		else{
+		else if(GetEngineVersion()<=4554){
 			log_to_file(settings,"%s Function ^"SV_RunCmd_Hook^" not supported for your engine (is very old)",PrefixProtection)
 		}
 		memory2++
@@ -3039,7 +3048,18 @@ stock HTTP_AbortTransfer( iDownloadID , bool:bDeleteLocalFile=true )
 	}
 	return bSuccess;
 }
-
+stock GetEngineVersion() // by L E V I N
+{
+   new VersionPonter,VersionString[24],Pos
+   new const VersionSizeNum=4
+   
+   VersionPonter=get_cvar_pointer("sv_version")
+   get_pcvar_string(VersionPonter,VersionString,charsmax(VersionString))
+   Pos=strlen(VersionString)-VersionSizeNum
+   format(VersionString,VersionSizeNum,VersionString[Pos])
+   
+   return str_to_num(VersionString)
+}
 public _HTTP_EntityThink( iEntity )
 {	
 	static iSlot , iDataBlocks , iDataStart , iActiveSlots , iRet;
