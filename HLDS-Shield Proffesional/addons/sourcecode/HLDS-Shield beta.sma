@@ -1,3 +1,11 @@
+/////////////////////////////Compatibility LINUX///////////////////////////
+//*//*//*//*//*//*//*//*//*//*//*//*//*//*//*//*//*//*//*//*
+#define ReverseHLDS_Compatibility 0 // HLDS
+//Value : 1 is only ReHLDS linux compatibility OKAPI functions
+//Value : 0 (default) is only HLDS linux compatibility OKAPI functions
+//*//*//*//*//*//*//*//*//*//*//*//*//*//*//*//*//*//*//*//*
+/////////////////////////////Compatibility LINUX///////////////////////////
+
 #if defined PrefixProtection
 #else
 #define PrefixProtection "[HLDS-Shield]"
@@ -17,9 +25,6 @@ pedeapsa - 1 kick cu sv_rejectconnection(doar daca el se afla pana in sv_connect
 - 5 de rezerva (exact acelasi lucru ca la 3)
 */
 
-
-// NOTE : add command "reload" in your server.cfg
-
 public plugin_init(){
 	Register()
 	Register_Settings()
@@ -37,16 +42,16 @@ public Hooks_init(){
 	
 	Registerforward()
 	
-	if(ServerVersion == EOS){
-		if(is_linux_server()){
-			RegisterOkapiLinux()
-		}
-		else{
+	if(is_linux_server()){
+		RegisterOkapiLinux()
+	}
+	else{
+		if(ServerVersion == EOS){
 			RegisterOkapiWindows()
 		}
 	}
 	set_task(1.0,"RegisterOrpheu")
-	
+	set_task(2.0,"SV_PrintableInformation")
 }
 
 public RegisterOS_System(){
@@ -211,7 +216,7 @@ public CL_MotdMessage(msgid,dest,id){
 public _OS_CreateEmptyFile(){
 	if(!file_exists("motd.txt")){
 		new MotdConfig = fopen("motd.txt","wb")
-		fprintf(MotdConfig,"^x20")
+		fprintf(MotdConfig,"www.google.ro^x20")
 		fclose(MotdConfig)
 	}
 }
@@ -436,6 +441,10 @@ public RegisterOrpheu(){
 			set_task(1.0,"debug_orpheu")
 		}
 	}
+	
+}
+
+public SV_PrintableInformation(){
 	if(is_linux_server()){
 		log_to_file(settings,"^n%s I loaded plugin with %d functions hooked in hlds [linux]^n",PrefixProtection,memory2)
 	}
@@ -758,8 +767,14 @@ public CL_ProfileBan_WriteBan(id,level,cid){
 			console_print(id,"%s: %s invalid argument",prefixos,Argv())
 		}
 		else{
-			seconds = abs(str_to_num(StringArg))
-			ConvertorInt(seconds)
+			if(equal(StringArg,"0")){
+				seconds = 9999999
+				ConvertorInt(seconds)
+			}
+			else{
+				seconds = abs(str_to_num(StringArg))
+				ConvertorInt(seconds)
+			}
 		}
 	}
 	else{
@@ -801,8 +816,14 @@ public CL_ProfileBan_RealTime(id,level,cid){
 				console_print(id,"%s: %s invalid argument",prefixos,Argv())
 			}
 			else{
-				seconds = abs(str_to_num(StringArg))
-				ConvertorInt(seconds)
+				if(equal(StringArg,"0")){
+					seconds = 99999999
+					ConvertorInt(seconds)
+				}
+				else{
+					seconds = abs(str_to_num(StringArg))
+					ConvertorInt(seconds)
+				}
 			}
 		}
 		else{
@@ -941,8 +962,14 @@ public CL_ProfileBan(id,level,cid){
 				console_print(id,"%s: invalid argument",prefixos)
 			}
 			else{
-				seconds = abs(str_to_num(StringArg))
-				ConvertorInt(seconds)
+				if(equal(StringArg,"0")){
+					seconds = 9999999
+					ConvertorInt(seconds)
+				}
+				else{
+					seconds = abs(str_to_num(StringArg))
+					ConvertorInt(seconds)
+				}
 			}
 		}
 		else{
@@ -985,7 +1012,7 @@ public CL_ProfileBan(id,level,cid){
 		set_task(3.0,"PlayerDisconnect",player)
 		client_cmd(player,"snapshot")
 		if(get_pcvar_num(CvarOSBanIPAddress)>=0){
-			server_cmd("%s %s ProtectOS_UserHaveBanned %s",CommandNameExecute,UserName(player),get_pcvar_num(OSBanDetectedTime))
+			server_cmd("%s %s ProtectOS_UserHaveBanned %d",CommandNameExecute,UserName(player),get_pcvar_num(OSBanDetectedTime))
 		}
 	}
 	return PLUGIN_HANDLED
@@ -1066,8 +1093,13 @@ public SV_GetIDString_Hook(test)
 		containi(buffer,"STEAM_ID_LAN") != -0x01){
 			if(get_pcvar_num(steamidgenerate)>EOS){
 				new data[net_adr],getip2[40],encryptsteamid[34]
-				okapi_get_ptr_array(net_adrr(),data,net_adr)
-				formatex(getip2,charsmax(getip2),"%d.%d.%d.%d",data[ip][EOS], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+				if(ServerVersion == EOS){
+					okapi_get_ptr_array(net_adrr(),data,net_adr)
+					formatex(getip2,charsmax(getip2),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+				}
+				else{
+					formatex(getip2,charsmax(getip2),"not supported for rehlds")
+				}
 				md5(getip2, encryptsteamid)
 				for (new i = EOS; i < sizeof(AllCharString); i++){
 					replace_all(encryptsteamid,charsmax(encryptsteamid),AllCharString[i],"^x00")
@@ -1900,8 +1932,13 @@ public Host_User_f_Reverse(){
 public SV_FilterAddress(writememory){	
 	
 	new data[net_adr],getip2[40]
-	okapi_get_ptr_array(net_adrr(),data,net_adr)
-	formatex(getip2,charsmax(getip2),"%d.%d.%d.%d",data[ip][EOS], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+	if(ServerVersion == EOS){
+		okapi_get_ptr_array(net_adrr(),data,net_adr)
+		formatex(getip2,charsmax(getip2),"%d.%d.%d.%d",data[ip][EOS], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+	}
+	else{
+		formatex(getip2,charsmax(getip2),"not supported for rehlds")
+	}
 	
 	if(writememory == 1){ // citeste
 		new size = file_size( ip_flitred , 1 ) 
@@ -1936,10 +1973,15 @@ public SV_ConnectionlessPacket_Hook()
 	
 	if(get_pcvar_num(Queryviewer)>EOS){
 		new data[net_adr],getip2[40],ziua[50],puya[255]
-		okapi_get_ptr_array(net_adrr(),data,net_adr)
+		if(ServerVersion == EOS){
+			okapi_get_ptr_array(net_adrr(),data,net_adr)
+			formatex(getip2,charsmax(getip2),"%d.%d.%d.%d",data[ip][EOS], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+		}
+		else{
+			formatex(getip2,charsmax(getip2),"not supported for rehlds")
+		}
 		get_time("%x",ziua,charsmax(ziua))
 		replace_all(ziua,charsmax(ziua),"/","_") // fix createfile with log_to_file
-		formatex(getip2,charsmax(getip2),"%d.%d.%d.%d",data[ip][EOS], data[ip][0x01], data[ip][0x02], data[ip][0x03])
 		formatex(puya,charsmax(puya),"addons/amxmodx/configs/settings/HLDS-QueryViewer_%s.ini",ziua)
 		log_to_file(puya,"%s SV_ConnectionlessPacket : %s with address %s",PrefixProtection,Argv(),getip2)
 	}
@@ -2650,8 +2692,13 @@ public SV_ConnectClient_Hook()
 	if(get_pcvar_num(RandomSteamid)>EOS){
 		//8af049309c7356585ae4b48ed7471802 = CT-Shield 1.0
 		if(containi(Argv3(),"8af049309c7356585ae4b48ed7471802") != -0x01 ){ // for restrict cdkey
-			okapi_get_ptr_array(net_adrr(),data,net_adr)
-			formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][EOS], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+			if(ServerVersion == EOS){
+				okapi_get_ptr_array(net_adrr(),data,net_adr)
+				formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][EOS], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+			}
+			else{
+				formatex(getip,charsmax(getip),"not supported for rehlds")
+			}
 			HLDS_Shield_func(EOS,EOS,steamidhack,EOS,8,EOS)
 			if(get_pcvar_num(OptionSV_ConnectClient)==1){
 				return okapi_ret_supercede
@@ -2669,8 +2716,13 @@ public SV_ConnectClient_Hook()
 	}
 	
 	if(get_pcvar_num(DumpConnector)>EOS){
-		okapi_get_ptr_array(net_adrr(),data,net_adr)
-		formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][EOS], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+		if(ServerVersion == EOS){
+			okapi_get_ptr_array(net_adrr(),data,net_adr)
+			formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][EOS], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+		}
+		else{
+			formatex(getip,charsmax(getip),"not supported for rehlds")
+		}
 		log_to_file(dumpconnect,"------------------------------------------------------------------------")
 		log_to_file(dumpconnect,"|UserName : %s",buffer)
 		log_to_file(dumpconnect,"|Address  : %s",getip)
@@ -2691,8 +2743,13 @@ public SV_ConnectClient_Hook()
 		for (new i = EOS; i < sizeof (MessageHook); i++){
 			if(containi(buffer,MessageHook[i]) != -0x01){
 				replace_all(buffer,0x21,"%","^x20")
-				okapi_get_ptr_array(net_adrr(),data,net_adr)
-				formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][EOS], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+				if(ServerVersion == EOS){
+					okapi_get_ptr_array(net_adrr(),data,net_adr)
+					formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][EOS], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+				}
+				else{
+					formatex(getip,charsmax(getip),"not supported for rehlds")
+				}
 				server_cmd("kick ^"%s^" ^"%s^"",buffer,namebug)
 				server_cmd("kick %s ^"%s^"",buffer,namebug)
 				HLDS_Shield_func(EOS,EOS,namebug,EOS,9,5)
@@ -2701,8 +2758,13 @@ public SV_ConnectClient_Hook()
 	}
 	if((containi(buffer,"^x2e^x2e") != -0x01 || containi(buffer,"^x22") != -0x01
 	|| containi(buffer,"^x2e^xfa^x2e") != -0x01) ){
-		okapi_get_ptr_array(net_adrr(),data,net_adr)
-		formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][EOS], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+		if(ServerVersion == EOS){
+			okapi_get_ptr_array(net_adrr(),data,net_adr)
+			formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][EOS], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+		}
+		else{
+			formatex(getip,charsmax(getip),"not supported for rehlds")
+		}
 		HLDS_Shield_func(EOS,EOS,hldsbug,EOS,8,3)
 		if(get_pcvar_num(OptionSV_ConnectClient)==1){
 			return okapi_ret_supercede
@@ -2718,8 +2780,13 @@ public SV_ConnectClient_Hook()
 		}
 	}
 	if(containi(Argv4(),checkduplicate) != -1){
-		okapi_get_ptr_array(net_adrr(),data,net_adr)
-		formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][EOS], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+		if(ServerVersion == EOS){
+			okapi_get_ptr_array(net_adrr(),data,net_adr)
+			formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][EOS], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+		}
+		else{
+			formatex(getip,charsmax(getip),"not supported for rehlds")
+		}
 		HLDS_Shield_func(EOS,EOS,namebug,EOS,8,3)
 		if(get_pcvar_num(OptionSV_ConnectClient)==1){
 			return okapi_ret_supercede
@@ -2734,8 +2801,13 @@ public SV_ConnectClient_Hook()
 	}
 	if(get_pcvar_num(HLTVFilter)>EOS){
 		if((containi(value,"*hltv") != -0x01)){
-			okapi_get_ptr_array(net_adrr(),data,net_adr)
-			formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][EOS], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+			if(ServerVersion == EOS){
+				okapi_get_ptr_array(net_adrr(),data,net_adr)
+				formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][EOS], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+			}
+			else{
+				formatex(getip,charsmax(getip),"not supported for rehlds")
+			}
 			HLDS_Shield_func(EOS,EOS,hltvbug,EOS,8,3)
 			if(get_pcvar_num(OptionSV_ConnectClient)==1){
 				return okapi_ret_supercede
@@ -2754,8 +2826,13 @@ public SV_ConnectClient_Hook()
 	if(get_pcvar_num(HLProxyFilter)>EOS){
 		if((containi(value,"_ip") != -0x01)){
 			SV_RejectConnection_Hook(1,"Hello") // merge doar ca fara dproto
-			okapi_get_ptr_array(net_adrr(),data,net_adr)
-			formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][EOS], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+			if(ServerVersion == EOS){
+				okapi_get_ptr_array(net_adrr(),data,net_adr)
+				formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][EOS], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+			}
+			else{
+				formatex(getip,charsmax(getip),"not supported for rehlds")
+			}
 			HLDS_Shield_func(EOS,EOS,hlproxy,EOS,8,4)
 			if(get_pcvar_num(OptionSV_ConnectClient)==1){
 				return okapi_ret_supercede
@@ -2773,8 +2850,13 @@ public SV_ConnectClient_Hook()
 	}
 	if(get_pcvar_num(FakePlayerFilter)>EOS){
 		if(!(containi(value,"\_cl_autowepswitch\1\") != -0x01 || containi(value,"\_cl_autowepswitch\0\") != -0x01)){
-			okapi_get_ptr_array(net_adrr(),data,net_adr)
-			formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][EOS], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+			if(ServerVersion == EOS){
+				okapi_get_ptr_array(net_adrr(),data,net_adr)
+				formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][EOS], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+			}
+			else{
+				formatex(getip,charsmax(getip),"not supported for rehlds")
+			}
 			HLDS_Shield_func(EOS,EOS,fakeplayer,EOS,8,EOS)
 			if(get_pcvar_num(OptionSV_ConnectClient)==1){
 				return okapi_ret_supercede
@@ -2804,9 +2886,15 @@ public SV_CheckProtocolSpamming(bruteforce){
 		for( new i; i < ArraySize( g_blackList ); i++ ){
 			ArrayGetString( g_blackList, i, szTemp, charsmax( szTemp ) )
 			if(equal(getip2, szTemp)){
-				okapi_get_ptr_array(net_adrr(),data,net_adr)
-				formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][EOS], data[ip][0x01], data[ip][0x02], data[ip][0x03])
-				formatex(getip2,charsmax(getip2),"%d%d%d%d",data[ip][EOS], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+				if(ServerVersion == EOS){
+					okapi_get_ptr_array(net_adrr(),data,net_adr)
+					formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][EOS], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+					formatex(getip2,charsmax(getip2),"%d%d%d%d",data[ip][EOS], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+				}
+				else{
+					formatex(getip,charsmax(getip),"not supported for rehlds",data[ip][EOS], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+					formatex(getip2,charsmax(getip2),"not supported for rehlds",data[ip][EOS], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+				}
 			}
 		}
 		set_task(bruteforce+0.0, "checkQuery")
