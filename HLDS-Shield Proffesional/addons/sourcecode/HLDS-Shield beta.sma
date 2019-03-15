@@ -190,6 +190,9 @@ public Load_Settings(){
 	if(get_pcvar_num(SV_RconCvar)==2){
 		RconRandom()
 	}
+	if(GetEngineVersion()<=4554){
+		server_cmd("shield_name_char_fix 2")
+	}
 }
 
 public SV_ForceFullClientsUpdate_api(index){
@@ -2501,20 +2504,46 @@ public pfnClientUserInfoChanged(id,buffer){
 			show_menu(id,EOS,"^n",0x01)
 		}
 	}
+	if(get_pcvar_num(NameSpammer)>EOS){
+		new get_time_cvar = get_pcvar_num(TimeNameChange)
+		if(containi(szNewName,"ï¼…") !=-1){
+			if (NameUnLock[id]==2){
+				NameUnLock[id] = 2
+				client_print_color(id,id,"^4%s^1 Please wait^4 %d seconds^1 before change the name",PrefixProtection,get_time_cvar)
+				set_user_info(id,"name",longformate) 
+				set_task(float(get_time_cvar),"SHIELD_NameDeBug",id+TASK_ONE2)
+				return FMRES_SUPERCEDE
+			}
+			
+			NameUnLock[id] = EOS
+			set_task(0.3,"SHIELD_NameDeBug2",id)
+			
+		}
+		if(szOldName[0]) {
+			if(!equal(szOldName,szNewName)) {
+				if (NameUnLock[id] == 1){
+					NameUnLock[id] = 1
+					client_print_color(id,id,"^4%s^1 Please wait^4 %d seconds^1 before change the name",PrefixProtection,get_time_cvar)
+					set_user_info(id,"name",longformate)
+					return FMRES_SUPERCEDE
+				}
+				NameUnLock[id] = 1
+				set_task(float(get_time_cvar),"SHIELD_NameDeBug",id+TASK_ONE2)
+			}
+		}
+	}
+	
 	if(get_pcvar_num(NameCharFix)==1){
 		if(containi(szNewName,"&") !=-1){
 			replace_all(szNewName,charsmax(szNewName),"&","ï¼†")
-			replace_all(szNewName,charsmax(szNewName),"&","*")
 			set_user_info(id,"name",szNewName) 
 		}
 		if(containi(szNewName,"%") !=-1){
 			replace_all(szNewName,charsmax(szNewName),"%","ï¼…")
-			replace_all(szNewName,charsmax(szNewName),"%","*")
 			set_user_info(id,"name",szNewName)
 		}
 		if(containi(szNewName,"#") !=-1){
 			replace_all(szNewName,charsmax(szNewName),"#","ï¼ƒ")
-			replace_all(szNewName,charsmax(szNewName),"#","*")
 			set_user_info(id,"name",szNewName) 
 		}
 		
@@ -2586,35 +2615,6 @@ public pfnClientUserInfoChanged(id,buffer){
 			SV_CheckUserNameForMenuStyle(id,lastname)
 		}
 		
-	}
-	if(get_pcvar_num(NameSpammer)>EOS){
-		new get_time_cvar = get_pcvar_num(TimeNameChange)
-		if(containi(szNewName,"%") !=-1){
-			if (NameUnLock[id]==2){
-				NameUnLock[id] = 2
-				client_print_color(id,id,"^4%s^1 Please wait^4 %d seconds^1 before change the name",PrefixProtection,get_time_cvar)
-				set_user_info(id,"name",longformate) 
-				set_task(float(get_time_cvar),"SHIELD_NameDeBug",id+TASK_ONE2)
-				return FMRES_SUPERCEDE
-			}
-			
-			NameUnLock[id] = EOS
-			set_task(0.3,"SHIELD_NameDeBug2",id+TASK_ONE2)
-			return FMRES_SUPERCEDE
-			
-		}
-		if(szOldName[0]) {
-			if(!equal(szOldName,szNewName)) {
-				if (NameUnLock[id] == 1){
-					NameUnLock[id] = 1
-					client_print_color(id,id,"^4%s^1 Please wait^4 %d seconds^1 before change the name",PrefixProtection,get_time_cvar)
-					set_user_info(id,"name",longformate)
-					return FMRES_SUPERCEDE
-				}
-				NameUnLock[id] = 1
-				set_task(float(get_time_cvar),"SHIELD_NameDeBug",id+TASK_ONE2)
-			}
-		}
 	}
 	if(ServerVersion == EOS){
 		if(get_pcvar_num(UnicodeName)>EOS){
