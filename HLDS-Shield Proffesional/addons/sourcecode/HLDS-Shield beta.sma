@@ -501,13 +501,11 @@ public RegisterFixChars(){
 			set_task(1.0,"debug_orpheu")
 		}
 		else{
-			new build[varmax]
-			get_cvar_string("sv_version",build,charsmax(build))
-			if(!equali(build,"1.1.2.6,48,4554")){
+			if(GetEngineVersion()>4555){
 				OrpheuRegisterHook(OrpheuGetFunction("UTIL_ClientPrint"),"UTIL_ClientPrint_Hook")
 				memory2++
 			}
-			else{
+			else if(GetEngineVersion()<=4554){
 				log_to_file(settings,"%s Function ^"UTIL_ClientPrint^" not supported for your engine (is very old)",PrefixProtection)
 			}
 		}
@@ -533,7 +531,7 @@ public Cmd_ExecuteString_Fix()
 	//all commands is blocked sended by sv_rcon
 	if(get_pcvar_num(RconSkippingCommand)>EOS){
 		if(cmpStr3(Argv3())){
-			log_to_file(settings,"%s Cmd_ExecuetString : blocked this command ^"%s^"",PrefixProtection,Argv3())
+			log_to_file(settings,"%s Cmd_ExecuteString : blocked this command ^"%s^"",PrefixProtection,Argv3())
 			return okapi_ret_supercede
 		}
 	}
