@@ -1838,7 +1838,7 @@ public client_command(id){
 	}
 	if(containi(Args(),"shield_")!= -0x01){
 		if(is_user_admin(id)){
-			HLDS_Shield_func(id,2,hldsbug,1,1,EOS)
+			HLDS_Shield_func(id,2,ilegalcommand,1,1,EOS)
 			return PLUGIN_HANDLED
 		}
 	}
