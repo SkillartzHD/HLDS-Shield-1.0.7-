@@ -1013,10 +1013,6 @@ stock HLDS_Shield_func(index,print,msg[],emit,log,pedeapsa)
 	return 1
 }
 stock Create_Signature(address[]){
-	
-	new build[varmax]
-	get_cvar_string("sv_version",build,charsmax(build))
-	
 	if(equali(address,"Cmd_ExecuteString")){
 		new cmdexecutestrinfile = fopen(orpheufile1,"wb")
 		fprintf(cmdexecutestrinfile,"{^n")
