@@ -818,6 +818,10 @@ public CL_ProfileBan_RealTime(id,level,cid){
 		
 		new player = cmd_target(id, FirstArg, CMDTARGET_OBEY_IMMUNITY | CMDTARGET_NO_BOTS | CMDTARGET_ALLOW_SELF)
 		
+		if(is_user_hltv(player) && is_user_bot(player)){
+			console_print(id,"%s: %s you can not execute the command on a bot/hltv",prefixos,Argv())
+			return PLUGIN_HANDLED
+		}
 		if(equal(FirstArg,"") || equal(SecondArg,"") || equal(StringArg,"")){
 			console_print(id,"%s: %s <name> <reason> <minutes>",prefixos,Argv())
 			return PLUGIN_HANDLED
@@ -924,6 +928,16 @@ public _OS_SendBanSteamID(index,function){
 			new varget[50]
 			get_pcvar_string(CvarTableName,varget,charsmax(varget))
 			get_user_authid(index,steamid,charsmax(steamid))
+			if(containi(steamid,"UNKNOWN") != -0x01 ||
+			containi(steamid,"VALVE_ID_LAN") != -0x01 ||
+			containi(steamid,"VALVE_ID_PENDING") != -0x01 ||
+			containi(steamid,"STEAM_ID_PENDING") != -0x01 ||
+			containi(steamid,"BOT") != -0x01 ||
+			containi(steamid,"HLTV") != -0x01 ||
+			containi(steamid,"STEAM_ID_LAN") != -0x01){
+				console_print(index,"%s: This address is invaild ^"%s^" ",prefixos,string)
+				return PLUGIN_HANDLED
+			}
 			replace_all(steamid,charsmax(steamid),":","_")
 			formatex(getfileorg,charsmax(getfileorg),"addons/amxmodx/configs/settings/OS_Ban/User_%s/%s.txt",varget,steamid)
 			if(!file_exists(getfileorg)){
@@ -943,6 +957,7 @@ public _OS_SendBanSteamID(index,function){
 		}
 		
 	}
+	return PLUGIN_CONTINUE
 }
 public CL_ProfileBan(id,level,cid){
 	
@@ -964,6 +979,10 @@ public CL_ProfileBan(id,level,cid){
 		
 		new player = cmd_target(id,FirstArg,(CMDTARGET_NO_BOTS))
 		
+		if(is_user_hltv(player) && is_user_bot(player)){
+			console_print(id,"%s: %s you can not execute the command on a bot/hltv",prefixos,Argv())
+			return PLUGIN_HANDLED
+		}
 		if(equal(FirstArg,"") || equal(SecondArg,"") || equal(StringArg,"")){
 			console_print(id,"%s: %s <name> <reason> <seconds>",prefixos,Argv())
 			return PLUGIN_HANDLED
