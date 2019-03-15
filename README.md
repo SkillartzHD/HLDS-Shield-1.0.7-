@@ -7,7 +7,7 @@ What does it do ?
 
 Works on reHLDS ?
 
-- yes , less functions orpheu/okapi , just a few function works , the rest is incompatible
+- yes , in small part , to activate the version reHLDS put #define ReverseHLDS_Compatibility on 1 in HLDS-Shield.sma
 
 What is _OS_Ban ?
 
