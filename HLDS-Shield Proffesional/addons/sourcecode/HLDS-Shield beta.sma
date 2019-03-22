@@ -118,6 +118,7 @@ public RegisterCvars(){
 	NoFlood = register_cvar("shield_noflood","1")
 	NoFloodTime = register_cvar("shield_noflood_time","0.75")
 	CvarAutoBuyBug = register_cvar("shield_autobuybug","1")
+	JumpBugCvar = register_cvar("shield_jumpbug","1")
 	
 	// OS_Ban
 	OS_System = register_cvar("shield_os_system","1")
@@ -1895,172 +1896,176 @@ public PfnClientCommand(id){
 
 public Shield_pfnClientPostPreThink(id){
 	
-	static buttons,oButtons[33],flags,oFlags[33]
-	static Float:floatClientSpeedAfter[33]
-	new Float:SpeedClientFall[3]
-	
-	buttons=pev(id,pev_button)
-	flags=pev(id,pev_flags)
-	
-	pev(id,pev_velocity,SpeedClientFall)
-	if(DuckTE[id][0]!=1){
-		if(oButtons[id]&IN_DUCK&&!(buttons&IN_DUCK)){
-			DuckTE[id][1]=-1
-			DuckTE[id][0]=1
+	if(get_pcvar_num(JumpBugCvar)>EOS){
+		static buttons,oButtons[33],flags,oFlags[33]
+		static Float:floatClientSpeedAfter[33]
+		new Float:SpeedClientFall[3]
+		
+		buttons=pev(id,pev_button)
+		flags=pev(id,pev_flags)
+		
+		pev(id,pev_velocity,SpeedClientFall)
+		if(DuckTE[id][0]!=1){
+			if(oButtons[id]&IN_DUCK&&!(buttons&IN_DUCK)){
+				DuckTE[id][1]=-1
+				DuckTE[id][0]=1
+			}
 		}
-	}
-	if(DuckTE[id][0]){
-		++DuckTE[id][1]
-	}
-	if(buttons&IN_DUCK){
-		DuckTE[id][0]=-1
-	}
-	if(JumpTE[id][0]!=1){
-		if(!(oButtons[id]&IN_JUMP)&&buttons&IN_JUMP){
-			JumpTE[id][1]=-1
-			JumpTE[id][0]=1
+		if(DuckTE[id][0]){
+			++DuckTE[id][1]
 		}
-	}
-	if(JumpTE[id][0]){
-		++JumpTE[id][1]
-	}
-	if(!(buttons&IN_JUMP)){
-		JumpTE[id][0]=-1
-	}
-	if(SpeedClientFall[2]<=-500.0){
-		TakeDmgFall[id]=true
-		if(pev(id,pev_flags)&FL_DUCKING){
-			static Float:flOrigin[3],Float:flOrigin2[3],Float:flUserOrigin[3]
-			pev(id,pev_origin,flOrigin)
-			flUserOrigin=flOrigin
-			
-			flHCD[0]=(36.0-2.0+0.03125)
-			flOrigin2=flOrigin
-			flOrigin2[2]-=(flHCD[0]*2.0)
-			engfunc(EngFunc_TraceLine,flOrigin,flOrigin2,DONT_IGNORE_MONSTERS,id,0)
-			flOrigin2[2]+=flHCD[0]
-			get_tr2(0,TR_flFraction,flUserOrigin[0])
-			if(flUserOrigin[0]<=0.5){
-				get_tr2(0,TR_vecEndPos,flOrigin)
-				flOrigin[0]=(flOrigin[2]-flOrigin2[2])
-				flOrigin[1]=(flOrigin2[2]-flOrigin[2])
+		if(buttons&IN_DUCK){
+			DuckTE[id][0]=-1
+		}
+		if(JumpTE[id][0]!=1){
+			if(!(oButtons[id]&IN_JUMP)&&buttons&IN_JUMP){
+				JumpTE[id][1]=-1
+				JumpTE[id][0]=1
+			}
+		}
+		if(JumpTE[id][0]){
+			++JumpTE[id][1]
+		}
+		if(!(buttons&IN_JUMP)){
+			JumpTE[id][0]=-1
+		}
+		if(SpeedClientFall[2]<=-500.0){
+			TakeDmgFall[id]=true
+			if(pev(id,pev_flags)&FL_DUCKING){
+				static Float:flOrigin[3],Float:flOrigin2[3],Float:flUserOrigin[3]
+				pev(id,pev_origin,flOrigin)
+				flUserOrigin=flOrigin
 				
-				if(flOrigin[0]<=(2.0-0.03125)&&flOrigin[0]>=0.0){
-					flHCD[id]=flOrigin[0]
-					flHCD[0]=(SpeedClientFall[2]*-1.0)
-					}else if(flOrigin[1]<=0.03125&&flOrigin[1]>=0.0){
-					flHCD[id]=flOrigin[1]
-					flHCD[0]=(SpeedClientFall[2]*-1.0)
-				}
-			}
-			if(flHCD[id]==0.0){
-				if(flUserOrigin[0]!=1.0){
+				flHCD[0]=(36.0-2.0+0.03125)
+				flOrigin2=flOrigin
+				flOrigin2[2]-=(flHCD[0]*2.0)
+				engfunc(EngFunc_TraceLine,flOrigin,flOrigin2,DONT_IGNORE_MONSTERS,id,0)
+				flOrigin2[2]+=flHCD[0]
+				get_tr2(0,TR_flFraction,flUserOrigin[0])
+				if(flUserOrigin[0]<=0.5){
 					get_tr2(0,TR_vecEndPos,flOrigin)
+					flOrigin[0]=(flOrigin[2]-flOrigin2[2])
+					flOrigin[1]=(flOrigin2[2]-flOrigin[2])
+					
+					if(flOrigin[0]<=(2.0-0.03125)&&flOrigin[0]>=0.0){
+						flHCD[id]=flOrigin[0]
+						flHCD[0]=(SpeedClientFall[2]*-1.0)
+						}else if(flOrigin[1]<=0.03125&&flOrigin[1]>=0.0){
+						flHCD[id]=flOrigin[1]
+						flHCD[0]=(SpeedClientFall[2]*-1.0)
+					}
+				}
+				if(flHCD[id]==0.0){
+					if(flUserOrigin[0]!=1.0){
+						get_tr2(0,TR_vecEndPos,flOrigin)
+					}
 				}
 			}
-		}
-		flHCD[0]=floatClientSpeedAfter[id]=(SpeedClientFall[2]*-1.0)
-		
-	}
-	else{
-		flHCD[0]=floatClientSpeedAfter[id]
-		floatClientSpeedAfter[id]=0.0
-		
-		if(TakeDmgFall[id]){
-			if(DuckTE[id][0]&&DuckTE[id][1]){
-				--DuckTE[id][1]
-			}
-			else{
-				DuckTE[id][0]=0
-			}
+			flHCD[0]=floatClientSpeedAfter[id]=(SpeedClientFall[2]*-1.0)
 			
-			if(JumpTE[id][0]&&JumpTE[id][1]){
-				--JumpTE[id][1]
-			}
-			else{
-				JumpTE[id][0]=0
-			}
 		}
-		TakeDmgFall[id]=false
-		flHCD[id]=0.0
-		DuckTE[id][1]=0
-		JumpTE[id][1]=0
-		DuckTE[id][0]=0
-		JumpTE[id][0]=0
+		else{
+			flHCD[0]=floatClientSpeedAfter[id]
+			floatClientSpeedAfter[id]=0.0
+			
+			if(TakeDmgFall[id]){
+				if(DuckTE[id][0]&&DuckTE[id][1]){
+					--DuckTE[id][1]
+				}
+				else{
+					DuckTE[id][0]=0
+				}
+				
+				if(JumpTE[id][0]&&JumpTE[id][1]){
+					--JumpTE[id][1]
+				}
+				else{
+					JumpTE[id][0]=0
+				}
+			}
+			TakeDmgFall[id]=false
+			flHCD[id]=0.0
+			DuckTE[id][1]=0
+			JumpTE[id][1]=0
+			DuckTE[id][0]=0
+			JumpTE[id][0]=0
+		}
+		SpeedClientFall[2]=0.0
+		oFlags[id]=flags
+		oButtons[id]=buttons
 	}
-	SpeedClientFall[2]=0.0
-	oFlags[id]=flags
-	oButtons[id]=buttons
 }
 public Shield_pfnClientPostThink(id){
 	
-	static buttons,oButtons[33]
-	buttons=pev(id,pev_button)
-	
-	static Float:fSpeed[3]
-	pev(id,pev_velocity,fSpeed)
-	if(GetUserFPS[id]>48.0&&GetUserFPS[id]<101.0){
-		FPSReader[id][0]+=GetUserFPS[id]
-		++FPSReader[id][1]
-	}
-	if(TakeDmgFall[id]){
-		if(Distance_Ground(id)<(fSpeed[2]/-10.0)){	
-			++AVG_FpsInt[id]
-		}
-	}
-	else if(!TakeDmgFall[id]&&AVG_FpsInt[id]){
-		AVG_FpsInt[id]=0
-		averagefps[id]=0.0
-		for(new i=0;i<AVG_FpsInt[id];++i){
-			FPSChecker1[id][i]=0.0
-			DistanceFall[id][i]=0.0
-		}
-	}
-	if(TakeDmgFall[id]&&!(oButtons[id]&IN_JUMP)&&buttons&IN_JUMP){
-		JumpTE[id][1]=0
+	if(get_pcvar_num(JumpBugCvar)>EOS){
+		static buttons,oButtons[33]
+		buttons=pev(id,pev_button)
 		
-		if(oButtons[id]&IN_DUCK&&!DuckTE[id][1]){
-			if(!(pev(id,pev_flags)&FL_DUCKING)){
-				if(fSpeed[2]>200.0){
-					static Float:FPSReader1[33],Float:FPSReader2[33]
-					FPSReader1[id]=(averagefps[id]/AVG_FpsInt[id])
-					FPSReader2[id]=(FPSReader[id][0]/FPSReader[id][1])
-					if(FPSReader1[id]>101.6&&AVG_FpsInt[id]>1){
-						locala[id]++
-						if(locala[id] >=get_pcvar_num(LimitPrintf)){
+		static Float:fSpeed[3]
+		pev(id,pev_velocity,fSpeed)
+		if(GetUserFPS[id]>48.0&&GetUserFPS[id]<101.0){
+			FPSReader[id][0]+=GetUserFPS[id]
+			++FPSReader[id][1]
+		}
+		if(TakeDmgFall[id]){
+			if(Distance_Ground(id)<(fSpeed[2]/-10.0)){	
+				++AVG_FpsInt[id]
+			}
+		}
+		else if(!TakeDmgFall[id]&&AVG_FpsInt[id]){
+			AVG_FpsInt[id]=0
+			averagefps[id]=0.0
+			for(new i=0;i<AVG_FpsInt[id];++i){
+				FPSChecker1[id][i]=0.0
+				DistanceFall[id][i]=0.0
+			}
+		}
+		if(TakeDmgFall[id]&&!(oButtons[id]&IN_JUMP)&&buttons&IN_JUMP){
+			JumpTE[id][1]=0
+			
+			if(oButtons[id]&IN_DUCK&&!DuckTE[id][1]){
+				if(!(pev(id,pev_flags)&FL_DUCKING)){
+					if(fSpeed[2]>200.0){
+						static Float:FPSReader1[33],Float:FPSReader2[33]
+						FPSReader1[id]=(averagefps[id]/AVG_FpsInt[id])
+						FPSReader2[id]=(FPSReader[id][0]/FPSReader[id][1])
+						if(FPSReader1[id]>101.6&&AVG_FpsInt[id]>1){
+							locala[id]++
+							if(locala[id] >=get_pcvar_num(LimitPrintf)){
+								user_kill(id)
+							}
+							else{
+								if(debug_s[id]== EOS){
+									if(locala[id] == 3){
+										locala[id]=1
+										debug_s[id]=1
+									}
+								}
+								HLDS_Shield_func(id,1,jumpbug,id,1,EOS)
+							}	
+							user_kill(id)
+							}else if(FPSReader1[id]<FPSReader2[id]-3.5&&AVG_FpsInt[id]>1){
+							locala[id]++
+							if(locala[id] >=get_pcvar_num(LimitPrintf)){
+								user_kill(id)
+							}
+							else{
+								if(debug_s[id]== EOS){
+									if(locala[id] == 3){
+										locala[id]=1
+										debug_s[id]=1
+									}
+								}
+								HLDS_Shield_func(id,1,jumpbug,id,1,EOS)
+							}
 							user_kill(id)
 						}
-						else{
-							if(debug_s[id]== EOS){
-								if(locala[id] == 3){
-									locala[id]=1
-									debug_s[id]=1
-								}
-							}
-							HLDS_Shield_func(id,1,jumpbug,id,1,EOS)
-						}	
-						user_kill(id)
-						}else if(FPSReader1[id]<FPSReader2[id]-3.5&&AVG_FpsInt[id]>1){
-						locala[id]++
-						if(locala[id] >=get_pcvar_num(LimitPrintf)){
-							user_kill(id)
-						}
-						else{
-							if(debug_s[id]== EOS){
-								if(locala[id] == 3){
-									locala[id]=1
-									debug_s[id]=1
-								}
-							}
-							HLDS_Shield_func(id,1,jumpbug,id,1,EOS)
-						}
-						user_kill(id)
 					}
 				}
 			}
 		}
+		oButtons[id]=buttons
 	}
-	oButtons[id]=buttons
 	return FMRES_IGNORED
 }
 public RegisterCmdFake()
