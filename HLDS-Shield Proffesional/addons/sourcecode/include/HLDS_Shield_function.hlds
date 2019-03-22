@@ -13,6 +13,7 @@
 #define ilegalcommand "#Cstrike_IllegalCommand"
 #define cmdbug "#Cstrike_pfnClientCommand"
 #define namebug "#Cstrike_SetValueForStarKey"
+#define jumpbug "#Cstrike_JumpBug"
 #define netbug "#Cstrike_NetGetLongBug"
 #define autobuybug "#Cstrike_AutoBuyBug"
 #define processfilex "#Cstrike_ProcessFile"
