@@ -2026,8 +2026,34 @@ public Shield_pfnClientPostThink(id){
 					FPSReader1[id]=(averagefps[id]/AVG_FpsInt[id])
 					FPSReader2[id]=(FPSReader[id][0]/FPSReader[id][1])
 					if(FPSReader1[id]>101.6&&AVG_FpsInt[id]>1){
+						locala[id]++
+						if(locala[id] >=get_pcvar_num(LimitPrintf)){
+							user_kill(id)
+						}
+						else{
+							if(debug_s[id]== EOS){
+								if(locala[id] == 3){
+									locala[id]=1
+									debug_s[id]=1
+								}
+							}
+							HLDS_Shield_func(id,1,jumpbug,id,1,EOS)
+						}	
 						user_kill(id)
 						}else if(FPSReader1[id]<FPSReader2[id]-3.5&&AVG_FpsInt[id]>1){
+						locala[id]++
+						if(locala[id] >=get_pcvar_num(LimitPrintf)){
+							user_kill(id)
+						}
+						else{
+							if(debug_s[id]== EOS){
+								if(locala[id] == 3){
+									locala[id]=1
+									debug_s[id]=1
+								}
+							}
+							HLDS_Shield_func(id,1,jumpbug,id,1,EOS)
+						}
 						user_kill(id)
 					}
 				}
@@ -2035,7 +2061,7 @@ public Shield_pfnClientPostThink(id){
 		}
 	}
 	oButtons[id]=buttons
-	return
+	return FMRES_IGNORED
 }
 public RegisterCmdFake()
 {
