@@ -257,7 +257,7 @@ new Float:DelaySpamBotStop[33],Float:DelaySpamBotStart[33]
 new UserCheckImpulse[33],DuplicateSteamid,suspiciousdebug_await[33],HLTVFilter,PrintErrorSysError,ServerVersion,HLProxyFilter,RandomSteamid,IlegalCmd,AgresiveFunction
 new Radio,convertortime[255],hour,minutes,day,year,month
 new GetTimeFile[10],GetTimeReal[10],CvarAutoBuyBug
-new OptionSV_ConnectClient,steamidgenerate,FakePlayerFilter,NameUnLock[33],DumpConnector,stringbuffer2[200],ShutdownServer
+new OptionSV_ConnectClient,steamidgenerate,FakePlayerFilter,NameUnLock[33],DumpConnector,stringbuffer2[200],ShutdownServer,JumpBugCvar
 new Float:g_Flooding[33] = {0.0,...},g_Flood[33] = {0,...}
 new NoFloodTime,NoFlood,CvarOSBanIPAddress,LostConnectionSeconds,NameBugShowMenu,steamidhash,CommandBug,NameCharFix
 new OSBanDetectedTime,ChatCharFix,UpdateClient,NameBug,NameSpammer,SpectatorVguiBug,lostconnection
@@ -2129,6 +2129,7 @@ public Register_Settings()
 		fprintf(FileVar,"shield_remove_string ^"motd_write^"^n")
 		fprintf(FileVar,"shield_remove_string ^"heartbeat^"^n")
 		
+		fprintf(FileVar,"shield_jumpbug 1^n")
 		fprintf(FileVar,"shield_autobuybug 1^n")
 		fprintf(FileVar,"shield_noflood 0^n")
 		fprintf(FileVar,"shield_noflood_time 0.75^n")
