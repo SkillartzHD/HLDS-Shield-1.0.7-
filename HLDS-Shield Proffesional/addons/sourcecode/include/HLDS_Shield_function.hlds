@@ -265,6 +265,12 @@ new mungelimit[varmax],getip[varmax],getip2[varmax],memory,memory2,holax,SV_Rcon
 new Array:cslBlock, g_ConsoleStr,hola,fuck,memhack,Array:unicodenameblock,g_ConsoleStr2,Array:rconskipping,g_ConsoleStr3
 new LimitResources,VAC,limitb[varmax],local,limita[varmax],limit[varmax]
 new GameData,SendBadDropClient,ParseConsistencyResponse,NameProtector,Queryviewer,UnicodeName
+new TakeDmgFall[33],JumpTE[33][2],DuckTE[33][2],Float:flHCD[33]
+new Float:averagefps[33]
+new AVG_FpsInt[33]
+new Float:FPSChecker1[33][32]
+new Float:DistanceFall[33][32]
+new Float:GetUserFPS[33],Float:FPSReader[33][2]
 enum net_adr {type=EOS,ip[0x04]=0x04}
 enum {BUFFER_MAXIM = 64}
 new CvarTableName,checkusor,CvarAdministratorServer,CvarFindCvarBuffer,CvarCreateBuffer,CheckVPN,CvarVpnDetector
@@ -3043,6 +3049,22 @@ stock HTTP_AbortTransfer( iDownloadID , bool:bDeleteLocalFile=true )
 		}
 	}
 	return bSuccess;
+}
+stock Float:Distance_Ground(id){
+	new Float:start[3],Float:end[3]
+	entity_get_vector(id,EV_VEC_origin,start)
+	if(entity_get_int(id,EV_INT_flags)&FL_DUCKING){
+		start[2]+=18.0
+	}
+	end[0]=start[0]
+	end[1]=start[1]
+	end[2]=start[2]-9999.0
+	new ptr=create_tr2()
+	engfunc(EngFunc_TraceHull,start,end,IGNORE_MONSTERS,HULL_HUMAN,id,ptr)
+	new Float:fraction
+	get_tr2(ptr,TR_flFraction,fraction)
+	free_tr2(ptr)
+	return(fraction*9999.0)
 }
 stock GetEngineVersion() // by L E V I N
 {
