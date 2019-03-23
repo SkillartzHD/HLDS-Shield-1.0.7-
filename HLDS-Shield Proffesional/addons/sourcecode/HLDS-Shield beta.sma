@@ -1,29 +1,14 @@
-/////////////////////////////Compatibility LINUX///////////////////////////
-//*//*//*//*//*//*//*//*//*//*//*//*//*//*//*//*//*//*//*//*
+#define PrefixProtection "[HLDS-Shield]"
+
 #define ReverseHLDS_Compatibility 0 // HLDS
 //Value : 1 is only ReHLDS linux compatibility OKAPI functions
 //Value : 0 (default) is only HLDS linux compatibility OKAPI functions
-//*//*//*//*//*//*//*//*//*//*//*//*//*//*//*//*//*//*//*//*
-/////////////////////////////Compatibility LINUX///////////////////////////
 
-#if defined PrefixProtection
-#else
-#define PrefixProtection "[HLDS-Shield]"
+#define Type_VersionHLDS-Shield 1 // HLDS-Shield Proffesional
+//Value : 1 (default) compile plugin with okapi/orpheu library (HLDS-Shield Proffesional Version)
+//Value : 0 compile plugin without okapi/orpheu library (HLDS-Shield Lite Version) // don't need okapi/orpheu module
+
 #include <HLDS_Shield_function.hlds>
-#endif
-
-/*
-HLDS_Shield_func(index,print,msg[],emit,log,pedeapsa)
-index - id = jucator , 0 nimic
-print - 1..3 , 0 nu este nimic
-emit - 1 trimite spk , 0 nu este nimic
-log - de la 1 pana la 16 , 0 nu este nimic
-pedeapsa - 1 kick cu sv_rejectconnection(doar daca el se afla pana in sv_connectclient)
-- 2 ban cu sv_rejectconnection(doar daca el se afla pana in sv_connectclient)
-- 3 un kick pentru o anume functie 
-- 4 ban cu ajutorul net_adr(nu recomand folosirea pentru a bana jucatori reali , decat atacuri query/sv_connectclient balbal)
-- 5 de rezerva (exact acelasi lucru ca la 3)
-*/
 
 public plugin_init(){
 	Register()
@@ -35,13 +20,14 @@ public plugin_init(){
 public plugin_precache(){
 	is_server_compatibility()
 	RegisterCvars()
-	Hooks_init()
+	Hooks_init()   
 	Load_Settings()
 }
 public Hooks_init(){
 	
 	Registerforward()
 	
+	#if Type_VersionHLDS-Shield == 1
 	if(is_linux_server()){
 		RegisterOkapiLinux()
 	}
@@ -50,7 +36,13 @@ public Hooks_init(){
 			RegisterOkapiWindows()
 		}
 	}
+	#endif
+	
+	#if Type_VersionHLDS-Shield == 1
+	
 	set_task(1.0,"RegisterOrpheu")
+	
+	#endif
 	set_task(2.0,"SV_PrintableInformation")
 }
 
@@ -132,10 +124,18 @@ public RegisterCvars(){
 	OSBanDetectedTime = register_cvar("shield_os_detected_bantime","1")
 	// OS_Ban
 	
-	OptionSV_ConnectClient = register_cvar("shield_sv_connectclient_filter_option","1") // 1 - force return 2 - kick 3 - ban
-	steamidgenerate=register_cvar("shield_steamid_generate_ip","1")
+	#if Type_VersionHLDS-Shield == 1 
+	UpdateClient = register_cvar("shield_update_vgui_client","1")
 	steamidhash=register_cvar("shield_steamid_hash","1")
+	ParseConsistencyResponse=register_cvar("shield_parseConsistencyResponse","1")
+	SendBadDropClient=register_cvar("shield_dropclient","1")
+	steamidgenerate=register_cvar("shield_steamid_generate_ip","1")
+	LimitResources=register_cvar("shield_sv_parseresource_limit","1")
 	RconSkippingCommand=register_cvar("shield_rcon_skipping_command","1")
+	LimitPrintf=register_cvar("shield_printf_limit","5")
+	LimitMunge=register_cvar("shield_munge_comamnd_limit","30")
+	PrintErrorSysError = register_cvar("shield_syserror_print","1")
+	OptionSV_ConnectClient = register_cvar("shield_sv_connectclient_filter_option","1") // 1 - force return 2 - kick 3 - ban
 	SV_RconCvar=register_cvar("shield_sv_rcon","1")
 	ShutdownServer = register_cvar("shield_lost_connection","0") // warning but is 1 plugin returned host_servershutdown but is possbily not work correctly server
 	LostConnectionSeconds = register_cvar("shield_lost_connection_seconds","15")
@@ -143,30 +143,25 @@ public RegisterCvars(){
 	HLProxyFilter = register_cvar("shield_hlproxy_allow_server","1")
 	HLTVFilter = register_cvar("shield_hltv_allow_server","1")
 	FakePlayerFilter = register_cvar("shield_fakeplayer_filter","1")
-	PrintErrorSysError = register_cvar("shield_syserror_print","1")
-	UpdateClient = register_cvar("shield_update_vgui_client","1")
 	NameProtector=register_cvar("shield_name_protector_sv_connect ","1")
 	Queryviewer=register_cvar("shield_query_log","0")
 	VAC=register_cvar("shield_vac","1")
 	MaxOverflowed=register_cvar("shield_max_overflowed","1000")
 	PrintUnMunge=register_cvar("shield_printf_decrypt_munge","0")
 	PrintUnknown=register_cvar("shield_printf_offset_command","0")
-	ParseConsistencyResponse=register_cvar("shield_parseConsistencyResponse","1")
-	SendBadDropClient=register_cvar("shield_dropclient","1")
-	LimitPrintf=register_cvar("shield_printf_limit","5")
 	LimitQuery=register_cvar("shield_query_limit","80")
-	LimitMunge=register_cvar("shield_munge_comamnd_limit","30")
 	LimitExploit=register_cvar("shield_exploit_cmd_limit","5")
 	LimitImpulse=register_cvar("shield_sv_runcmd_limit","100")
-	LimitResources=register_cvar("shield_sv_parseresource_limit","1")
 	PauseDlfile=register_cvar("shield_dlfile_pause","1")
 	LimitPrintfRcon=register_cvar("shield_rcon_limit","10")
+	
 	
 	if(ServerVersion == EOS){
 		register_srvcmd("shield_remove_function","RegisterRemoveFunction")
 	}
 	register_srvcmd("shield_replace_string","RegisterReplaceString")
 	register_srvcmd("shield_remove_string","RegisterRemoveString")
+	#endif
 	register_srvcmd("shield_fake_cvar","RegisterFakeCvar")
 	register_srvcmd("shield_addcmd_fake","RegisterCmdFake")
 	register_srvcmd("shield_reload","Register_Settings")
@@ -182,25 +177,29 @@ public Load_Settings(){
 	g_MaxClients = get_global_int(GL_maxClients)
 	g_iPattern = regex_compile("[+]",iError,szError,charsmax(szError),"i")
 	valutsteamid = nvault_open("SteamHackDetector")
+	#if Type_VersionHLDS-Shield == 1
 	g_aArray = ArrayCreate(1) 
 	g_blackList = ArrayCreate(15)
 	set_task(600.0,"Destroy_Memory",_,"",_,"b",_)
+	#endif
 	server_cmd("mp_consistency 1")
+	#if Type_VersionHLDS-Shield == 1
 	ReadFileCheck(locatie)
+	#endif
 	new getlimit = get_pcvar_num(CmdlimitDestroy)
 	set_task(float(getlimit),"Destroy_Fileiplist",_,"",_,"b",_)
 	
+	#if Type_VersionHLDS-Shield == 1
 	if(get_pcvar_num(SV_RconCvar)==2){
 		RconRandom()
 	}
-	if(GetEngineVersion()<=4554){
-		server_cmd("shield_name_char_fix 2")
-	}
+	#endif
 }
-
+#if Type_VersionHLDS-Shield == 1
 public SV_ForceFullClientsUpdate_api(index){
 	SV_ForceFullClientsUpdate()
 }
+#endif
 
 public SV_ExecuteMainConfig(){
 	new varget[100],key[50]
@@ -273,7 +272,9 @@ public pfnClientConnect(id){
 	DelaySpamBotStop[id] = get_gametime() + 5.0;
 	DelaySpamBotStart[id] = 0.0
 	FalseAllFunction(id)
+	#if Type_VersionHLDS-Shield == 1
 	Info_ValueForKey_Hook(id)
+	#endif
 	
 	if(get_pcvar_num(OS_System)>EOS){
 		new getipban[32],getsteam[32],getfileorg[255],getfileorgsteamid[255],szfile1[64],len
@@ -368,10 +369,27 @@ public CheckOS_SteamID(index){
 		}
 	}
 }
-new CheckOS = EOS
+#if Type_VersionHLDS-Shield == 1
 public RegisterOrpheu(){
 	if(ServerVersion == EOS){
+		ifcheckfiledebug = 1
+		
 		RegisterFixChars()
+		//nu stiu de da crash in 6153 linux dupa changelevel/reload 
+		//queryhook = okapi_add_hook(okapi_build_function(queryserver6153linux,arg_void),"SV_ConnectionlessPacket_Hook")
+		if(is_linux_server()){
+			if(ServerVersion == EOS){
+				if(file_exists(orpheufile6)){
+					queryhook2 = OrpheuRegisterHook(OrpheuGetFunction("SV_ConnectionlessPacket"),"SV_ConnectionlessPacket_Hook")
+					memory2++
+				}
+				else{
+					log_to_file(settings,"%s Injected successfully %s",PrefixProtection,orpheufile6)
+					Create_Signature("SV_ConnectionslessPacket")
+					set_task(1.0,"debug_orpheu")
+				}
+			}
+		}
 		if(file_exists(orpheufile8)){
 			global_msgReadBits = OrpheuGetFunction("MSG_ReadBits")
 		}
@@ -379,44 +397,60 @@ public RegisterOrpheu(){
 			log_to_file(settings,"%s Injected successfully %s",PrefixProtection,orpheufile8)
 			Create_Signature("MSG_ReadBits")
 			set_task(1.0,"debug_orpheu")
+			ifcheckfiledebug = EOS
 		}
 		if(file_exists(orpheufile9)){
 			OrpheuRegisterHook(OrpheuGetFunction("SV_ParseConsistencyResponse"), "SV_ParseConsistencyResponse_fix", OrpheuHookPre)
 			memory2++
 		}
 		else{
-			log_to_file(settings,"%s Injected successfully %s",PrefixProtection,orpheufile9)
-			Create_Signature("SV_ParseConsistencyResponse")
-			set_task(1.0,"debug_orpheu")
+			if(ifcheckfiledebug==1){
+				log_to_file(settings,"%s Injected successfully %s",PrefixProtection,orpheufile9)
+				Create_Signature("SV_ParseConsistencyResponse")
+				set_task(1.0,"debug_orpheu")
+				ifcheckfiledebug = EOS
+			}
 		}
 		if(!file_exists(orpheufile5)){
-			log_to_file(settings,"%s Injected successfully %s",PrefixProtection,orpheufile5)
-			Create_Signature("SV_ForceFullClientsUpdate")
-			set_task(1.0,"debug_orpheu")
+			if(ifcheckfiledebug==1){
+				log_to_file(settings,"%s Injected successfully %s",PrefixProtection,orpheufile5)
+				Create_Signature("SV_ForceFullClientsUpdate")
+				set_task(1.0,"debug_orpheu")
+				ifcheckfiledebug = EOS
+			}
 		}
 		else{
 			memory2++
 		}
 		if(!file_exists(orpheufile4)){
-			log_to_file(settings,"%s Injected successfully %s",PrefixProtection,orpheufile4)
-			Create_Signature("SV_Drop_f")
-			set_task(1.0,"debug_orpheu")
+			if(ifcheckfiledebug==1){
+				log_to_file(settings,"%s Injected successfully %s",PrefixProtection,orpheufile4)
+				Create_Signature("SV_Drop_f")
+				set_task(1.0,"debug_orpheu")
+				ifcheckfiledebug = EOS
+			}
 		}
 		else{
 			memory2++
 		}
 		if(!file_exists(orpheufile2)){
-			log_to_file(settings,"%s Injected successfully %s",PrefixProtection,orpheufile2)
-			Create_Signature("MSG_ReadShort")
-			set_task(1.0,"debug_orpheu")
+			if(ifcheckfiledebug==1){
+				log_to_file(settings,"%s Injected successfully %s",PrefixProtection,orpheufile2)
+				Create_Signature("MSG_ReadShort")
+				set_task(1.0,"debug_orpheu")
+				ifcheckfiledebug = EOS
+			}
 		}
 		else{
 			memory2++
 		}
 		if(!file_exists(orpheufile3)){
-			log_to_file(settings,"%s Injected successfully %s",PrefixProtection,orpheufile3)
-			Create_Signature("MSG_ReadLong")
-			set_task(1.0,"debug_orpheu")
+			if(ifcheckfiledebug==1){
+				log_to_file(settings,"%s Injected successfully %s",PrefixProtection,orpheufile3)
+				Create_Signature("MSG_ReadLong")
+				set_task(1.0,"debug_orpheu")
+				ifcheckfiledebug = EOS
+			}
 		}
 		else{
 			memory2++
@@ -436,15 +470,21 @@ public RegisterOrpheu(){
 		else{
 			if(!is_linux_server()){
 				if(GetEngineVersion()<=8000){
-					log_to_file(settings,"%s Injected successfully %s",PrefixProtection,orpheufile1)
-					Create_Signature("Cmd_ExecuteString")
-					set_task(1.0,"debug_orpheu")
+					if(ifcheckfiledebug==1){
+						log_to_file(settings,"%s Injected successfully %s",PrefixProtection,orpheufile1)
+						Create_Signature("Cmd_ExecuteString")
+						set_task(1.0,"debug_orpheu")
+						ifcheckfiledebug = EOS
+					}
 				}
 			}
 			else{
-				log_to_file(settings,"%s Injected successfully %s",PrefixProtection,orpheufile1)
-				Create_Signature("Cmd_ExecuteString")
-				set_task(1.0,"debug_orpheu")
+				if(ifcheckfiledebug==1){
+					log_to_file(settings,"%s Injected successfully %s",PrefixProtection,orpheufile1)
+					Create_Signature("Cmd_ExecuteString")
+					set_task(1.0,"debug_orpheu")
+					ifcheckfiledebug = EOS
+				}
 			}
 		}
 		
@@ -459,14 +499,17 @@ public RegisterOrpheu(){
 			}
 		}
 		else{
-			log_to_file(settings,"%s Injected successfully %s",PrefixProtection,orpheufile7)
-			Create_Signature("SV_GetIDString")
-			set_task(1.0,"debug_orpheu")
+			if(ifcheckfiledebug==1){
+				log_to_file(settings,"%s Injected successfully %s",PrefixProtection,orpheufile7)
+				Create_Signature("SV_GetIDString")
+				set_task(1.0,"debug_orpheu")
+				ifcheckfiledebug = EOS
+			}
 		}
 	}
 	
 }
-
+#endif
 public SV_PrintableInformation(){
 	if(is_linux_server()){
 		log_to_file(settings,"^n%s I loaded plugin with %d functions hooked in hlds [linux]^n",PrefixProtection,memory2)
@@ -486,6 +529,11 @@ public SV_PrintableInformation(){
 	server_print("-------------------------------------------------------------------------")
 	server_print("%s Amxx : %s",PrefixProtection,AMXXVersion)
 	server_print("%s Plugin : %s",PrefixProtection,get)
+	#if Type_VersionHLDS-Shield == 1
+		server_print("%s Version : Professional",PrefixProtection)
+	#else
+		server_print("%s Version : Lite",PrefixProtection)
+	#endif
 	if(!strlen(RCONName)){	
 		server_print("%s Rcon : No password set",PrefixProtection)
 	}
@@ -505,6 +553,7 @@ public SV_PrintableInformation(){
 	SV_UpTime(1)
 	server_print("--------------------------------------------------------------------------")
 }
+#if Type_VersionHLDS-Shield == 1
 public RegisterFixChars(){
 	
 	register_message(get_user_msgid("SayText"),"ProtectAllPluginsChatReplaced")
@@ -520,8 +569,11 @@ public RegisterFixChars(){
 	
 	if(CheckOS==1){
 		if(!file_exists("addons/amxmodx/configs/orpheu/functions/UTIL_ClientPrint")){
-			Create_Signature("UTIL_ClientPrint")
-			set_task(1.0,"debug_orpheu")
+			if(ifcheckfiledebug==1){
+				Create_Signature("UTIL_ClientPrint")
+				set_task(1.0,"debug_orpheu")
+				ifcheckfiledebug = EOS
+			}
 		}
 		else{
 			if(GetEngineVersion()>4555){
@@ -536,8 +588,11 @@ public RegisterFixChars(){
 	
 	if(CheckOS==2){
 		if(!file_exists("addons/amxmodx/configs/orpheu/functions/PF_WriteString_I")){
-			Create_Signature("PF_WriteString_I")
-			set_task(1.0,"debug_orpheu")
+			if(ifcheckfiledebug==1){
+				Create_Signature("PF_WriteString_I")
+				set_task(1.0,"debug_orpheu")
+				ifcheckfiledebug = EOS
+			}
 		}
 		else{
 			OrpheuRegisterHook(OrpheuGetFunction("PF_WriteString_I"),"PF_WriteString_I_Hook")
@@ -548,22 +603,21 @@ public RegisterFixChars(){
 public delay_install(){
 	getidstringhook = OrpheuRegisterHook(OrpheuGetFunction("SV_GetIDString"),"SV_GetIDString_Hook",OrpheuHookPost)
 }
+#endif
 
-public Cmd_ExecuteString_Fix()
+#if Type_VersionHLDS-Shield == 1
+public OrpheuHookReturn:Cmd_ExecuteString_Fix()
 {
 	//all commands is blocked sended by sv_rcon
 	if(get_pcvar_num(RconSkippingCommand)>EOS){
 		if(cmpStr3(Argv3())){
 			log_to_file(settings,"%s Cmd_ExecuteString : blocked this command ^"%s^"",PrefixProtection,Argv3())
-			return okapi_ret_supercede
+			return OrpheuSupercede
 		}
 	}
-	if(get_pcvar_num(SV_RconCvar)==2){
-		RconRandom()
-	}
 	if(is_linux_server()){
-		if(containi(Argv3(),"say")!=-0x01 || containi(Argv3(),"say_team")!=-0x01){ 
-			return okapi_ret_ignore
+		if(containi(Argv3(),"say")!=-0x01 || containi(Argv3(),"say_team")!=-0x01){
+			return OrpheuSupercede
 		}
 		else{
 			server_cmd("%s %s",Argv3(),Argv4())
@@ -571,7 +625,7 @@ public Cmd_ExecuteString_Fix()
 		
 	}
 	if(containi(Argv(),"dlfile")!=-0x01){
-		return okapi_ret_ignore
+		return OrpheuSupercede
 	}
 	else{
 		new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
@@ -587,7 +641,7 @@ public Cmd_ExecuteString_Fix()
 				mungelimit[id] = EOS
 				local++
 				if(local >=get_pcvar_num(LimitPrintf)){
-					return okapi_ret_ignore
+					return OrpheuSupercede
 				}
 				else{
 					if(is_user_connected(id)){
@@ -596,7 +650,7 @@ public Cmd_ExecuteString_Fix()
 							SV_Drop_function(id)
 						}
 					}
-					return okapi_ret_supercede
+					return OrpheuSupercede
 				}
 			}
 		}
@@ -606,8 +660,9 @@ public Cmd_ExecuteString_Fix()
 			}
 		}
 	}
-	return okapi_ret_ignore
+	return OrpheuIgnored
 }
+#endif
 
 public plugin_cfg(){
 	set_task(2.0,"RegisterConfigPlugin")
@@ -1065,6 +1120,7 @@ public CL_DebugPrint(index,string[]){
 	formatex(buildmessage,charsmax(buildmessage),"[_OS_] Banned from this server [^"%s^"]",string)
 	SV_RejectConnection_user(index,buildmessage)
 }
+#if Type_VersionHLDS-Shield == 1
 public SV_Addip_f_Hook()
 {
 	holax++
@@ -1079,7 +1135,7 @@ public SV_Addip_f_Hook()
 	}
 	return okapi_ret_ignore
 }
-
+#endif
 public Host_Kill_f_fix()
 {
 	new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
@@ -1092,7 +1148,9 @@ public Host_Kill_f_fix()
 					return FMRES_SUPERCEDE
 				}
 				else{
+					#if Type_VersionHLDS-Shield == 1
 					return okapi_ret_supercede
+					#endif
 				}
 			}
 			if(debug_s[id]== EOS){
@@ -1101,20 +1159,29 @@ public Host_Kill_f_fix()
 					debug_s[id]=1
 				}
 			}
+			#if Type_VersionHLDS-Shield == 1
 			if(get_pcvar_num(SendBadDropClient)>EOS){
 				SV_Drop_function(id)
 			}
+			#endif
 			HLDS_Shield_func(id,EOS,killbug,1,1,EOS) // index print msg emit log pedeapsa
 			if(memory == 25){
 				return FMRES_SUPERCEDE
 			}
 			else{
+				#if Type_VersionHLDS-Shield == 1
 				return okapi_ret_supercede
+				#endif
 			}
 		}
 	}
+	#if Type_VersionHLDS-Shield == 1
 	return okapi_ret_ignore
+	#else
+	return FMRES_IGNORED
+	#endif
 }
+#if Type_VersionHLDS-Shield == 1
 public SV_GetIDString_Hook(test)
 {
 	new getcvar[a_max]
@@ -1134,7 +1201,9 @@ public SV_GetIDString_Hook(test)
 			if(get_pcvar_num(steamidgenerate)>EOS){
 				new data[net_adr],getip2[40],encryptsteamid[34]
 				if(ServerVersion == EOS){
+					#if Type_VersionHLDS-Shield == 1
 					okapi_get_ptr_array(net_adrr(),data,net_adr)
+					#endif
 					formatex(getip2,charsmax(getip2),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
 				}
 				else{
@@ -1169,6 +1238,8 @@ public SV_GetIDString_Hook(test)
 	}
 	return 0
 }
+#endif
+#if Type_VersionHLDS-Shield == 1
 public IsSafeDownloadFile_Hook()
 {
 	new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
@@ -1191,18 +1262,22 @@ public IsSafeDownloadFile_Hook()
 						HLDS_Shield_func(id,2,safefile,1,4,1)
 						return okapi_ret_supercede
 					}
-					if(get_pcvar_num(SendBadDropClient)>EOS){
-						if(locala[id] >=get_pcvar_num(LimitExploit)){
+					if(locala[id] >=get_pcvar_num(LimitExploit)){
+						#if Type_VersionHLDS-Shield == 1 
+						if(get_pcvar_num(SendBadDropClient)>EOS){
 							SV_Drop_function(id)
 						}
+						#endif
 					}
 					return okapi_ret_supercede
 				}
 				else{
-					if(get_pcvar_num(SendBadDropClient)>EOS){
-						if(locala[id] >=get_pcvar_num(LimitExploit)){
+					if(locala[id] >=get_pcvar_num(LimitExploit)){
+						#if Type_VersionHLDS-Shield == 1 
+						if(get_pcvar_num(SendBadDropClient)>EOS){
 							SV_Drop_function(id)
 						}
+						#endif
 					}
 					if(id){
 						HLDS_Shield_func(id,2,safefile,1,5,1)
@@ -1231,18 +1306,22 @@ public IsSafeDownloadFile_Hook()
 					HLDS_Shield_func(id,2,safefile,1,4,1)
 					return okapi_ret_supercede
 				}
-				if(get_pcvar_num(SendBadDropClient)>EOS){
-					if(locala[id] >=get_pcvar_num(LimitExploit)){
+				if(locala[id] >=get_pcvar_num(LimitExploit)){
+					#if Type_VersionHLDS-Shield == 1 
+					if(get_pcvar_num(SendBadDropClient)>EOS){
 						SV_Drop_function(id)
 					}
+					#endif
 				}
 				return okapi_ret_supercede
 			}
 			else{
-				if(get_pcvar_num(SendBadDropClient)>EOS){
-					if(locala[id] >=get_pcvar_num(LimitExploit)){
+				if(locala[id] >=get_pcvar_num(LimitExploit)){
+					#if Type_VersionHLDS-Shield == 1 
+					if(get_pcvar_num(SendBadDropClient)>EOS){
 						SV_Drop_function(id)
 					}
+					#endif
 				}
 				if(id){
 					HLDS_Shield_func(id,2,safefile,1,5,1)
@@ -1269,9 +1348,11 @@ public IsSafeDownloadFile_Hook()
 			return okapi_ret_supercede;
 		}
 		else{
+			#if Type_VersionHLDS-Shield == 1 
 			if(get_pcvar_num(SendBadDropClient)>EOS){
 				SV_Drop_function(id)
 			}
+			#endif
 			if(id){
 				HLDS_Shield_func(id,2,safefile,1,5,1)
 			}
@@ -1292,9 +1373,11 @@ public IsSafeDownloadFile_Hook()
 		else{
 			HLDS_Shield_func(id,EOS,safefile,EOS,5,1)
 		}
+		#if Type_VersionHLDS-Shield == 1 
 		if(get_pcvar_num(SendBadDropClient)>EOS){
 			SV_Drop_function(id)
 		}
+		#endif
 		return okapi_ret_supercede
 	}
 	return okapi_ret_ignore
@@ -1318,24 +1401,30 @@ public SV_New_f_Hook()
 		localas[id]++
 		if(localas[id] >=get_pcvar_num(LimitPrintf)){
 			HLDS_Shield_func(id,1,newbug,1,EOS,1)
+			#if Type_VersionHLDS-Shield == 1 
 			if(get_pcvar_num(SendBadDropClient)>EOS){
 				SV_Drop_function(id)
 			}
+			#endif
 			return okapi_ret_supercede
 		}
 		else{
 			limitba[id]=EOS
 			if(!strlen(UserName(id))){
 				HLDS_Shield_func(id,1,newbug,1,3,1)
+				#if Type_VersionHLDS-Shield == 1 
 				if(get_pcvar_num(SendBadDropClient)>EOS){
 					SV_Drop_function(id)
 				}
+				#endif
 			}
 			else{
 				HLDS_Shield_func(id,2,newbug,1,5,1)
+				#if Type_VersionHLDS-Shield == 1 
 				if(get_pcvar_num(SendBadDropClient)>EOS){
 					SV_Drop_function(id)
 				}
+				#endif
 			}
 		}
 		return okapi_ret_supercede
@@ -1344,18 +1433,6 @@ public SV_New_f_Hook()
 		set_task(0.5,"sv_new_f_debug",id+TASK_ONE4)
 	}
 	return okapi_ret_ignore	
-}
-
-public pfnSys_Error(arg[]){
-	if(get_pcvar_num(PrintErrorSysError)>EOS){
-		log_to_file(settings,"%s I found a error in Sys_Error : (%s)",PrefixProtection,arg)
-	}
-}
-public pfnGetGameDescription(){
-	new GameDatax[200] 
-	get_pcvar_string(GameData,GameDatax,charsmax(GameDatax));
-	forward_return(FMV_STRING,GameDatax) 
-	return FMRES_SUPERCEDE
 }
 public SV_Rcon_Hook()
 {
@@ -1368,12 +1445,10 @@ public SV_Rcon_Hook()
 		}
 	}
 	
-	if(get_pcvar_num(SV_RconCvar) == EOS){
-		hola++
+	if(get_pcvar_num(SV_RconCvar)==EOS){
 		return okapi_ret_supercede
 	}
 	if(get_pcvar_num(SV_RconCvar) ==2){
-		hola++
 		RconRandom()
 	}
 	else if(get_pcvar_num(SV_RconCvar) ==1){
@@ -1429,6 +1504,18 @@ public SV_Rcon_Hook()
 	
 	return okapi_ret_ignore
 }
+#endif
+public pfnSys_Error(arg[]){
+	if(get_pcvar_num(PrintErrorSysError)>EOS){
+		log_to_file(settings,"%s I found a error in Sys_Error : (%s)",PrefixProtection,arg)
+	}
+}
+public pfnGetGameDescription(){
+	new GameDatax[200] 
+	get_pcvar_string(GameData,GameDatax,charsmax(GameDatax));
+	forward_return(FMV_STRING,GameDatax) 
+	return FMRES_SUPERCEDE
+}
 public ProtectPlayerDontExistSVC(id){
 	server_cmd("kick #%d Banned",GetUserID(id))
 }
@@ -1470,12 +1557,14 @@ public PfnClientPutInServer(id){
 		suspiciousdebug_await[id] = 1
 		set_task(2.0,"isCheckUserBanned",id)
 	}
+	#if Type_VersionHLDS-Shield == 1
 	if(get_pcvar_num(UpdateClient)>EOS){
 		SV_ForceFullClientsUpdate_api(id) // fix show players in vgui for old
 	}
+	#endif
 	set_task(3.0,"await_func_suspicious",id)
 }
-
+#if Type_VersionHLDS-Shield == 1
 public SV_SendBan_fix(){
 	if(!is_linux_server()){
 		if(SV_CheckProtocolSpamming(2)){
@@ -1487,6 +1576,8 @@ public SV_SendBan_fix(){
 	}
 	return okapi_ret_ignore
 }
+#endif
+#if Type_VersionHLDS-Shield == 1
 public OrpheuHookReturn:SV_ParseConsistencyResponse_fix( ){
 	if(get_pcvar_num(ParseConsistencyResponse)>EOS){
 		detect = -1;
@@ -1566,6 +1657,8 @@ public DetectPlayer(Data[TaskData], iTaskID)
 	
 	client_cmd(id,"spk doop")
 	
+	HLDS_Shield_func(id,1,data[FileName],1,0,EOS)
+	
 	SVC_PrintConsole(id,"------------------------------------------------------------^n")
 	formatex(stringbuffer,charsmax(stringbuffer),"%s Please delete file ^"%s^"^n",PrefixProtection,data[FileName])
 	SVC_PrintConsole(id,stringbuffer)
@@ -1615,11 +1708,11 @@ public ReadFileCheck(const file[])
 	}
 	fclose(f)
 }
-public SV_Drop_function(index){
+public OrpheuHookReturn:SV_Drop_function(index){
 	Add_SV_Drop_f()
-	return okapi_ret_supercede
+	return OrpheuSupercede
 }
-
+#endif
 public client_command(id){
 	if(get_pcvar_num(ChatCharFix)==1){
 		new StringBuffer[500]
@@ -1804,7 +1897,7 @@ public client_command(id){
 								debug_s[id]=1
 							}
 						}
-						HLDS_Shield_func(id,1,autobuybug,id,1,EOS)
+						HLDS_Shield_func(id,1,autobuybug,1,1,EOS)
 						return PLUGIN_HANDLED
 					}	
 				}
@@ -1832,7 +1925,7 @@ public client_command(id){
 								debug_s[id]=1
 							}
 						}
-						HLDS_Shield_func(id,1,ilegalcommand,id,1,EOS)
+						HLDS_Shield_func(id,1,ilegalcommand,1,1,EOS)
 						return PLUGIN_HANDLED;
 					}
 				}
@@ -1849,12 +1942,14 @@ public client_command(id){
 }
 
 public PfnClientCommand(id){
+	#if Type_VersionHLDS-Shield == 1
 	if(is_user_connected(id)){
 		UserCheckImpulse[id] = 1
 		if(get_pcvar_num(UpdateClient)>EOS){
 			SV_ForceFullClientsUpdate_api(id) // fix show players in vgui for old build
 		}
 	}
+	#endif
 	if(suspiciousdebug_await[id] == EOS){	
 		mungelimit[id]++
 		if(!task_exists(0x01)){
@@ -2041,7 +2136,7 @@ public Shield_pfnClientPostThink(id){
 										debug_s[id]=1
 									}
 								}
-								HLDS_Shield_func(id,1,jumpbug,id,1,EOS)
+								HLDS_Shield_func(id,1,jumpbug,1,1,EOS)
 							}	
 							user_kill(id)
 							}else if(FPSReader1[id]<FPSReader2[id]-3.5&&AVG_FpsInt[id]>1){
@@ -2056,7 +2151,7 @@ public Shield_pfnClientPostThink(id){
 										debug_s[id]=1
 									}
 								}
-								HLDS_Shield_func(id,1,jumpbug,id,1,EOS)
+								HLDS_Shield_func(id,1,jumpbug,1,1,EOS)
 							}
 							user_kill(id)
 						}
@@ -2107,6 +2202,7 @@ public RegisterFakeCvar()
 	return PLUGIN_CONTINUE
 }
 
+#if Type_VersionHLDS-Shield == 1
 public RegisterRemoveString()
 {
 	new deletestring[a_max]
@@ -2182,6 +2278,8 @@ public SV_FilterAddress(writememory){
 	}
 	return okapi_ret_ignore
 }
+#endif
+#if Type_VersionHLDS-Shield == 1 || Type_VersionHLDS-Shield == 1
 public SV_ConnectionlessPacket_Hook()
 {
 	/* fix for
@@ -2262,6 +2360,8 @@ public checkQuery()
 	ArrayClear(g_aArray)
 	return okapi_ret_ignore
 }
+#endif
+#if Type_VersionHLDS-Shield == 1
 public Netchan_CheckForCompletion_Hook(int,int2,int3x)
 {
 	set_task(1.5, "destroy_fuck")
@@ -2313,10 +2413,10 @@ public IsInvalidFunction(functioncall,stringexit[]){
 			if(containi(Argv4(),"^x22")!=-0x01 || containi(Argv4(),"^x2E^x5C")!=-0x01 ||
 			containi(Argv4(),"^x2E^x20")!=-0x01 || containi(Argv4(),"^x2E^xFA^x2E")!=-0x01 || 
 			containi(Argv4(),"^x63^x6F^x6E^x73^x6F^x6C^x65")!=-0x01) {
-				tralala++
-				if(tralala>=get_pcvar_num(LimitPrintf)){
+				duplicateloop++
+				if(duplicateloop>=get_pcvar_num(LimitPrintf)){
 					HLDS_Shield_func(EOS,EOS,loopnamebug,EOS,9,4)
-					tralala=0
+					duplicateloop=0
 				}
 				else{
 					HLDS_Shield_func(EOS,EOS,loopnamebug,EOS,9,3)
@@ -2349,7 +2449,7 @@ public SV_ProcessFile_Hook()
 		return okapi_ret_supercede
 	}
 	else{
-		HLDS_Shield_func(id,1,processfilex,id,1,EOS)
+		HLDS_Shield_func(id,1,processfilex,1,1,EOS)
 	}
 	return okapi_ret_supercede
 }
@@ -2389,7 +2489,7 @@ public SV_ParseVoiceData_Fix()
 	}
 	return okapi_ret_ignore
 }
-public SV_ParseStringCommand_fix()
+public OrpheuHookReturn:SV_ParseStringCommand_fix()
 {
 	new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
 	for (new i = EOS; i < sizeof (CommandBlockInpfnClientConnect); i++){
@@ -2397,16 +2497,16 @@ public SV_ParseStringCommand_fix()
 			if(is_user_connecting(id)){
 				if(get_pcvar_num(SendBadDropClient)>EOS){
 					SV_Drop_function(id)
-					return okapi_ret_supercede
+					return OrpheuSupercede
 				}
 				HLDS_Shield_func(id,EOS,bugclc,EOS,8,1)
-				return okapi_ret_supercede
+				return OrpheuSupercede
 			}
 		}
 	}
-	return okapi_ret_ignore
+	return OrpheuIgnored
 }
-public SV_ParseResourceList_Fix(){
+public OrpheuHookReturn:SV_ParseResourceList_Fix(){
 	new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
 	locala[id]++
 	new MSG_ReadShort = Add_MSG_ReadShort()
@@ -2422,7 +2522,7 @@ public SV_ParseResourceList_Fix(){
 			HLDS_Shield_func(id,EOS,overload2,EOS,EOS,3)
 			locala[id]=0
 		}
-		return okapi_ret_supercede
+		return OrpheuSupercede
 	}
 	else{
 		if(MSG_ReadShort>get_pcvar_num(LimitResources)){
@@ -2432,10 +2532,10 @@ public SV_ParseResourceList_Fix(){
 			}
 			HLDS_Shield_func(id,EOS,overload2,EOS,17,3)
 			locala[id]=0
-			return okapi_ret_supercede
+			return OrpheuSupercede
 		}
 	}
-	return okapi_ret_ignore
+	return OrpheuIgnored
 }
 public NET_GetLong()
 {
@@ -2600,6 +2700,7 @@ public SV_RunCmd_Hook()
 	}
 	return okapi_ret_ignore
 }
+#endif
 public SV_CheckForDuplicateSteamID(id){
 	//procedure function fix sv_checkforduplicatesteamid
 	
@@ -2644,9 +2745,11 @@ public Shield_CheckSteamID(id,payload)  {
 		if(equal(szip2, szip)) {
 			if(!equal(authid2, authid)) {
 				HLDS_Shield_func(id,EOS,steamidhack,1,1,1)
+				#if Type_VersionHLDS-Shield == 1
 				if(get_pcvar_num(SendBadDropClient)>EOS){
 					SV_Drop_function(id)
 				}
+				#endif
 			}
 		}
 	}
@@ -2658,8 +2761,10 @@ public Shield_CheckSteamID(id,payload)  {
 	return PLUGIN_HANDLED
 }
 public plugin_end(){
+	#if Type_VersionHLDS-Shield == 1
 	TrieDestroy(gTrie)
 	ArrayDestroy(gFileData)
+	#endif
 	SV_UpTime(2)
 	Destroy_Fileiplist()
 	nvault_close(valutsteamid)
@@ -2690,6 +2795,7 @@ public pfnClientUserInfoChanged(id,buffer){
 				client_print_color(id,id,"^4%s^1 Please wait^4 %d seconds^1 before change the name",PrefixProtection,get_time_cvar)
 				set_user_info(id,"name",longformate) 
 				set_task(float(get_time_cvar),"SHIELD_NameDeBug",id+TASK_ONE2)
+				HLDS_Shield_func(id,0,"",1,0,EOS)
 				return FMRES_SUPERCEDE
 			}
 			
@@ -2703,6 +2809,7 @@ public pfnClientUserInfoChanged(id,buffer){
 					NameUnLock[id] = 1
 					client_print_color(id,id,"^4%s^1 Please wait^4 %d seconds^1 before change the name",PrefixProtection,get_time_cvar)
 					set_user_info(id,"name",longformate)
+					HLDS_Shield_func(id,0,"",1,0,EOS)
 					return FMRES_SUPERCEDE
 				}
 				NameUnLock[id] = 1
@@ -2818,6 +2925,7 @@ public pfnClientUserInfoChanged(id,buffer){
 	}
 	return FMRES_IGNORED
 }
+#if Type_VersionHLDS-Shield == 1
 public Info_ValueForKey_Hook(index)
 {
 	if(get_pcvar_num(NameBug)>EOS){
@@ -2863,13 +2971,7 @@ public Info_ValueForKey_Hook(index)
 	}
 	return okapi_ret_ignore
 }
-public plugin_pause(){
-	new get[a_max]
-	get_plugin(-1,get,charsmax(get))
-	server_cmd("amxx unpause %s",get)
-	log_to_file(settings,"%s Failed to pause plugin ^"%s^"",PrefixProtection,get)
-	client_print_color(EOS,EOS,"^4%s^1 : Failed to pause plugin ^"%s^"",PrefixProtection,get)
-}
+
 public Host_Say_f_Hook(){
 	if(get_pcvar_num(CommandBug)>EOS){
 		for (new i = EOS; i < sizeof (MessageHook); i++){
@@ -3043,7 +3145,9 @@ public SV_ConnectClient_Hook()
 	}
 	if(get_pcvar_num(HLProxyFilter)>EOS){
 		if((containi(value,"_ip") != -0x01)){
+			#if Type_VersionHLDS-Shield == 1 
 			SV_RejectConnection_Hook(1,"Hello") // merge doar ca fara dproto
+			#endif
 			if(ServerVersion == EOS){
 				okapi_get_ptr_array(net_adrr(),data,net_adr)
 				formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][EOS], data[ip][0x01], data[ip][0x02], data[ip][0x03])
@@ -3131,12 +3235,14 @@ public SV_SendRes_f_Hook(){
 	}
 	else{
 		if(locala[id] >=get_pcvar_num(LimitExploit)){
+			#if Type_VersionHLDS-Shield == 1 
 			if(get_pcvar_num(SendBadDropClient)>EOS){
 				SV_Drop_function(id)
 			}
-			else{
-				HLDS_Shield_func(id,1,hldsprintf,1,5,1)
-			}
+			#endif
+			
+			HLDS_Shield_func(id,1,hldsprintf,1,5,1)
+			
 			if(strlen(UserName(id))){
 				HLDS_Shield_func(id,1,hldsres,1,5,EOS)
 			}
@@ -3210,12 +3316,12 @@ public Con_Printf_Hook(pfnprint[])
 				else
 				{
 					if(locala[id] >=get_pcvar_num(LimitExploit)){
+						#if Type_VersionHLDS-Shield == 1 
 						if(get_pcvar_num(SendBadDropClient)>EOS){
 							SV_Drop_function(id)
 						}
-						else{
-							HLDS_Shield_func(id,1,hldsprintf,1,5,1)
-						}
+						#endif
+						HLDS_Shield_func(id,1,hldsprintf,1,5,1)
 						return okapi_ret_supercede
 					}
 					if(strlen(UserName(id))){
@@ -3256,26 +3362,40 @@ public Con_Printf_Hook(pfnprint[])
 	}
 	return okapi_ret_ignore
 }
-
+#endif
+#if Type_VersionHLDS-Shield == 1
 public SV_RejectConnection_Hook(a,b[])
 {
 	long = OrpheuGetFunction("MSG_ReadLong")
 	return OrpheuCallSuper(long)
 }
+#endif
+public plugin_pause(){
+	new get[a_max]
+	get_plugin(-1,get,charsmax(get))
+	server_cmd("amxx unpause %s",get)
+	log_to_file(settings,"%s Failed to pause plugin ^"%s^"",PrefixProtection,get)
+	client_print_color(EOS,EOS,"^4%s^1 : Failed to pause plugin ^"%s^"",PrefixProtection,get)
+}
 public FalseAllFunction(id)
 {
 	UserCheckImpulse[id] = 0x01
 	locala[id] = EOS
-	tralala = EOS
 	usercheck[id] = EOS
 	debug_s[id]  = EOS
 	limitexecute[id] = EOS
 	overflowed[id] = EOS
 	limit[id] = EOS
+	#if Type_VersionHLDS-Shield == 1
+	duplicateloop = EOS
+	#endif
+	#if Type_VersionHLDS-Shield == 1 && Type_VersionHLDS-Shield == 1
 	local = EOS
+	#endif
 	limitb[id] = EOS
 	mungelimit[id] = EOS
 }
+#if Type_VersionHLDS-Shield == 1
 public SV_DropClient_Hook(int,int2,string[],index)
 {
 	new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
@@ -3296,6 +3416,7 @@ public SV_DropClient_Hook(int,int2,string[],index)
 				new longtext[255]
 				overflowed[id]++
 				formatex(longtext,charsmax(longtext),"[%s] Reliable channel overflowed of %d",PrefixProtection,overflowed[id])
+				HLDS_Shield_func(id,0,"",1,0,EOS)
 				SV_RejectConnection_user(id,longtext)
 			}
 			return okapi_ret_supercede
@@ -3319,6 +3440,7 @@ public SV_DropClient_Hook(int,int2,string[],index)
 	FalseAllFunction(id)
 	return okapi_ret_ignore
 }
+#endif
 public PfnClientDisconnect(id){
 	if(task_exists(id+TASK_Detect)){
 		remove_task(id+TASK_Detect)
@@ -3332,6 +3454,7 @@ public PfnClientDisconnect(id){
 	limitba[id]=EOS
 	FalseAllFunction(id)
 }
+#if Type_VersionHLDS-Shield == 1
 public SV_Spawn_f_Hook()
 {
 	new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
@@ -3343,16 +3466,20 @@ public SV_Spawn_f_Hook()
 		}
 		else{
 			if(!strlen(UserName(id))){
+				#if Type_VersionHLDS-Shield == 1
 				if(get_pcvar_num(SendBadDropClient)>EOS){
 					SV_Drop_function(id)
 				}
+				#endif
 				HLDS_Shield_func(id,1,hldspawn,1,5,1)
 				return okapi_ret_supercede
 			}
 			else{
+				#if Type_VersionHLDS-Shield == 1
 				if(get_pcvar_num(SendBadDropClient)>EOS){
 					SV_Drop_function(id)
 				}
+				#endif
 				HLDS_Shield_func(id,2,hldspawn,1,5,1)
 				return okapi_ret_supercede
 			}
@@ -3361,3 +3488,16 @@ public SV_Spawn_f_Hook()
 	}
 	return okapi_ret_ignore	
 }
+#endif
+/*
+HLDS_Shield_func(index,print,msg[],emit,log,pedeapsa)
+index - id = jucator , 0 nimic
+print - 1..3 , 0 nu este nimic
+emit - 1 trimite spk , 0 nu este nimic
+log - de la 1 pana la 16 , 0 nu este nimic
+pedeapsa - 1 kick cu sv_rejectconnection(doar daca el se afla pana in sv_connectclient)
+- 2 ban cu sv_rejectconnection(doar daca el se afla pana in sv_connectclient)
+- 3 un kick pentru o anume functie 
+- 4 ban cu ajutorul net_adr(nu recomand folosirea pentru a bana jucatori reali , decat atacuri query/sv_connectclient balbal)
+- 5 de rezerva (exact acelasi lucru ca la 3)
+*/
