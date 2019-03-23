@@ -2193,6 +2193,7 @@ public Register_Settings()
 				set_task(1.0,"debug_orpheu")
 			}
 		}
+		#if Type_VersionHLDS-Shield == 1
 		if(!file_exists(locatie)){
 			if(ifcheckfiledebug==1){
 				server_print("%s I created file ^"%s^"",PrefixProtection,locatie)
@@ -2233,6 +2234,7 @@ public Register_Settings()
 				set_task(1.0,"debug_orpheu")
 			}
 		}
+		#endif
 		if(ifcheckfiledebug==1){
 			if(!file_exists(cmd_restricted)){
 				server_print("%s I created file ^"%s^"",PrefixProtection,cmd_restricted)
@@ -2255,34 +2257,41 @@ public Register_Settings()
 			if(ifcheckfiledebug==1){
 				new FileVar = fopen(loc2,"wb")
 				server_print("%s I created file ^"%s^"",PrefixProtection,loc2)
+				#if Type_VersionHLDS-Shield == 1
 				fprintf(FileVar,"//shield_replace_string ^"status^" ^"statu3^"^n")
 				fprintf(FileVar,"//shield_remove_string ^"rcon^"^n")
+				#endif
 				fprintf(FileVar,"//shield_addcmd_fake ^"kick2^" ^"1^"^n")
 				fprintf(FileVar,"//shield_shield_fake_cvar ^"podbot^" ^"hello^"^n")
 				fprintf(FileVar,"//shield_drop <name> <message disconnect client^n")
 				fprintf(FileVar,"//shield_final <name> <message client camera^n")
 				fprintf(FileVar,"//shield_reload (reload settings config)^n")
 				fprintf(FileVar,"//shield_os_ban <name> <reason> <time>^n")
+				#if Type_VersionHLDS-Shield == 1
 				fprintf(FileVar,"//shield_remove_function <function>^n^n")
-				
 				fprintf(FileVar,"shield_remove_string ^"motd_write^"^n")
 				fprintf(FileVar,"shield_remove_string ^"heartbeat^"^n")
-				
+				#endif
 				fprintf(FileVar,"shield_jumpbug 1^n")
 				fprintf(FileVar,"shield_autobuybug 1^n")
 				fprintf(FileVar,"shield_noflood 0^n")
 				fprintf(FileVar,"shield_noflood_time 0.75^n")
+				#if Type_VersionHLDS-Shield == 1
 				fprintf(FileVar,"shield_ban_violation_function 0^n")
+				#endif
 				fprintf(FileVar,"shield_os_system 1^n")
 				fprintf(FileVar,"shield_name_char_fix 1^n")
 				fprintf(FileVar,"shield_chat_char_fix 1^n")
+				#if Type_VersionHLDS-Shield == 1
 				fprintf(FileVar,"shield_sv_connectclient_filter_option 1^n")
 				fprintf(FileVar,"shield_steamid_generate_ip 1^n")
 				fprintf(FileVar,"shield_steamid_hash 1^n")
+				#endif
 				fprintf(FileVar,"shield_commandlimit_filter 1^n")
 				fprintf(FileVar,"shield_commandlimit_destory_file 1^n")
 				fprintf(FileVar,"shield_commandlimit_execute 1^n")
 				fprintf(FileVar,"shield_namechange_delay_seconds 8^n")
+				#if Type_VersionHLDS-Shield == 1
 				fprintf(FileVar,"shield_rcon_skipping_command 1^n")
 				fprintf(FileVar,"shield_lost_connection 0^n")
 				fprintf(FileVar,"shield_lost_connection_seconds 15^n")
@@ -2291,8 +2300,9 @@ public Register_Settings()
 				fprintf(FileVar,"shield_hlproxy_allow_server 1^n")
 				fprintf(FileVar,"shield_hltv_allow_server 1^n")
 				fprintf(FileVar,"shield_fakeplayer_filter 1^n")
-				fprintf(FileVar,"shield_syserror_print 1^n")
 				fprintf(FileVar,"shield_update_vgui_client 1^n")
+				#endif
+				fprintf(FileVar,"shield_syserror_print 1^n")
 				fprintf(FileVar,"shield_namebug_showmenu 1^n")
 				fprintf(FileVar,"shield_vgui_specbug 1^n")
 				fprintf(FileVar,"shield_radio 1^n")
@@ -2302,9 +2312,10 @@ public Register_Settings()
 				fprintf(FileVar,"shield_name_spammer 1^n")
 				fprintf(FileVar,"shield_steamid_hack 1^n")
 				fprintf(FileVar,"shield_steamid_duplicate 1^n")
-				fprintf(FileVar,"wait;wait;wait;wait;wait;wait;wait;wait;wait;wait;wait;wait;wait;^n")
+				fprintf(FileVar,"shield_gamedata HLDS-Shield 1.0.7^n")
 				fprintf(FileVar,"shield_name_protector_sv_connect 1^n")
 				fprintf(FileVar,"shield_kill_crash 1^n")
+				#if Type_VersionHLDS-Shield == 1
 				fprintf(FileVar,"shield_query_log 0^n")
 				fprintf(FileVar,"shield_vac 1^n")
 				fprintf(FileVar,"shield_max_overflowed 1000^n")
@@ -2312,8 +2323,6 @@ public Register_Settings()
 				fprintf(FileVar,"shield_printf_offset_command 0^n")
 				fprintf(FileVar,"shield_parseConsistencyResponse 1^n")
 				fprintf(FileVar,"shield_dropclient 1^n")
-				fprintf(FileVar,"wait;wait;wait;wait;wait;wait;wait;wait;wait;wait;wait;wait;wait;^n")
-				fprintf(FileVar,"shield_gamedata HLDS-Shield 1.0.7^n")
 				fprintf(FileVar,"shield_printf_limit 5^n")
 				fprintf(FileVar,"shield_query_limit 40^n")
 				fprintf(FileVar,"shield_munge_comamnd_limit 15^n")
@@ -2358,6 +2367,7 @@ public Register_Settings()
 				fprintf(FileVar,"//shield_remove_function sv_sendban^n")
 				fprintf(FileVar,"//shield_remove_function sv_runcmd^n")
 				fprintf(FileVar,"//shield_remove_function host_users_f^n")
+				#endif
 				fclose(FileVar)
 				ifcheckfiledebug = EOS
 				set_task(1.0,"debug_orpheu")
