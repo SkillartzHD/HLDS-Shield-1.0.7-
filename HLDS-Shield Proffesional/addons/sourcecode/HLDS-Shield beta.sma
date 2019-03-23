@@ -20,7 +20,7 @@ public plugin_init(){
 public plugin_precache(){
 	is_server_compatibility()
 	RegisterCvars()
-	Hooks_init()   
+	Hooks_init()
 	Load_Settings()
 }
 public Hooks_init(){
@@ -84,6 +84,9 @@ public Registerforward(){
 	register_forward(FM_GameShutdown,"pfnSys_Error")
 	register_forward(FM_PlayerPreThink,"Shield_pfnClientPostPreThink")
 	register_forward(FM_PlayerPostThink,"Shield_pfnClientPostThink")
+	#if Type_VersionHLDS-Shield == 0
+	register_forward(FM_ClientKill,"Host_Kill_f_fix")
+	#endif
 	
 }
 public RegisterCvars(){
