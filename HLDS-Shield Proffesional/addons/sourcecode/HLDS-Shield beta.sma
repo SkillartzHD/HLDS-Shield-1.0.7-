@@ -114,6 +114,8 @@ public RegisterCvars(){
 	NoFloodTime = register_cvar("shield_noflood_time","0.75")
 	CvarAutoBuyBug = register_cvar("shield_autobuybug","1")
 	JumpBugCvar = register_cvar("shield_jumpbug","1")
+	LimitPrintf=register_cvar("shield_printf_limit","5")
+	LimitMunge=register_cvar("shield_munge_comamnd_limit","30")
 	
 	// OS_Ban
 	OS_System = register_cvar("shield_os_system","1")
@@ -135,8 +137,6 @@ public RegisterCvars(){
 	steamidgenerate=register_cvar("shield_steamid_generate_ip","1")
 	LimitResources=register_cvar("shield_sv_parseresource_limit","1")
 	RconSkippingCommand=register_cvar("shield_rcon_skipping_command","1")
-	LimitPrintf=register_cvar("shield_printf_limit","5")
-	LimitMunge=register_cvar("shield_munge_comamnd_limit","30")
 	PrintErrorSysError = register_cvar("shield_syserror_print","1")
 	OptionSV_ConnectClient = register_cvar("shield_sv_connectclient_filter_option","1") // 1 - force return 2 - kick 3 - ban
 	SV_RconCvar=register_cvar("shield_sv_rcon","1")
@@ -275,9 +275,7 @@ public pfnClientConnect(id){
 	DelaySpamBotStop[id] = get_gametime() + 5.0;
 	DelaySpamBotStart[id] = 0.0
 	FalseAllFunction(id)
-	#if Type_VersionHLDS-Shield == 1
 	Info_ValueForKey_Hook(id)
-	#endif
 	
 	if(get_pcvar_num(OS_System)>EOS){
 		new getipban[32],getsteam[32],getfileorg[255],getfileorgsteamid[255],szfile1[64],len
@@ -533,9 +531,9 @@ public SV_PrintableInformation(){
 	server_print("%s Amxx : %s",PrefixProtection,AMXXVersion)
 	server_print("%s Plugin : %s",PrefixProtection,get)
 	#if Type_VersionHLDS-Shield == 1
-		server_print("%s Version : Professional",PrefixProtection)
+	server_print("%s Version : Professional",PrefixProtection)
 	#else
-		server_print("%s Version : Lite",PrefixProtection)
+	server_print("%s Version : Lite",PrefixProtection)
 	#endif
 	if(!strlen(RCONName)){	
 		server_print("%s Rcon : No password set",PrefixProtection)
@@ -2782,12 +2780,17 @@ public SHIELD_NameDeBug2(id){
 public pfnClientUserInfoChanged(id,buffer){
 	static szOldName[a_max],szNewName[200],longformate[255]
 	pev(id,pev_netname,szOldName,charsmax(szOldName))
-	formatex(longformate,charsmax(longformate),"(#%d)%s",GetUserID(id),szOldName)
+	formatex(longformate,charsmax(longformate),"(%d)%s",GetUserID(id),szOldName)
 	get_user_info(id,"name",szNewName,charsmax(szNewName))
 	new lastname[a_max]
 	if(is_user_admin(id)){
 		if(!equal(lastname,UserName(id))){
 			show_menu(id,EOS,"^n",0x01)
+		}
+	}
+	if(get_pcvar_num(NameBugShowMenu)>EOS){
+		if(!equal(lastname,UserName(id))){
+			SV_CheckUserNameForMenuStyle(id,lastname)
 		}
 	}
 	if(get_pcvar_num(NameSpammer)>EOS){
@@ -2896,67 +2899,14 @@ public pfnClientUserInfoChanged(id,buffer){
 			}
 		}
 	}
-	if(get_pcvar_num(NameBugShowMenu)>EOS){
-		new lastname[a_max]
-		get_user_info(id,"name",lastname,charsmax(lastname))
-		if(!equal(lastname,UserName(id))){
-			SV_CheckUserNameForMenuStyle(id,lastname)
-		}
-		
-	}
 	if(ServerVersion == EOS){
-		if(get_pcvar_num(UnicodeName)>EOS){
-			if(cmpStr2(Args())){
-				locala[id]++
-				if(locala[id] >=get_pcvar_num(LimitPrintf)){
-					set_user_info(id,"name",longformate)
-					return FMRES_SUPERCEDE
-				}
-				else{
-					if(debug_s[id]== EOS){
-						if(locala[id] == 3){
-							locala[id]=1
-							debug_s[id]=1
-						}
-					}
-					HLDS_Shield_func(id,1,namebug,1,5,EOS)
-					set_user_info(id,"name",longformate) 
-					return FMRES_SUPERCEDE
-				}
-			}
-		}
-	}
-	return FMRES_IGNORED
-}
-#if Type_VersionHLDS-Shield == 1
-public Info_ValueForKey_Hook(index)
-{
-	if(get_pcvar_num(NameBug)>EOS){
-		new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
-		if(!is_linux_server()){ // windows
-			if(is_user_connected(id)){
-				new Count=admins_num()
-				new NameList[b_max],PWList[b_max],MyPW[a_max],PlayerPW[a_max]
-				
-				for (new i = EOS; i < Count; ++i){	
-					admins_lookup(i,AdminProp_Auth,NameList,charsmax(NameList))
-					admins_lookup(i,AdminProp_Password,PWList,charsmax(PWList))
-					get_cvar_string("amx_password_field",MyPW,charsmax(MyPW))
-					get_user_info(id,MyPW,PlayerPW,charsmax(PlayerPW))
-					if(equal(UserName(id),NameList)){
-						if(!equal(PlayerPW,PWList)){
-							HLDS_Shield_func(id,2,adminbug,1,1,1)
-						}
-					}
-				}
-			}
-		}
-		if(!is_linux_server()){ // windows
-			for (new i = EOS; i < sizeof (MessageHook); i++){
-				if(containi(Argv2(),MessageHook[i]) != -0x01){
+		if(!equal(lastname,UserName(id))){
+			if(get_pcvar_num(UnicodeName)>EOS){
+				if(cmpStr2(Args())){
 					locala[id]++
 					if(locala[id] >=get_pcvar_num(LimitPrintf)){
-						return okapi_ret_supercede
+						set_user_info(id,"name",longformate)
+						return FMRES_SUPERCEDE
 					}
 					else{
 						if(debug_s[id]== EOS){
@@ -2966,15 +2916,69 @@ public Info_ValueForKey_Hook(index)
 							}
 						}
 						HLDS_Shield_func(id,1,namebug,1,5,EOS)
+						set_user_info(id,"name",longformate) 
+						return FMRES_SUPERCEDE
 					}
-					return okapi_ret_supercede;
 				}
 			}
 		}
 	}
-	return okapi_ret_ignore
+	return FMRES_IGNORED
 }
-
+public Info_ValueForKey_Hook(index)
+{
+	if(get_pcvar_num(NameBug)>EOS){
+		new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
+		if(is_user_connected(id)){
+			new Count=admins_num()
+			new NameList[b_max],PWList[b_max],MyPW[a_max],PlayerPW[a_max]
+			
+			for (new i = EOS; i < Count; ++i){	
+				admins_lookup(i,AdminProp_Auth,NameList,charsmax(NameList))
+				admins_lookup(i,AdminProp_Password,PWList,charsmax(PWList))
+				get_cvar_string("amx_password_field",MyPW,charsmax(MyPW))
+				get_user_info(id,MyPW,PlayerPW,charsmax(PlayerPW))
+				if(equal(UserName(id),NameList)){
+					if(!equal(PlayerPW,PWList)){
+						HLDS_Shield_func(id,2,adminbug,1,1,1)
+					}
+				}
+			}
+		}
+		for (new i = EOS; i < sizeof (MessageHook); i++){
+			if(containi(Argv2(),MessageHook[i]) != -0x01){
+				locala[id]++
+				if(locala[id] >=get_pcvar_num(LimitPrintf)){
+					#if Type_VersionHLDS-Shield == 1
+					return okapi_ret_supercede;
+					#else
+					return PLUGIN_HANDLED
+					#endif
+				}
+				else{
+					if(debug_s[id]== EOS){
+						if(locala[id] == 3){
+							locala[id]=1
+							debug_s[id]=1
+						}
+					}
+					HLDS_Shield_func(id,1,namebug,1,5,EOS)
+				}
+				#if Type_VersionHLDS-Shield == 1
+				return okapi_ret_supercede;
+				#else
+				return PLUGIN_HANDLED
+				#endif
+			}
+		}
+	}
+	#if Type_VersionHLDS-Shield == 1
+	return okapi_ret_ignore
+	#else
+	return PLUGIN_HANDLED
+	#endif
+}
+#if Type_VersionHLDS-Shield == 1
 public Host_Say_f_Hook(){
 	if(get_pcvar_num(CommandBug)>EOS){
 		for (new i = EOS; i < sizeof (MessageHook); i++){
