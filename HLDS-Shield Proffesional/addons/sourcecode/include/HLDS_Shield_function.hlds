@@ -1,9 +1,7 @@
 #include <amxmodx>
 #include <fakemeta>
 #include <amxmisc>
-#include <engine>
 #include <nvault>
-#include <regex>
 #if Type_VersionHLDS-Shield == 1
 #include <orpheu_advanced>
 #include <orpheu>
@@ -252,7 +250,7 @@
 #define MAX_BUFFER_IP 32
 #define console_max 255
 
-new limitba[33],debug_s[33],g_MaxClients,Regex:g_iPattern,iClientTimeoutConnection[33],CvarQQC2Result,QQC2CvarCheck
+new limitba[33],debug_s[33],g_MaxClients,iClientTimeoutConnection[33],CvarQQC2Result,QQC2CvarCheck
 new Float:DelaySpamBotStop[33],Float:DelaySpamBotStart[33]
 new UserCheckImpulse[33],DuplicateSteamid,PrintErrorSysError,ServerVersion,RandomSteamid,IlegalCmd,AgresiveFunction
 new Radio,convertortime[255],hour,minutes,day,year,month
@@ -809,26 +807,6 @@ stock RconRandom()
 	else{
 		log_to_file(settings,"%s I changed rcon old password : ^"%s^"  with new password : ^"%s^"",PrefixProtection,RconVar,bullshit)
 	}
-}
-stock SV_CheckUserNameForMenuStyle(id,szNewName[] = ""){
-	new GetName[200]
-	if(szNewName[0]){
-		copy(GetName,charsmax(GetName),szNewName)
-	}
-	else{
-		get_user_name(id,GetName,charsmax(GetName))
-	}
-	
-	new iNum,szSubStr[3],szNewTxtPart[200]
-	
-	while(regex_match_c(GetName,g_iPattern,iNum)){
-		regex_substr(g_iPattern,0,szSubStr,2)
-		copy(szNewTxtPart,charsmax(szNewTxtPart),szSubStr)
-		replace(szNewTxtPart,charsmax(szNewTxtPart),"+","+.")
-		replace_all(GetName,charsmax(GetName),szSubStr,szNewTxtPart)
-		set_user_info(id,"name",GetName)
-	}
-	return PLUGIN_CONTINUE
 }
 stock net_adrr()
 {
