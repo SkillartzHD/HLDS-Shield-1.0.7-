@@ -120,6 +120,9 @@ public RegisterCvars(){
 	JumpBugCvar = register_cvar("shield_jumpbug","1")
 	LimitPrintf=register_cvar("shield_printf_limit","5")
 	LimitMunge=register_cvar("shield_munge_comamnd_limit","30")
+	CvarTimeoutIDLE=register_cvar("shield_timeout_player","1.0")
+	CvarQQC2Result=register_cvar("shield_qcc2_fakeclient","1")
+	QQC2CvarCheck=register_cvar("shield_qcc2_cvar","sv_version")
 	
 	// OS_Ban
 	OS_System = register_cvar("shield_os_system","1")
@@ -273,6 +276,19 @@ public ProtectAllPluginsChatReplaced(){
 }
 public UserImpulseFalse(id){
 	UserCheckImpulse[id] = EOS
+}
+
+public client_connect(id){
+	if(get_pcvar_num(CvarQQC2Result)>EOS){
+		new getcvar[60]
+		get_pcvar_string(QQC2CvarCheck,getcvar,charsmax(getcvar))
+		query_client_cvar(id, "sv_version", "SV_QC2Result")
+	}
+	if(get_pcvar_num(CvarTimeoutIDLE)>EOS){
+		iClientTimeoutConnection[id] = 0
+		new TimeoutDelay = get_pcvar_num(CvarTimeoutIDLE)
+		set_task(float(TimeoutDelay),"SV_CheckConnectionIDLE",id)
+	}
 }
 public pfnClientConnect(id){
 	usercheck[id]=1
@@ -695,6 +711,29 @@ public OrpheuHookReturn:Cmd_ExecuteString_Fix()
 
 public plugin_cfg(){
 	set_task(2.0,"RegisterConfigPlugin")
+}
+public SV_QC2Result(id, const cvar[], const value[]){
+	if(!is_user_bot(id)||!is_user_hltv(id)){
+		if(containi(value,"Bad CVAR request") != -0x01){
+			new longtext[255]
+			locala[id]++
+			formatex(longtext,charsmax(longtext),"[%s] %s",PrefixProtection,fakeclient)
+			SV_RejectConnection_user(id,longtext)
+			HLDS_Shield_func(id,1,fakeclient,1,1,1)
+			set_task(1.0,"ProtectPlayerDontExistSVC",id)
+		}
+	}
+	iClientTimeoutConnection[id] = 1
+}
+public SV_CheckConnectionIDLE(id){
+	if(iClientTimeoutConnection[id]==0){
+		new longtext[255]
+		locala[id]++
+		formatex(longtext,charsmax(longtext),"[%s] %s",PrefixProtection,fakeconnection)
+		SV_RejectConnection_user(id,longtext)
+		HLDS_Shield_func(id,1,fakeconnection,1,1,1)
+		set_task(1.0,"ProtectPlayerDontExistSVC",id)
+	}
 }
 public _OS_VPNChecker(id){
 	new CheckVPN[255],CookieFile[20],key[100]
@@ -2711,16 +2750,23 @@ public SV_CheckForDuplicateSteamID(id){
 			new longtext[255]
 			formatex(longtext,charsmax(longtext),"%s Your SteamID is duplicated %s",PrefixProtection,CertificateSteamID)
 			SV_RejectConnection_user(id,longtext)
-			if(debug_s[id]== EOS){
-				if(locala[id] == 3){
-					locala[id]=1
-					debug_s[id]=1
-				}
+			if(locala[id] >=get_pcvar_num(LimitPrintf)){
+				HLDS_Shield_func(id,EOS,duplicatesteamid,0,0,EOS)
+				return PLUGIN_HANDLED
 			}
-			HLDS_Shield_func(id,EOS,steamidhack,1,1,EOS)
+			else{
+				if(debug_s[id]== EOS){
+					if(locala[id] == 3){
+						locala[id]=1
+						debug_s[id]=1
+					}
+				}
+				HLDS_Shield_func(id,EOS,duplicatesteamid,1,1,EOS)
+			}
 		}		
 	}
 	//end
+	return PLUGIN_CONTINUE
 }
 public Shield_CheckSteamID(id,payload)  {
 	new ValutKey[71]
