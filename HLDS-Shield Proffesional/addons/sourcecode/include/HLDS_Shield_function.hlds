@@ -1039,22 +1039,32 @@ stock HLDS_Shield_func(index,print,msg[],emit,log,pedeapsa)
 	else if(log==16){
 		log_to_file(settings,string10,PrefixProtection,UserName(index),PlayerIP(index),msg,Argv(),hola)
 	}
-	if(get_pcvar_num(AgresiveFunction)>0){
-		new AddressHLDS[32]
-		get_cvar_string("net_address",AddressHLDS,charsmax(AddressHLDS))
-		server_cmd("addip %d %s",get_pcvar_num(BanTime),PlayerIP(index))
-		server_cmd("banid %d ^"%s^"",get_pcvar_num(BanTime),BufferSteamID(index))
-		if(containi(PlayerIP(index),AddressHLDS) != -0x01){ // for sv_connectclient blabla
-			if(ServerVersion == EOS){
-				#if Type_VersionHLDS-Shield == 1
-				okapi_get_ptr_array(net_adrr(),data,net_adr)
-				#endif
-				formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+	if(get_pcvar_num(AgresiveFunction)==1){
+		if(strlen(msg)){ // exception null string namespammer/overflowed/etc...
+			new createmsg[255]
+			formatex(createmsg,charsmax(createmsg),"%s Rejected for violation function %s",PrefixProtection,msg)
+			SV_RejectConnection_user(index,createmsg)
+			set_task(1.0,"ProtectPlayerDontExistSVC",index)
+		}
+	}
+	if(get_pcvar_num(AgresiveFunction)==2){
+		if(strlen(msg)){ // exception null string namespammer/overflowed/etc...
+			new AddressHLDS[32]
+			get_cvar_string("net_address",AddressHLDS,charsmax(AddressHLDS))
+			server_cmd("addip %d %s",get_pcvar_num(BanTime),PlayerIP(index))
+			server_cmd("banid %d ^"%s^"",get_pcvar_num(BanTime),BufferSteamID(index))
+			if(containi(PlayerIP(index),AddressHLDS) != -0x01){ // for sv_connectclient blabla
+				if(ServerVersion == EOS){
+					#if Type_VersionHLDS-Shield == 1
+					okapi_get_ptr_array(net_adrr(),data,net_adr)
+					#endif
+					formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
+				}
+				else{
+					formatex(getip,charsmax(getip),"not supported for rehlds")
+				}
+				server_cmd("addip %d %s",get_pcvar_num(BanTime),getip)
 			}
-			else{
-				formatex(getip,charsmax(getip),"not supported for rehlds")
-			}
-			server_cmd("addip %d %s",get_pcvar_num(BanTime),getip)
 		}
 	}
 	if(pedeapsa==0x01){
@@ -2331,9 +2341,7 @@ public Register_Settings()
 				fprintf(FileVar,"shield_autobuybug 1^n")
 				fprintf(FileVar,"shield_noflood 1^n")
 				fprintf(FileVar,"shield_noflood_time 0.75^n")
-				#if Type_VersionHLDS-Shield == 1
 				fprintf(FileVar,"shield_ban_violation_function 0^n")
-				#endif
 				fprintf(FileVar,"shield_os_system 1^n")
 				fprintf(FileVar,"shield_name_char_fix 1^n")
 				fprintf(FileVar,"shield_chat_char_fix 1^n")
