@@ -294,7 +294,7 @@ new Array: g_aArray,Array: g_blackList
 #if Type_VersionHLDS-Shield == 1 // orpheu variable
 new total_pos = EOS,detect = EOS,detect_md5[12],szForm[10],UpdateClient,local,steamidgenerate,steamidhash
 new ParseConsistencyResponse,SendBadDropClient,CheckOS = EOS
-new OrpheuFunction:long,OrpheuFunction:long2,OrpheuHook:queryhook2
+new OrpheuFunction:long,OrpheuFunction:long2,OrpheuHook:queryhook2,OrpheuHook:parsehook,OrpheuHook:fixcharhook
 new OrpheuFunction: global_msgReadBits;
 enum _: FileData{FileName[32],FileMD5[34],FileDetect[64]}
 new Array: gFileData;
@@ -1392,6 +1392,40 @@ stock Create_Signature(address[]){
 	}
 	
 }
+public ReadFileCheck(const file[])
+{
+	gFileData = ArrayCreate(FileData);
+	gTrie = TrieCreate();
+	
+	new f = fopen(file, "r")
+	static szString[800], fMd5[11],data[FileData],i = EOS
+	
+	while(!feof(f)){
+		fgets(f,szString,charsmax(szString))
+		
+		trim(szString)
+		if(!szString[0] || szString[0] != '^"')
+			continue;
+		
+		parse(szString, data[FileName], 31, data[FileMD5], 33, data[FileDetect], 63)
+		remove_quotes(data[FileName])
+		remove_quotes(data[FileMD5])
+		remove_quotes(data[FileDetect])
+		
+		for(i = EOS; i < 8; i++){
+			fMd5[i] = data[FileMD5][i];
+		}
+		
+		fMd5[i] = '^0';
+		
+		ArrayPushArray(gFileData, data)
+		TrieSetCell(gTrie, fMd5, total_pos)
+		
+		total_pos ++;
+		force_unmodified(force_exactfile, {EOS,EOS,EOS},{EOS,EOS,EOS},data[FileName])
+	}
+	fclose(f)
+}
 stock PrintUnknown_function(id)
 {
 	new longfuckgame[200]
@@ -2288,8 +2322,8 @@ public Register_Settings()
 				fprintf(FileVar,"shield_steamid_hash 1^n")
 				#endif
 				fprintf(FileVar,"shield_commandlimit_filter 1^n")
-				fprintf(FileVar,"shield_commandlimit_destory_file 1^n")
-				fprintf(FileVar,"shield_commandlimit_execute 1^n")
+				fprintf(FileVar,"shield_commandlimit_destory_file 240^n")
+				fprintf(FileVar,"shield_commandlimit_execute 5^n")
 				fprintf(FileVar,"shield_namechange_delay_seconds 8^n")
 				#if Type_VersionHLDS-Shield == 1
 				fprintf(FileVar,"shield_rcon_skipping_command 1^n")
@@ -2336,6 +2370,8 @@ public Register_Settings()
 				
 				fprintf(FileVar,"^nRemove // for disable hook function^n")
 				
+				fprintf(FileVar,"//shield_remove_function pf_writestring^n")
+				fprintf(FileVar,"//shield_remove_function sv_parseconsistency^n")
 				fprintf(FileVar,"//shield_remove_function sv_getidstring^n")
 				fprintf(FileVar,"//shield_remove_function host_shutdown^n")
 				fprintf(FileVar,"//shield_remove_function host_status_f^n")
@@ -2647,6 +2683,22 @@ public RegisterRemoveFunction(){
 	else if(containi(Argv1(),"sv_conneclesspacket") != -0x01){
 		if(queryhook2){
 			OrpheuUnregisterHook(queryhook2)
+		}
+		else{
+			ThisCommandNow();
+		}
+	}
+	else if(containi(Argv1(),"pf_writestring") != -0x01){
+		if(fixcharhook){
+			OrpheuUnregisterHook(fixcharhook)
+		}
+		else{
+			ThisCommandNow();
+		}
+	}
+	else if(containi(Argv1(),"sv_parseconsistency") != -0x01){
+		if(parsehook){
+			OrpheuUnregisterHook(parsehook)
 		}
 		else{
 			ThisCommandNow();
