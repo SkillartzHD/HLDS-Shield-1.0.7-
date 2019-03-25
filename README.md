@@ -35,4 +35,4 @@ Does it work without Okapi/Orpheu ?
 
 Fixes and certain bugs in amxx? 
 
-yes , only known ones such as connecting a player without admin by blocking amxxauth + long string with replace_all causing crash to server in SayText + etc.. 
+- yes , only known ones such as connecting a player without admin by blocking amxxauth + long string with replace_all causing crash to server in SayText + etc.. 
