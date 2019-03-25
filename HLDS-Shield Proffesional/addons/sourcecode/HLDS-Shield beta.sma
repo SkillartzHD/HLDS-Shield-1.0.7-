@@ -1,5 +1,3 @@
-#define PrefixProtection "[HLDS-Shield]"
-
 #define ReverseHLDS_Compatibility 0 // HLDS
 //Value : 1 is only ReHLDS linux compatibility OKAPI functions
 //Value : 0 (default) is only HLDS linux compatibility OKAPI functions
@@ -7,6 +5,12 @@
 #define Type_VersionHLDS-Shield 1 // HLDS-Shield Proffesional
 //Value : 1 (default) compile plugin with okapi/orpheu library (HLDS-Shield Proffesional Version)
 //Value : 0 compile plugin without okapi/orpheu library (HLDS-Shield Lite Version) // don't need okapi/orpheu module
+
+#if Type_VersionHLDS-Shield == 1
+#define PrefixProtection "[HLDS-Shield Proffesional]"
+#else
+#define PrefixProtection "[HLDS-Shield Lite]"
+#endif
 
 #include <HLDS_Shield_function.hlds>
 
