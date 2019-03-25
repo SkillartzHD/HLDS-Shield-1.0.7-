@@ -28,3 +28,11 @@ What is HLDS++.so ?
 - it is a mode only for crack server HLDS that only the emulation of the players (non-steam)
 
 - here it works all functions of your HLDS-Shield correctly
+
+Does it work without Okapi/Orpheu ?
+
+- yes , only if you compile the source with #Type_VersionHLDS-Shield 0 but there are not all the fixes
+
+Fixes and certain bugs in amxx? 
+
+yes , only known ones such as connecting a player without admin by blocking amxxauth + long string with replace_all causing crash to server in SayText + etc.. 
