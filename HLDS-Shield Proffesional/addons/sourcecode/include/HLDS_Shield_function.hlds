@@ -857,7 +857,7 @@ stock HLDS_Shield_func(index,print,msg[],emit,log,pedeapsa)
 	BufferName(value,charsmax(value),buffer)
 	
 	if(print==0x01){
-		client_print_color(index,index,"^4%s^1 %s%s ^1(%s) [^4%d^1/^3%d^1]",PrefixProtection,string1,msg,PlayerIP(index),locala[index],get_pcvar_num(LimitPrintf))
+		client_print_color_func(index,index,"^4%s^1 %s%s ^1(%s) [^4%d^1/^3%d^1]",PrefixProtection,string1,msg,PlayerIP(index),locala[index],get_pcvar_num(LimitPrintf))
 	}
 	else if(print==0x02){
 		formatex(bomba,charsmax(bomba),"%s You has been detected for %s (%s)^n",PrefixProtection,msg,PlayerIP(index))
@@ -3395,13 +3395,13 @@ public _HTTP_EntityThink( iEntity )
 #define RED Red
 #define BLUE Blue
 #define GREY Grey
-#define ColorChat client_print_color
+#define ColorChat client_print_color_func
 
 enum _:Colors {DontChange,Red,Blue,Grey}
 
 stock const g_szTeamName[Colors][] = {"UNASSIGNED","TERRORIST","CT","SPECTATOR"}
 
-stock client_print_color(id, iColor=DontChange, const szMsg[], any:...){
+stock client_print_color_func(id, iColor=DontChange, const szMsg[], any:...){
 	if( id && !is_user_connected(id) ){
 		return 0;
 	}
