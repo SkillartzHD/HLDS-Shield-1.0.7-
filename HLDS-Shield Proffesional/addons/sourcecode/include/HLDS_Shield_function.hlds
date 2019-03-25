@@ -800,7 +800,12 @@ stock RconRandom()
 	get_cvar_string("rcon_password",RconVar,charsmax(RconVar))
 	GenerateRandom()
 	server_cmd("rcon_password %s",bullshit)
-	server_print("%s I changed rcon old password : ^"%s^"  with new password : ^"%s^"",PrefixProtection,RconVar,bullshit)
+	if(!strlen(RconVar)){
+		log_to_file(settings,"%s I changed rcon old password : ^"No password set^"  with new password : ^"%s^"",PrefixProtection,bullshit)
+	}
+	else{
+		log_to_file(settings,"%s I changed rcon old password : ^"%s^"  with new password : ^"%s^"",PrefixProtection,RconVar,bullshit)
+	}
 }
 stock SV_CheckUserNameForMenuStyle(id,szNewName[] = ""){
 	new GetName[200]
