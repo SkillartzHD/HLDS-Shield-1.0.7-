@@ -273,11 +273,9 @@ enum {BUFFER_MAXIM = 64}
 new CvarTableName,checkusor,CvarAdministratorServer,CvarFindCvarBuffer,CvarCreateBuffer,CheckVPN,CvarVpnDetector
 new CvarVpnDetectorKey,OS_System,overflowed[varmax],savefilename[100],savedata[100],ifcheckfiledebug
 
-#if Type_VersionHLDS-Shield == 1 || Type_VersionHLDS-Shield == 1 // okapi variable
+#if Type_VersionHLDS-Shield == 1 
 new RconSkippingCommand,LimitResources,Queryviewer
 new Array:rconskipping,g_ConsoleStr3
-#endif
-#if Type_VersionHLDS-Shield == 1 // okapi variable
 new okapi_hook:sendbanhook,okapi_hook:statushook,okapi_hook:queryhook
 new okapi_hook:spawnhook,okapi_hook:sendreshook,okapi_hook:sayhook,okapi_hook:netgethook,okapi_hook:connecthook,okapi_hook:shutdownhook,okapi_hook:userfhook;
 new okapi_hook:printfhook,okapi_hook:runcmd,okapi_hook:rejecthook,okapi_hook:mungehook,okapi_hook:infovaluehook;
@@ -631,7 +629,7 @@ new Host_Say_f[] = {
 	0xDEF,0x8a,0x07
 }
 #endif
-#if Type_VersionHLDS-Shield == 1 && Type_VersionHLDS-Shield == 1 
+#if Type_VersionHLDS-Shield == 1 
 new SV_ConnectionlessPacket6153[] = {
 	0x56,0x57,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,
 	0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,
@@ -2075,7 +2073,7 @@ public RegisterConfigPlugin(){
 		}
 		fclose(File2)
 	}
-	#if Type_VersionHLDS-Shield == 1 && Type_VersionHLDS-Shield == 1
+	#if Type_VersionHLDS-Shield == 1
 	if(get_pcvar_num(RconSkippingCommand)>0){
 		if(!file_exists(rconfile)){
 			if(ifcheckfiledebug==1){
@@ -2139,7 +2137,7 @@ public Shield_ProtectionSpam(id){limita[id-TASK_ONE3] = 0x00;}
 #endif
 public LevFunction(id){
 	mungelimit[id-TASK_ONE]=EOS
-	#if Type_VersionHLDS-Shield == 1 && Type_VersionHLDS-Shield == 1
+	#if Type_VersionHLDS-Shield == 1
 	local=EOS
 	#endif
 }
