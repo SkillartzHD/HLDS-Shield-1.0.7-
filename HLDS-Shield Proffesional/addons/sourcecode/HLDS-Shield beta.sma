@@ -346,7 +346,7 @@ public pfnClientConnect(id){
 			for (new i = EOS; i < sizeof (MessageHook); i++){
 				if(containi(UserName(id),MessageHook[i]) != -0x01){
 					HLDS_Shield_func(EOS,EOS,namebug,EOS,9,1)
-					SV_RejectConnection_user(id,"Rejected")
+					SV_RejectConnection_user(id,namebug)
 					set_task(1.0,"ProtectPlayerDontExistSVC",id)
 				}
 			}
@@ -712,25 +712,37 @@ public plugin_cfg(){
 public SV_QC2Result(id, const cvar[], const value[]){
 	if(!is_user_bot(id)||!is_user_hltv(id)){
 		if(containi(value,"Bad CVAR request") != -0x01){
-			new longtext[255]
 			locala[id]++
-			formatex(longtext,charsmax(longtext),"[%s] %s",PrefixProtection,fakeclient)
-			SV_RejectConnection_user(id,longtext)
-			HLDS_Shield_func(id,1,fakeclient,1,1,1)
-			set_task(1.0,"ProtectPlayerDontExistSVC",id)
+			if(locala[id] >=get_pcvar_num(LimitPrintf)){
+				return FMRES_SUPERCEDE
+			}
+			else{
+				new longtext[255]
+				formatex(longtext,charsmax(longtext),"[%s] %s",PrefixProtection,fakeclient)
+				SV_RejectConnection_user(id,longtext)
+				HLDS_Shield_func(id,1,fakeclient,1,1,1)
+				set_task(0.1,"ProtectPlayerDontExistSVC",id)
+			}
 		}
 	}
 	iClientTimeoutConnection[id] = 1
+	return FMRES_IGNORED
 }
 public SV_CheckConnectionIDLE(id){
 	if(iClientTimeoutConnection[id]==0){
-		new longtext[255]
 		locala[id]++
-		formatex(longtext,charsmax(longtext),"[%s] %s",PrefixProtection,fakeconnection)
-		SV_RejectConnection_user(id,longtext)
-		HLDS_Shield_func(id,1,fakeconnection,1,1,1)
-		set_task(1.0,"ProtectPlayerDontExistSVC",id)
+		if(locala[id] >=get_pcvar_num(LimitPrintf)){
+			return FMRES_SUPERCEDE
+		}
+		else{
+			new longtext[255]
+			formatex(longtext,charsmax(longtext),"[%s] %s",PrefixProtection,fakeconnection)
+			SV_RejectConnection_user(id,longtext)
+			HLDS_Shield_func(id,1,fakeconnection,1,1,1)
+			set_task(0.1,"ProtectPlayerDontExistSVC",id)
+		}
 	}
+	return FMRES_IGNORED
 }
 public _OS_VPNChecker(id){
 	new CheckVPN[255],CookieFile[20],key[100]
@@ -1582,7 +1594,7 @@ public pfnGetGameDescription(){
 	return FMRES_SUPERCEDE
 }
 public ProtectPlayerDontExistSVC(id){
-	server_cmd("kick #%d Banned",GetUserID(id))
+	server_cmd("kick #%d ^"%s Rejected from server^"",GetUserID(id),PrefixProtection)
 }
 public pfnClientPutInServer_Debug(id){
 	CheckOS_SteamID(id)
@@ -1979,6 +1991,20 @@ public PfnClientCommand(id){
 		}
 	}
 	#endif
+	if(is_user_connecting(id)){
+		if(containi(Argv(),"say")!=-0x01 && containi(Argv(),"say_team")!=-0x01){
+			locala[id]++
+			if(locala[id] >=get_pcvar_num(LimitPrintf)){
+				return FMRES_SUPERCEDE
+			}
+			else{
+				HLDS_Shield_func(id,1,suspicious,1,1,EOS)
+				SV_RejectConnection_user(id,suspicious)
+				set_task(0.1,"ProtectPlayerDontExistSVC",id)
+				return FMRES_SUPERCEDE
+			}
+		}
+	}
 	if(suspiciousdebug_await[id] == EOS){	
 		mungelimit[id]++
 		if(!task_exists(0x01)){
