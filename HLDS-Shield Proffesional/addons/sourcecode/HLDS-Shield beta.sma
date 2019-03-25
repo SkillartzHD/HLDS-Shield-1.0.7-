@@ -881,7 +881,7 @@ public _OS_SendUnBan(id,level,cid){
 		
 		if(file_exists(getfileorg)){
 			unlink(getfileorg)
-			client_print_color(EOS,EOS,"^4%s^1 Admin : ^4^"%s^"^1 successfully unbanned address ^4^"%s^"^1",
+			client_print_color_func(EOS,EOS,"^4%s^1 Admin : ^4^"%s^"^1 successfully unbanned address ^4^"%s^"^1",
 			prefixos,UserName(id),Argv1())
 			console_print(id,"%s: I successfully unbanned address ^"%s^"",prefixos,banid)
 		}
@@ -927,9 +927,9 @@ public CL_ProfileBan_WriteBan(id,level,cid){
 	}	
 	read_argv(2,reason,charsmax(reason))
 	remove_quotes(reason)
-	client_print_color(EOS,EOS,"^1 %s Admin : ^4^"%s^"^1 executed ^4^"%s^"^1",prefixos,UserName(id),Argv())
-	client_print_color(EOS,EOS,"^1 %s Address: ^4^"%s^"^1 / ^1Reason :^4^"%s^"^1",prefixos,FirstArg,SecondArg)
-	client_print_color(EOS,EOS,"^1 %s ID : ^4Simple Ban^1",prefixos)
+	client_print_color_func(EOS,EOS,"^1 %s Admin : ^4^"%s^"^1 executed ^4^"%s^"^1",prefixos,UserName(id),Argv())
+	client_print_color_func(EOS,EOS,"^1 %s Address: ^4^"%s^"^1 / ^1Reason :^4^"%s^"^1",prefixos,FirstArg,SecondArg)
+	client_print_color_func(EOS,EOS,"^1 %s ID : ^4Simple Ban^1",prefixos)
 	_OS_SendBanSteamID(EOS,1)
 	return PLUGIN_HANDLED
 }
@@ -985,10 +985,10 @@ public CL_ProfileBan_RealTime(id,level,cid){
 		_OS_SendBanSteamID(player,EOS)
 		replace_all(convertortime,charsmax(convertortime),"s","minutes")
 		HLDS_Shield_func(id,EOS,"",1,EOS,EOS)
-		client_print_color(EOS,EOS,"^1 %s Admin : ^4^"%s^"^1 executed ^4^"%s^"^1 on User : ^4^"%s^"^1",prefixos,UserName(id),Argv(),UserName(player))
-		client_print_color(EOS,EOS,"^1 %s Address: ^4^"%s^"^1 / SteamID: ^4^"%s^"^1",prefixos,PlayerIP(player),BufferSteamID(player))
-		client_print_color(EOS,EOS,"^1 %s Reason :^4^"%s^"^1 / Time : ^4^"%s^"^1",prefixos,SecondArg,convertortime)
-		client_print_color(EOS,EOS,"^1 %s ID : ^4Simple Ban^1",prefixos)
+		client_print_color_func(EOS,EOS,"^1 %s Admin : ^4^"%s^"^1 executed ^4^"%s^"^1 on User : ^4^"%s^"^1",prefixos,UserName(id),Argv(),UserName(player))
+		client_print_color_func(EOS,EOS,"^1 %s Address: ^4^"%s^"^1 / SteamID: ^4^"%s^"^1",prefixos,PlayerIP(player),BufferSteamID(player))
+		client_print_color_func(EOS,EOS,"^1 %s Reason :^4^"%s^"^1 / Time : ^4^"%s^"^1",prefixos,SecondArg,convertortime)
+		client_print_color_func(EOS,EOS,"^1 %s ID : ^4Simple Ban^1",prefixos)
 		
 		log_to_file(LogOSExecuted,"----------------------------------------------------------------------")
 		log_to_file(LogOSExecuted,"%s UserName: ^"%s^"",prefixos,UserName(player),PlayerIP(player))
@@ -1149,10 +1149,10 @@ public CL_ProfileBan(id,level,cid){
 		formatex(stringbuffer,charsmax(stringbuffer),"%s/banuser.php?usertabel=%s&userserver=%s&timeban=%d",urlcache,varget,AddressHLDS,seconds)
 		show_motd(player,stringbuffer,"Counter-Strike")
 		HLDS_Shield_func(id,EOS,"",1,EOS,EOS)
-		client_print_color(EOS,EOS,"^1 %s Admin : ^4^"%s^"^1 executed ^4^"%s^"^1 on User :^4^"%s^"^1",prefixos,UserName(id),Argv(),UserName(player))
-		client_print_color(EOS,EOS,"^1 %s Address: ^4^"%s^"^1 / SteamID: ^4^"%s^"^1",prefixos,PlayerIP(player),BufferSteamID(player))
-		client_print_color(EOS,EOS,"^1 %s Reason :^4^"%s^"^1 / Time :^4^"%s^"^1",prefixos,SecondArg,convertortime)
-		client_print_color(EOS,EOS,"^1 %s ID : ^4Cookie Ban^1",prefixos)
+		client_print_color_func(EOS,EOS,"^1 %s Admin : ^4^"%s^"^1 executed ^4^"%s^"^1 on User :^4^"%s^"^1",prefixos,UserName(id),Argv(),UserName(player))
+		client_print_color_func(EOS,EOS,"^1 %s Address: ^4^"%s^"^1 / SteamID: ^4^"%s^"^1",prefixos,PlayerIP(player),BufferSteamID(player))
+		client_print_color_func(EOS,EOS,"^1 %s Reason :^4^"%s^"^1 / Time :^4^"%s^"^1",prefixos,SecondArg,convertortime)
+		client_print_color_func(EOS,EOS,"^1 %s ID : ^4Cookie Ban^1",prefixos)
 		
 		log_to_file(LogOSExecuted,"----------------------------------------------------------------------")
 		log_to_file(LogOSExecuted,"%s UserName: ^"%s^"",prefixos,UserName(player),PlayerIP(player))
@@ -2856,7 +2856,7 @@ public pfnClientUserInfoChanged(id,buffer){
 		if(containi(szNewName,"ï¼…") !=-1){
 			if (NameUnLock[id]==2){
 				NameUnLock[id] = 2
-				client_print_color(id,id,"^4%s^1 Please wait^4 %d seconds^1 before change the name",PrefixProtection,get_time_cvar)
+				client_print_color_func(id,id,"^4%s^1 Please wait^4 %d seconds^1 before change the name",PrefixProtection,get_time_cvar)
 				set_user_info(id,"name",szOldName) 
 				set_task(float(get_time_cvar),"SHIELD_NameDeBug",id+TASK_ONE2)
 				HLDS_Shield_func(id,EOS,"",1,EOS,EOS)
@@ -2871,7 +2871,7 @@ public pfnClientUserInfoChanged(id,buffer){
 			if(!equal(szOldName,szNewName)) {
 				if (NameUnLock[id] == 1){
 					NameUnLock[id] = 1
-					client_print_color(id,id,"^4%s^1 Please wait^4 %d seconds^1 before change the name",PrefixProtection,get_time_cvar)
+					client_print_color_func(id,id,"^4%s^1 Please wait^4 %d seconds^1 before change the name",PrefixProtection,get_time_cvar)
 					set_user_info(id,"name",szOldName)
 					HLDS_Shield_func(id,EOS,"",1,EOS,EOS)
 					return FMRES_SUPERCEDE
@@ -3038,7 +3038,7 @@ public Host_Say_f_Hook(){
 		return okapi_ret_supercede;
 	}
 	
-	client_print_color(EOS,EOS,"^4%s (Console)^1 : %s",hostname,Args())
+	client_print_color_func(EOS,EOS,"^4%s (Console)^1 : %s",hostname,Args())
 	log_amx("%s (Console) : %s",hostname,Args())
 	return okapi_ret_supercede;
 }
@@ -3420,7 +3420,7 @@ public plugin_pause(){
 	get_plugin(-1,get,charsmax(get))
 	server_cmd("amxx unpause %s",get)
 	log_to_file(settings,"%s Failed to pause plugin ^"%s^"",PrefixProtection,get)
-	client_print_color(EOS,EOS,"^4%s^1 : Failed to pause plugin ^"%s^"",PrefixProtection,get)
+	client_print_color_func(EOS,EOS,"^4%s^1 : Failed to pause plugin ^"%s^"",PrefixProtection,get)
 }
 public FalseAllFunction(id)
 {
