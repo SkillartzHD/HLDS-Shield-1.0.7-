@@ -182,10 +182,7 @@ public RegisterCvars(){
 }
 
 public Load_Settings(){
-	new szError[64],iError;
-	
 	g_MaxClients = get_global_int(GL_maxClients)
-	g_iPattern = regex_compile("[+]",iError,szError,charsmax(szError),"i")
 	valutsteamid = nvault_open("SteamHackDetector")
 	#if Type_VersionHLDS-Shield == 1
 	g_aArray = ArrayCreate(1) 
@@ -2828,11 +2825,6 @@ public pfnClientUserInfoChanged(id,buffer){
 			}
 		}
 	}
-	if(get_pcvar_num(NameBug)>EOS){
-		if(!equal(szNewName,UserName(id))){
-			SV_CheckUserNameForMenuStyle(id,szNewName)
-		}
-	}
 	#if Type_VersionHLDS-Shield == 0
 	if(get_pcvar_num(NameBug)>EOS){
 		for (new i = EOS; i < sizeof (MessageHook); i++){
@@ -2912,7 +2904,14 @@ public pfnClientUserInfoChanged(id,buffer){
 		}
 		
 	}
-	
+	if(get_pcvar_num(NameBug)>EOS){
+		if(!equal(szNewName,UserName(id))){
+			if(containi(szNewName,"+") !=-1){
+				replace_all(szNewName,charsmax(szNewName),"+","+.")
+				set_user_info(id,"name",szNewName) 
+			}
+		}
+	}
 	if(get_pcvar_num(NameBug)>EOS){
 		if(is_linux_server()){
 			if(is_user_connected(id)){
