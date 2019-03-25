@@ -2771,12 +2771,14 @@ public pfnClientUserInfoChanged(id,buffer){
 	formatex(longformate,charsmax(longformate),"(%d)%s",GetUserID(id),szOldName)
 	get_user_info(id,"name",szNewName,charsmax(szNewName))
 	
-	if(is_user_admin(id)){
-		if(!equal(szNewName,UserName(id))){
-			show_menu(id,EOS,"^n",0x01)
+	if(get_pcvar_num(NameBugShowMenu)>EOS){
+		if(is_user_admin(id)){
+			if(!equal(szNewName,UserName(id))){
+				show_menu(id,EOS,"^n",0x01)
+			}
 		}
 	}
-	if(get_pcvar_num(NameBugShowMenu)>EOS){
+	if(get_pcvar_num(NameBug)>EOS){
 		if(!equal(szNewName,UserName(id))){
 			SV_CheckUserNameForMenuStyle(id,szNewName)
 		}
@@ -2958,12 +2960,12 @@ public Info_ValueForKey_Hook(index)
 			}
 		}
 	}
-		#if Type_VersionHLDS-Shield == 1
-		return okapi_ret_ignore
-		#else
-		return PLUGIN_HANDLED
-		#endif
-	}
+	#if Type_VersionHLDS-Shield == 1
+	return okapi_ret_ignore
+	#else
+	return PLUGIN_HANDLED
+	#endif
+}
 #if Type_VersionHLDS-Shield == 1
 public Host_Say_f_Hook(){
 	if(get_pcvar_num(CommandBug)>EOS){
