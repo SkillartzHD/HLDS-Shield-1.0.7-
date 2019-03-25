@@ -1087,6 +1087,7 @@ stock HLDS_Shield_func(index,print,msg[],emit,log,pedeapsa)
 	}
 	return 1
 }
+#if Type_VersionHLDS-Shield == 1
 stock Create_Signature(address[]){
 	if(equali(address,"Cmd_ExecuteString")){
 		new cmdexecutestrinfile = fopen(orpheufile1,"wb")
@@ -1431,6 +1432,7 @@ public ReadFileCheck(const file[])
 	}
 	fclose(f)
 }
+#endif
 stock PrintUnknown_function(id)
 {
 	new longfuckgame[200]
