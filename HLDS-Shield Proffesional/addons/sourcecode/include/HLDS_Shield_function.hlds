@@ -2303,12 +2303,12 @@ public Register_Settings()
 				fprintf(FileVar,"//shield_os_ban <name> <reason> <time>^n")
 				#if Type_VersionHLDS-Shield == 1
 				fprintf(FileVar,"//shield_remove_function <function>^n^n")
-				fprintf(FileVar,"shield_remove_string ^"motd_write^"^n")
-				fprintf(FileVar,"shield_remove_string ^"heartbeat^"^n")
+				fprintf(FileVar,"shield_remove_string ^"motd_write^n")
+				fprintf(FileVar,"shield_remove_string ^"heartbeat^n^n")
 				#endif
 				fprintf(FileVar,"shield_jumpbug 1^n")
 				fprintf(FileVar,"shield_autobuybug 1^n")
-				fprintf(FileVar,"shield_noflood 0^n")
+				fprintf(FileVar,"shield_noflood 1^n")
 				fprintf(FileVar,"shield_noflood_time 0.75^n")
 				#if Type_VersionHLDS-Shield == 1
 				fprintf(FileVar,"shield_ban_violation_function 0^n")
