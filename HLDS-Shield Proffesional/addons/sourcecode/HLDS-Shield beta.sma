@@ -3432,8 +3432,6 @@ public FalseAllFunction(id)
 	limit[id] = EOS
 	#if Type_VersionHLDS-Shield == 1
 	duplicateloop = EOS
-	#endif
-	#if Type_VersionHLDS-Shield == 1 && Type_VersionHLDS-Shield == 1
 	local = EOS
 	#endif
 	limitb[id] = EOS
