@@ -1,9 +1,6 @@
 # HLDS-Shield-1.0.7-
-HLDS-Shield 1.0.7
 
-![Imgur Image](https://i.imgur.com/rCie2p6.png)
-
-![Imgur Image](https://i.imgur.com/fvnlobd.png)
+![Imgur Image](https://i.imgur.com/rCie2p6.png) ![Imgur Image](https://i.imgur.com/fvnlobd.png)
 
 What does it do ?
 
