@@ -14,6 +14,8 @@ What is _OS_Ban ?
 
 - you can block players with amx_os_ban2 <name> <reason> <time> via cookies (bypass random ip/bypass steamid random)
   
+  ![Imgur Image](https://i.imgur.com/WKVzSRX.png)
+  
 - you can block players (real time ban) on steamid & ip with amx_os_ban/amx_os_addban and for remove use amx_os_unban
 
 What is VPNDetector ?
@@ -46,4 +48,3 @@ What is WHBlocker ?
 
 - he blocks wallhack/esphack , you shield_wh_blocker for it
 
-![Imgur Image](https://i.imgur.com/fvnlobd.png)
