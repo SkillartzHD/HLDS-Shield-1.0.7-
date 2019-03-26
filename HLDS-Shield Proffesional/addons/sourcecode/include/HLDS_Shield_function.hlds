@@ -249,13 +249,16 @@
 #define V4nr 0x04
 #define MAX_BUFFER_IP 32
 #define console_max 255
+#define add_alive_property(%1) g_Alive|=(1<<(%1-1))
+#define del_alive_property(%1) g_Alive&=~(1<<(%1-1))
+#define has_alive_property(%1) (g_Alive&(1<<(%1-1)))
 
 new limitba[33],debug_s[33],g_MaxClients,iClientTimeoutConnection[33],CvarQQC2Result,QQC2CvarCheck
 new Float:DelaySpamBotStop[33],Float:DelaySpamBotStart[33]
 new UserCheckImpulse[33],DuplicateSteamid,PrintErrorSysError,ServerVersion,RandomSteamid,IlegalCmd,AgresiveFunction
-new Radio,convertortime[255],hour,minutes,day,year,month
+new Radio,convertortime[255],hour,minutes,day,year,month,bool:g_bTeamCheck,g_Alive,g_Team[33]
 new GetTimeFile[10],GetTimeReal[10],CvarAutoBuyBug
-new KillBug,locala[varmax],BanTime,LimitPrintf,LimitMunge,CmdLimitVar,CmdlimitDestroy,CmdLimitMax,usercheck[varmax],TimeNameChange,CvarTimeoutIDLE
+new KillBug,locala[varmax],BanTime,LimitPrintf,LimitMunge,CmdLimitVar,CmdlimitDestroy,CmdLimitMax,usercheck[varmax],TimeNameChange,CvarTimeoutIDLE,CvarWHBlocker
 new LimitExploit,limitexecute[varmax],hola,mungelimit[varmax],GameData,UnicodeName,NameProtector,suspiciousdebug_await[33]
 new Array:unicodenameblock,g_ConsoleStr2,limit[varmax],limitb[varmax],JumpBugCvar,stringbuffer2[200],NameUnLock[33]
 new Float:g_Flooding[33] = {0.0,...},g_Flood[33] = {0,...}
@@ -1444,6 +1447,59 @@ stock PrintUnknown_function(id)
 public force_exit(){
 	server_cmd("quit")
 }
+stock bool:is_user_visible(const host,const who)
+{
+	static tr,Float:fFraction,Float:fPosHost[3],Float:fOfsHost[3],
+	Float:fPosWho[3],Float:fOfsWho[3]
+	
+	pev(host,pev_origin,fPosHost)
+	pev(host,pev_view_ofs,fOfsHost)
+	fPosHost[0]+=fOfsHost[0]
+	fPosHost[1]+=fOfsHost[1]
+	fPosHost[2]+=fOfsHost[2]
+	
+	pev(who,pev_origin,fPosWho)
+	pev(who,pev_view_ofs,fOfsWho)
+	fOfsWho[0]+=fPosWho[0]
+	fOfsWho[1]+=fPosWho[1]
+	fOfsWho[2]+=fPosWho[2]+12
+	
+	engfunc(EngFunc_TraceLine,fPosHost,fOfsWho,IGNORE_GLASS|IGNORE_MONSTERS,host,tr)
+	get_tr2(tr,TR_flFraction,fFraction)
+	
+	if(fFraction==1.0){
+		return true
+	}
+	static Float:fVecRightHost[3],Float:fVecRightSrcHost[3]
+	global_get(glb_v_right,fVecRightHost)
+	fVecRightHost[0]*=18
+	fVecRightHost[1]*=18
+	fVecRightHost[2]*=18
+	
+	fVecRightSrcHost[0]=fPosWho[0]+fVecRightHost[0]
+	fVecRightSrcHost[1]=fPosWho[1]+fVecRightHost[1]
+	fVecRightSrcHost[2]=fPosWho[2]+fVecRightHost[2]
+	
+	engfunc(EngFunc_TraceLine,fPosHost,fVecRightSrcHost,IGNORE_GLASS|1,host,tr)
+	get_tr2(tr,TR_flFraction,fFraction)
+	
+	if(fFraction==1.0){
+		return true
+	}
+	static Float:fVecLeftSrcHost[3]
+	fVecLeftSrcHost[0]=fPosWho[0]-fVecRightHost[0]
+	fVecLeftSrcHost[1]=fPosWho[1]-fVecRightHost[1]
+	fVecLeftSrcHost[2]=fPosWho[2]-fVecRightHost[2]
+	
+	
+	engfunc(EngFunc_TraceLine,fPosHost,fVecLeftSrcHost,IGNORE_GLASS|1,host,tr)
+	get_tr2(tr,TR_flFraction,fFraction)
+	
+	if(fFraction==1.0){
+		return true
+	}
+	return false
+}
 stock BufferName(info[],size,name[],size_name = 31) // nu pune mai mare decat 31
 {
 	new heh = 0x00;
@@ -1458,6 +1514,16 @@ stock BufferName(info[],size,name[],size_name = 31) // nu pune mai mare decat 31
 	else{
 		name[0x00] = EOS;
 	}
+}
+public ev_CurWeapon(id){
+	g_Team[id]=get_user_team(id)
+}
+public ev_PlayerSpawn(id){
+	add_alive_property(id)
+}
+public ev_PlayerDeath(){
+	new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
+	del_alive_property(id)
 }
 stock Send_CalculationsTimeBan(valueint,function,userfile[]){
 	new daysX[32],monthsX[12],yearsX[10],secondsX[32],minutesX[32],hourX[10],textstring[50]
@@ -2310,6 +2376,7 @@ public Register_Settings()
 				#endif
 				fprintf(FileVar,"sv_gamename ^"HLDS-Shield 1.0.7^" //only hlds++.so^n^n")
 
+				fprintf(FileVar,"shield_wh_blocker 1^n")
 				fprintf(FileVar,"shield_timeout_player 1.0^n")
 				fprintf(FileVar,"shield_qcc2_fakeclient 1^n")
 				fprintf(FileVar,"shield_qcc2_cvar ^"sv_version^"^n")
