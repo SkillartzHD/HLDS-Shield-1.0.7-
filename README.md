@@ -1,6 +1,10 @@
 # HLDS-Shield-1.0.7-
 HLDS-Shield 1.0.7
 
+![Imgur Image](https://i.imgur.com/rCie2p6.png)
+
+![Imgur Image](https://i.imgur.com/fvnlobd.png)
+
 What does it do ?
 
 - fix all the bugs/exploits knowns in the engine HLDS of Valve
@@ -36,3 +40,12 @@ Does it work without Okapi/Orpheu ?
 Fixes and certain bugs in amxx? 
 
 - yes , only known ones such as connecting a player without admin by blocking amxxauth + long string with replace_all causing crash to server in SayText + etc.. 
+
+What do i do if the rehlds version does not work?
+
+- just download the Lite version (without orpheu/okapi) and then it will work
+
+What is WHBlocker ?
+
+- he blocks wallhack/esphack , you shield_wh_blocker for it
+
