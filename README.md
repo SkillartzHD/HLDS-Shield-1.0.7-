@@ -1,6 +1,6 @@
 # HLDS-Shield-1.0.7-
 
-![Imgur Image](https://i.imgur.com/rCie2p6.png) ![Imgur Image](https://i.imgur.com/fvnlobd.png)
+![Imgur Image](https://i.imgur.com/rCie2p6.png)
 
 What does it do ?
 
@@ -46,3 +46,4 @@ What is WHBlocker ?
 
 - he blocks wallhack/esphack , you shield_wh_blocker for it
 
+![Imgur Image](https://i.imgur.com/fvnlobd.png)
