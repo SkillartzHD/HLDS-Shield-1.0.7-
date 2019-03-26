@@ -91,6 +91,10 @@ public Registerforward(){
 	#if Type_VersionHLDS-Shield == 0
 	register_forward(FM_ClientKill,"Host_Kill_f_fix")
 	#endif
+	register_forward(FM_AddToFullPack,"SV_AddToFullPack")
+	register_event("CurWeapon","ev_CurWeapon","be")
+	register_event("ResetHUD","ev_PlayerSpawn","be","1=1")
+	register_event("DeathMsg","ev_PlayerDeath","a")
 	
 }
 public RegisterCvars(){
@@ -123,6 +127,7 @@ public RegisterCvars(){
 	CvarTimeoutIDLE=register_cvar("shield_timeout_player","1.0")
 	CvarQQC2Result=register_cvar("shield_qcc2_fakeclient","1")
 	QQC2CvarCheck=register_cvar("shield_qcc2_cvar","sv_version")
+	CvarWHBlocker=register_cvar("shield_wh_blocker","1")
 	
 	// OS_Ban
 	OS_System = register_cvar("shield_os_system","1")
@@ -231,6 +236,23 @@ public _OS_CreateEmptyFile(){
 		fprintf(MotdConfig,"www.google.ro^x20")
 		fclose(MotdConfig)
 	}
+}
+public SV_AddToFullPack(entity_state,e,ent,host,hostflags,player,set){
+	if(get_pcvar_num(CvarWHBlocker)>EOS){
+		if(host>32||ent>32||host==ent){
+			return FMRES_IGNORED
+		}
+		if(!has_alive_property(ent)||!has_alive_property(host)){
+			return FMRES_IGNORED
+		}
+		if(g_bTeamCheck){
+			if(g_Team[ent]==g_Team[host]){
+				return FMRES_IGNORED
+			}
+		}
+		return is_user_visible(host,ent)?FMRES_IGNORED:FMRES_SUPERCEDE
+	}
+	return FMRES_IGNORED
 }
 public SV_UsersID(id){
 	new players[a_max], num, tempid;
