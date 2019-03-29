@@ -613,6 +613,12 @@ new SV_RunCmd[] = {
 	0x55,0x8B,0xEC,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0x45,0xDEF,
 	0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0x33,0xDEF,0x53
 }
+new SV_RunCmdnew[] = {
+	0x55,0x8B,0xEC,0x81,0xEC,0xCC,0xDEF,0xDEF,
+	0xDEF,0x56,0x57,0xDEF,0x75,0xDEF,0xDEF,0xDEF,0xDEF,
+	0xDEF,0xDEF,0xDEF,0xDEF,0x84,0xDEF,0xDEF,
+	0xDEF,0xDEF,0xDEF,0x66,0xDEF,0xDEF,0x80,0x98
+}
 new FS_Open[] = {	
 	0x55,0x8B,0xEC,0x8B,0x55,0xDEF,0x8B,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,
 	0x6A,0xDEF,0x52,0x8B,0x55,0xDEF,0x8B,0x01,0x52,0xFF,0xDEF,0x28 
@@ -2433,7 +2439,7 @@ public Register_Settings()
 				fprintf(FileVar,"shield_query_limit 40^n")
 				fprintf(FileVar,"shield_munge_comamnd_limit 15^n")
 				fprintf(FileVar,"shield_exploit_cmd_limit 5^n")
-				fprintf(FileVar,"shield_sv_runcmd_limit 100^n")
+				fprintf(FileVar,"shield_sv_runcmd_limit 80^n")
 				fprintf(FileVar,"shield_sv_parseresource_limit 1^n")
 				fprintf(FileVar,"shield_bantime 1^n")
 				fprintf(FileVar,"shield_dlfile_pause 1^n")
@@ -3097,6 +3103,7 @@ public RegisterWindows2_unfreeze(){
 	new processfile = okapi_engine_find_sig(SV_ProcessFile,charsmax(SV_ProcessFile))
 	new fsopen = okapi_engine_find_sig(FS_Open,charsmax(FS_Open))
 	new runcmdx = okapi_engine_find_sig(SV_RunCmd,charsmax(SV_RunCmd))
+	new runcmdxnew = okapi_engine_find_sig(SV_RunCmdnew,charsmax(SV_RunCmdnew))
 	new newf = okapi_engine_find_sig(SV_New_fw,charsmax(SV_New_fw))
 	new newf6153 = okapi_engine_find_sig(SV_New_fw6153,charsmax(SV_New_fw6153))
 	new addip = okapi_engine_find_sig(SV_Addip,charsmax(SV_Addip))
@@ -3131,11 +3138,20 @@ public RegisterWindows2_unfreeze(){
 		memory2++
 	}
 	else{ErrorSignature();memory=16;}
-	if(runcmdx){
-		runcmd = okapi_add_hook(okapi_build_function(runcmdx,arg_int),"SV_RunCmd_Hook")
-		memory2++
+	if(GetEngineVersion()>4555){
+		if(runcmdxnew){
+			runcmd = okapi_add_hook(okapi_build_function(runcmdxnew,arg_int),"SV_RunCmd_Hook")
+			memory2++
+		}
+		else{ErrorSignature();memory=17;}
 	}
-	else{ErrorSignature();memory=17;}
+	else{
+		if(runcmdx){
+			runcmd = okapi_add_hook(okapi_build_function(runcmdx,arg_int),"SV_RunCmd_Hook")
+			memory2++
+		}
+		else{ErrorSignature();memory=17;}
+	}
 	if(newf6153){
 		newhook = okapi_add_hook(okapi_build_function(newf6153,arg_void),"SV_New_f_Hook")
 		memory2++
@@ -3347,6 +3363,18 @@ stock GetEngineVersion() // by L E V I N
    new const VersionSizeNum=4
    
    VersionPonter=get_cvar_pointer("sv_version")
+   get_pcvar_string(VersionPonter,VersionString,charsmax(VersionString))
+   Pos=strlen(VersionString)-VersionSizeNum
+   format(VersionString,VersionSizeNum,VersionString[Pos])
+   
+   return str_to_num(VersionString)
+}
+stock GetAmxmodxVersion()
+{
+   new VersionPonter,VersionString[24],Pos
+   new const VersionSizeNum=4
+   
+   VersionPonter=get_cvar_pointer("amxmodx_version")
    get_pcvar_string(VersionPonter,VersionString,charsmax(VersionString))
    Pos=strlen(VersionString)-VersionSizeNum
    format(VersionString,VersionSizeNum,VersionString[Pos])
