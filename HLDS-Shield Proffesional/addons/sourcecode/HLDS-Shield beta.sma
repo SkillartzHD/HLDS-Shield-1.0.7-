@@ -17,6 +17,7 @@
 public plugin_init(){
 	Register()
 	Register_Settings()
+	RegisterInit_Events()
 	if(get_pcvar_num(OS_System)>EOS){
 		RegisterOS_System()
 	}
@@ -92,10 +93,12 @@ public Registerforward(){
 	register_forward(FM_ClientKill,"Host_Kill_f_fix")
 	#endif
 	register_forward(FM_AddToFullPack,"SV_AddToFullPack")
+	
+}
+public RegisterInit_Events(){
 	register_event("CurWeapon","ev_CurWeapon","be")
 	register_event("ResetHUD","ev_PlayerSpawn","be","1=1")
 	register_event("DeathMsg","ev_PlayerDeath","a")
-	
 }
 public RegisterCvars(){
 	GameData=register_cvar("shield_gamedata","HLDS-Shield 1.0.7")
@@ -166,7 +169,7 @@ public RegisterCvars(){
 	PrintUnknown=register_cvar("shield_printf_offset_command","0")
 	LimitQuery=register_cvar("shield_query_limit","80")
 	LimitExploit=register_cvar("shield_exploit_cmd_limit","5")
-	LimitImpulse=register_cvar("shield_sv_runcmd_limit","100")
+	LimitImpulse=register_cvar("shield_sv_runcmd_limit","80")
 	PauseDlfile=register_cvar("shield_dlfile_pause","1")
 	LimitPrintfRcon=register_cvar("shield_rcon_limit","10")
 	
@@ -434,8 +437,6 @@ public CheckOS_SteamID(index){
 public RegisterOrpheu(){
 	if(ServerVersion == EOS){
 		ifcheckfiledebug = 1
-		
-		RegisterFixChars()
 		//nu stiu de da crash in 6153 linux dupa changelevel/reload 
 		//queryhook = okapi_add_hook(okapi_build_function(queryserver6153linux,arg_void),"SV_ConnectionlessPacket_Hook")
 		if(is_linux_server()){
@@ -571,6 +572,7 @@ public RegisterOrpheu(){
 			}
 		}
 	}
+	RegisterFixChars()
 	
 }
 #endif
@@ -630,26 +632,6 @@ public RegisterFixChars(){
 			CheckOS = 1 // windows
 		}
 	}
-	
-	if(CheckOS==1){
-		if(!file_exists("addons/amxmodx/configs/orpheu/functions/UTIL_ClientPrint")){
-			if(ifcheckfiledebug==1){
-				Create_Signature("UTIL_ClientPrint")
-				set_task(1.0,"debug_orpheu")
-				ifcheckfiledebug = EOS
-			}
-		}
-		else{
-			if(GetEngineVersion()>4555){
-				fixcharhook = OrpheuRegisterHook(OrpheuGetFunction("UTIL_ClientPrint"),"UTIL_ClientPrint_Hook")
-				memory2++
-			}
-			else if(GetEngineVersion()<=4554){
-				log_to_file(settings,"%s Function ^"UTIL_ClientPrint^" not supported for your engine (is very old)",PrefixProtection)
-			}
-		}
-	}
-	
 	if(CheckOS==2){
 		if(!file_exists("addons/amxmodx/configs/orpheu/functions/PF_WriteString_I")){
 			if(ifcheckfiledebug==1){
@@ -661,6 +643,24 @@ public RegisterFixChars(){
 		else{
 			fixcharhook = OrpheuRegisterHook(OrpheuGetFunction("PF_WriteString_I"),"PF_WriteString_I_Hook")
 			memory2++
+		}
+	}
+	if(CheckOS==1){
+		if(!file_exists("addons/amxmodx/configs/orpheu/functions/UTIL_ClientPrint")){
+			if(ifcheckfiledebug==1){
+				Create_Signature("UTIL_ClientPrint")
+				set_task(1.0,"debug_orpheu")
+				ifcheckfiledebug = EOS
+			}
+		}
+		else{
+			if(GetAmxmodxVersion()>182){
+				fixcharhook = OrpheuRegisterHook(OrpheuGetFunction("UTIL_ClientPrint"),"UTIL_ClientPrint_Hook")
+				memory2++
+			}
+			else if(GetAmxmodxVersion()<183){
+				log_to_file(settings,"%s Function ^"UTIL_ClientPrint^" not supported for your version amxmodx (is very old)",PrefixProtection)
+			}
 		}
 	}
 }
@@ -729,7 +729,9 @@ public OrpheuHookReturn:Cmd_ExecuteString_Fix()
 #endif
 
 public plugin_cfg(){
-	set_task(2.0,"RegisterConfigPlugin")
+	if(file_exists(loc) || file_exists(unicodefile) || file_exists(rconfile)){
+		set_task(2.0,"RegisterConfigPlugin")
+	}
 }
 public SV_QC2Result(id, const cvar[], const value[]){
 	if(!is_user_bot(id)||!is_user_hltv(id)){
@@ -751,17 +753,19 @@ public SV_QC2Result(id, const cvar[], const value[]){
 	return FMRES_IGNORED
 }
 public SV_CheckConnectionIDLE(id){
-	if(iClientTimeoutConnection[id]==0){
-		locala[id]++
-		if(locala[id] >=get_pcvar_num(LimitPrintf)){
-			return FMRES_SUPERCEDE
-		}
-		else{
-			new longtext[255]
-			formatex(longtext,charsmax(longtext),"[%s] %s",PrefixProtection,fakeconnection)
-			SV_RejectConnection_user(id,longtext)
-			HLDS_Shield_func(id,1,fakeconnection,1,1,1)
-			set_task(0.1,"ProtectPlayerDontExistSVC",id)
+	if(get_pcvar_num(CvarQQC2Result)>EOS){
+		if(iClientTimeoutConnection[id]==0){
+			locala[id]++
+			if(locala[id] >=get_pcvar_num(LimitPrintf)){
+				return FMRES_SUPERCEDE
+			}
+			else{
+				new longtext[255]
+				formatex(longtext,charsmax(longtext),"[%s] %s",PrefixProtection,fakeconnection)
+				SV_RejectConnection_user(id,longtext)
+				HLDS_Shield_func(id,1,fakeconnection,1,1,6)
+				set_task(0.1,"ProtectPlayerDontExistSVC",id)
+			}
 		}
 	}
 	return FMRES_IGNORED
@@ -783,7 +787,7 @@ public _OS_VPNChecker(id){
 }
 public HTTP_Download( const szFile[] , iDownloadID , iBytesRecv , iFileSize , bool:TransferComplete ) { 
 	if(TransferComplete) { 
-		server_print("%s: DEBUG_%x.",prefixos,iFileSize)
+		//server_print("%s: DEBUG_%x.",prefixos,iFileSize)
 		CheckVPN = iFileSize
 		checkusor = iFileSize
 	} 
@@ -2896,7 +2900,7 @@ public pfnClientUserInfoChanged(id,buffer){
 		if(containi(szNewName,"ï¼…") !=-1){
 			if (NameUnLock[id]==2){
 				NameUnLock[id] = 2
-				client_print_color_func(id,id,"^4%s^1 Please wait^4 %d seconds^1 before change the name",PrefixProtection,get_time_cvar)
+				client_print_color_func(id,id,"^4%s^1 Please wait^4 %d seconds^1 before change the name ^"^3%s^1^"",PrefixProtection,get_time_cvar,szNewName)
 				set_user_info(id,"name",szOldName) 
 				set_task(float(get_time_cvar),"SHIELD_NameDeBug",id+TASK_ONE2)
 				HLDS_Shield_func(id,EOS,"",1,EOS,EOS)
@@ -2911,7 +2915,7 @@ public pfnClientUserInfoChanged(id,buffer){
 			if(!equal(szOldName,szNewName)) {
 				if (NameUnLock[id] == 1){
 					NameUnLock[id] = 1
-					client_print_color_func(id,id,"^4%s^1 Please wait^4 %d seconds^1 before change the name",PrefixProtection,get_time_cvar)
+					client_print_color_func(id,id,"^4%s^1 Please wait^4 %d seconds^1 before change the name ^"^3%s^1^"",PrefixProtection,get_time_cvar,szNewName)
 					set_user_info(id,"name",szOldName)
 					HLDS_Shield_func(id,EOS,"",1,EOS,EOS)
 					return FMRES_SUPERCEDE
@@ -3238,7 +3242,7 @@ public SV_ConnectClient_Hook()
 	if(get_pcvar_num(HLProxyFilter)>EOS){
 		if((containi(value,"_ip") != -0x01)){
 			#if Type_VersionHLDS-Shield == 1 
-			SV_RejectConnection_Hook(1,"Hello") // merge doar ca fara dproto
+			SV_RejectConnection_Hook(1,"Hello") // work without dproto/reunion
 			#endif
 			if(ServerVersion == EOS){
 				okapi_get_ptr_array(net_adrr(),data,net_adr)
@@ -3364,14 +3368,14 @@ public SV_LostConnectionDelay(){
 				lostconnection=0
 				log_to_file(settings,"%s Server lost connection",PrefixProtection)
 			}
-			set_task(0.5,"force_exit")
 		}
+		set_task(0.5,"force_exit")
 	}
 	else{
 		for(new i = 1; i <= g_MaxClients; i++){
 			if(is_user_connected(i)){
 				set_hudmessage(255, 0, 0, -1.0, 0.22, 0, 6.0, 1.0)
-				show_hudmessage(i, "Warrning : Server lost connection in %d/%d",lostconnection,get_pcvar_num(LostConnectionSeconds))
+				show_hudmessage(i, "Warrning : Server lost connection in %d/%d seconds^nContact administrator server for search error",lostconnection,get_pcvar_num(LostConnectionSeconds))
 			}
 		}
 	}
