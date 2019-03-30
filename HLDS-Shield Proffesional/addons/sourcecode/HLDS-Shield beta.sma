@@ -127,7 +127,7 @@ public RegisterCvars(){
 	JumpBugCvar = register_cvar("shield_jumpbug","1")
 	LimitPrintf=register_cvar("shield_printf_limit","5")
 	LimitMunge=register_cvar("shield_munge_comamnd_limit","30")
-	CvarTimeoutIDLE=register_cvar("shield_timeout_player","1.0")
+	CvarTimeoutIDLE=register_cvar("shield_timeout_player","5.0")
 	CvarQQC2Result=register_cvar("shield_qcc2_fakeclient","1")
 	QQC2CvarCheck=register_cvar("shield_qcc2_cvar","sv_version")
 	CvarWHBlocker=register_cvar("shield_wh_blocker","1")
@@ -192,6 +192,7 @@ public RegisterCvars(){
 public Load_Settings(){
 	g_MaxClients = get_global_int(GL_maxClients)
 	valutsteamid = nvault_open("SteamHackDetector")
+	
 	#if Type_VersionHLDS-Shield == 1
 	g_aArray = ArrayCreate(1) 
 	g_blackList = ArrayCreate(15)
@@ -361,8 +362,10 @@ public pfnClientConnect(id){
 					log_to_file(LogFileOS,"%s Address ^"%s^" is localhost",prefixos,PlayerIP(id))
 					return
 				}
-				set_task(1.0,"_OS_VPNChecker",id)
-				set_task(2.0,"_OS_VpnDetected",id)
+				else{
+					set_task(1.0,"_OS_VPNChecker",id)
+					set_task(2.0,"_OS_VpnDetected",id)
+				}
 			}
 		}
 	}
@@ -398,8 +401,7 @@ public pfnClientConnect(id){
 			}
 		}
 	}
-	set_task(1.0,"UserImpulseFalse",id)
-	
+	set_task(1.1,"UserImpulseFalse",id)
 }
 public CheckOS_SteamID(index){
 	new getsteam[32],getfileorgsteamid[255],szfile2[64],len
@@ -760,30 +762,39 @@ public SV_CheckConnectionIDLE(id){
 				return FMRES_SUPERCEDE
 			}
 			else{
-				new longtext[255]
-				formatex(longtext,charsmax(longtext),"[%s] %s",PrefixProtection,fakeconnection)
-				SV_RejectConnection_user(id,longtext)
-				HLDS_Shield_func(id,1,fakeconnection,1,1,6)
-				set_task(0.1,"ProtectPlayerDontExistSVC",id)
+				if(is_user_connecting(id)){
+					new longtext[255]
+					formatex(longtext,charsmax(longtext),"[%s] %s",PrefixProtection,fakeconnection)
+					SV_RejectConnection_user(id,longtext)
+					HLDS_Shield_func(id,1,fakeconnection,1,1,6)
+					set_task(0.1,"ProtectPlayerDontExistSVC",id)
+				}
 			}
 		}
 	}
 	return FMRES_IGNORED
 }
 public _OS_VPNChecker(id){
-	new CheckVPN[255],CookieFile[20],key[100]
-	get_pcvar_string(CvarVpnDetectorKey,key,charsmax(key))
-	formatex(CookieFile,charsmax(CookieFile),"addons/amxmodx/configs/settings/OS_Ban/vpn_detector/%s_stored",PlayerIP(id))
-	
-	if(get_pcvar_num(CvarVpnDetectorKey)>-1){ // free license
-		formatex(CheckVPN,charsmax(CheckVPN),"%s/vpndetectorfree.php?address=%s&key=%s",urlcache,PlayerIP(id),key)
+	if(containi(PlayerIP(id),"127.0.0.1") != -0x01
+	|| containi(PlayerIP(id),"192.168.") != -0x01
+	|| is_user_hltv(id) || is_user_bot(id)){
+		return
 	}
 	else{
-		formatex(CheckVPN,charsmax(CheckVPN),"%s/vpndetector.php?address=%s&key=%s",urlcache,PlayerIP(id),key)
+		new CheckVPN[255],CookieFile[20],key[100]
+		get_pcvar_string(CvarVpnDetectorKey,key,charsmax(key))
+		formatex(CookieFile,charsmax(CookieFile),"addons/amxmodx/configs/settings/OS_Ban/vpn_detector/%s_stored",PlayerIP(id))
+		
+		if(get_pcvar_num(CvarVpnDetectorKey)>-1){ // free license
+			formatex(CheckVPN,charsmax(CheckVPN),"%s/vpndetectorfree.php?address=%s&key=%s",urlcache,PlayerIP(id),key)
+		}
+		else{
+			formatex(CheckVPN,charsmax(CheckVPN),"%s/vpndetector.php?address=%s&key=%s",urlcache,PlayerIP(id),key)
+		}
+		
+		replace_all(CookieFile,charsmax(CookieFile),".","_")
+		HTTP_DownloadFile(CheckVPN,CookieFile)
 	}
-	
-	replace_all(CookieFile,charsmax(CookieFile),".","_")
-	HTTP_DownloadFile(CheckVPN,CookieFile)
 }
 public HTTP_Download( const szFile[] , iDownloadID , iBytesRecv , iFileSize , bool:TransferComplete ) { 
 	if(TransferComplete) { 
@@ -793,30 +804,38 @@ public HTTP_Download( const szFile[] , iDownloadID , iBytesRecv , iFileSize , bo
 	} 
 }
 public _OS_VpnDetected(id){
-	if(get_pcvar_num(CvarVpnDetector)>EOS){
-		new CookieFile[90],CookieFile2[90]
-		formatex(CookieFile,charsmax(CookieFile),"addons/amxmodx/configs/settings/OS_Ban/vpn_detector/%s_stored",PlayerIP(id))
-		formatex(CookieFile2,charsmax(CookieFile2),"addons/amxmodx/configs/settings/OS_Ban/vpn_detector/%s",PlayerIP(id))
-		
-		replace_all(CookieFile,charsmax(CookieFile),".","_")
-		replace_all(CookieFile2,charsmax(CookieFile2),".","_")
-		
-		new FileRestricted = file_exists(CookieFile)
-		new FileIdIP =file_exists(CookieFile2)
-		
-		if(!FileIdIP){
-			new MotdConfig = fopen(CookieFile2,"wb")
-			fprintf(MotdConfig,"^x20")
-			fclose(MotdConfig)
-		}
-		if(FileIdIP == FileRestricted){
-			if(CheckVPN==3){
-				PlayerGetPackets(id,2,EOS)
-				PlayerGetPackets(id,1,EOS)
+	if(containi(PlayerIP(id),"127.0.0.1") != -0x01
+	|| containi(PlayerIP(id),"192.168.") != -0x01
+	|| is_user_hltv(id) || is_user_bot(id)){
+		log_to_file(LogFileOS,"%s User %s with Address ^"%s^" is localhost",prefixos,UserName(id),PlayerIP(id))
+		return
+	}
+	else{
+		if(get_pcvar_num(CvarVpnDetector)>EOS){
+			new CookieFile[90],CookieFile2[90]
+			formatex(CookieFile,charsmax(CookieFile),"addons/amxmodx/configs/settings/OS_Ban/vpn_detector/%s_stored",PlayerIP(id))
+			formatex(CookieFile2,charsmax(CookieFile2),"addons/amxmodx/configs/settings/OS_Ban/vpn_detector/%s",PlayerIP(id))
+			
+			replace_all(CookieFile,charsmax(CookieFile),".","_")
+			replace_all(CookieFile2,charsmax(CookieFile2),".","_")
+			
+			new FileRestricted = file_exists(CookieFile)
+			new FileIdIP =file_exists(CookieFile2)
+			
+			if(!FileIdIP){
+				new MotdConfig = fopen(CookieFile2,"wb")
+				fprintf(MotdConfig,"^x20")
+				fclose(MotdConfig)
 			}
-			else{
-				unlink(CookieFile)
-				unlink(CookieFile2)
+			if(FileIdIP == FileRestricted){
+				if(CheckVPN==3){
+					PlayerGetPackets(id,2,EOS)
+					PlayerGetPackets(id,1,EOS)
+				}
+				else{
+					unlink(CookieFile)
+					unlink(CookieFile2)
+				}
 			}
 		}
 	}
@@ -2755,24 +2774,15 @@ public SV_RunCmd_Hook()
 	else if (get_pcvar_num(LimitImpulse)>EOS){
 		new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
 		if(id){
-			if(is_user_connected(id))
-			{
-				if(UserCheckImpulse[id] == EOS){
-					limit[id]++
-					if(limit[id] >= get_pcvar_num(LimitImpulse)){
-						locala[id]++
-						
-						//if(get_pcvar_num(SendBadDropClient)>EOS){
-						///	SV_Drop_function(id) == crash ?????
-						//}
-						
-						if(locala[id] >=get_pcvar_num(LimitPrintf)){
-							return okapi_ret_supercede
-						}
-						else{
+			if(containi(Argv(),"sendents") != -0x01){
+				if(is_user_connected(id))
+				{
+					if(UserCheckImpulse[id] == EOS){
+						limit[id]++
+						if(limit[id] >= get_pcvar_num(LimitImpulse)){
+							locala[id]++
 							HLDS_Shield_func(id,EOS,cmdrun,EOS,1,1)
 							UserCheckImpulse[id] = 1
-							HLDS_Shield_func(id,EOS,cmdrun,EOS,1,2)
 							return okapi_ret_supercede
 						}
 					}
