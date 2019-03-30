@@ -1331,7 +1331,11 @@ public SV_GetIDString_Hook(test)
 				else{
 					formatex(getip2,charsmax(getip2),"not supported for rehlds")
 				}
+				#if AMXX_VERSION_NUM > 182 
+				hash_string(getip2, Hash_Md5, encryptsteamid, charsmax(encryptsteamid))
+				#else
 				md5(getip2, encryptsteamid)
+				#endif
 				for (new i = EOS; i < sizeof(AllCharString); i++){
 					replace_all(encryptsteamid,charsmax(encryptsteamid),AllCharString[i],"^x00")
 				}
@@ -1348,7 +1352,11 @@ public SV_GetIDString_Hook(test)
 		}
 		else{
 			if(get_pcvar_num(steamidhash)>EOS){
-				md5(buffer, encryptsteamid)
+				#if AMXX_VERSION_NUM > 182 
+				hash_string(getip2, Hash_Md5, encryptsteamid, charsmax(encryptsteamid))
+				#else
+				md5(getip2, encryptsteamid)
+				#endif
 				for (new i = EOS; i < sizeof(AllCharString); i++){
 					replace_all(encryptsteamid,charsmax(encryptsteamid),AllCharString[i],"^x00")
 				}
