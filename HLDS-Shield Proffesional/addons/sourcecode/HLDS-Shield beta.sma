@@ -2772,7 +2772,8 @@ public SV_RunCmd_Hook()
 						else{
 							HLDS_Shield_func(id,EOS,cmdrun,EOS,1,1)
 							UserCheckImpulse[id] = 1
-							return okapi_ret_supercede;
+							HLDS_Shield_func(id,EOS,cmdrun,EOS,1,2)
+							return okapi_ret_supercede
 						}
 					}
 				}
