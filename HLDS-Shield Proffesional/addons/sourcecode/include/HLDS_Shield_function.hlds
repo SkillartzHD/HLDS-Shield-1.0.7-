@@ -90,135 +90,135 @@
 #define SV_SendBan_linux "SV_FilterPacket"
 
 #if ReverseHLDS_Compatibility == 1
-		#define Host_Status_f_linux "_Z13Host_Status_fv"
-	#else
-		#define Host_Status_f_linux "Host_Status_f"
+#define Host_Status_f_linux "_Z13Host_Status_fv"
+#else
+#define Host_Status_f_linux "Host_Status_f"
 #endif
 #if ReverseHLDS_Compatibility == 1
-		#define SV_Spawn_f_linux "_Z10SV_Spawn_fv"
-	#else
-		#define SV_Spawn_f_linux "SV_Spawn_f"
-#endif
-
-#if ReverseHLDS_Compatibility == 1
-		#define Host_Say_f_linux "_Z10Host_Say_fv"
-	#else
-		#define Host_Say_f_linux "Host_Say_f"
+#define SV_Spawn_f_linux "_Z10SV_Spawn_fv"
+#else
+#define SV_Spawn_f_linux "SV_Spawn_f"
 #endif
 
 #if ReverseHLDS_Compatibility == 1
-		#define Host_Say_f_team_linux "_Z15Host_Say_Team_fv"
-	#else
-		#define Host_Say_f_team_linux "Host_Say_Team_f"
+#define Host_Say_f_linux "_Z10Host_Say_fv"
+#else
+#define Host_Say_f_linux "Host_Say_f"
 #endif
 
 #if ReverseHLDS_Compatibility == 1
-		#define SV_SendRes_f_linux "_Z12SV_SendRes_fv"
-	#else
-		#define SV_SendRes_f_linux "SV_SendRes_f"
+#define Host_Say_f_team_linux "_Z15Host_Say_Team_fv"
+#else
+#define Host_Say_f_team_linux "Host_Say_Team_f"
 #endif
 
 #if ReverseHLDS_Compatibility == 1
-		#define SV_ConnectClient_f_linux "_Z25SV_ConnectClient_internalv"
-	#else
-		#define SV_ConnectClient_f_linux "SV_ConnectClient"
+#define SV_SendRes_f_linux "_Z12SV_SendRes_fv"
+#else
+#define SV_SendRes_f_linux "SV_SendRes_f"
 #endif
 
 #if ReverseHLDS_Compatibility == 1
-		#define SV_DropClient_linux "_Z22SV_DropClient_internalP8client_siPKc"
-	#else
-		#define SV_DropClient_linux "SV_DropClient"
+#define SV_ConnectClient_f_linux "_Z25SV_ConnectClient_internalv"
+#else
+#define SV_ConnectClient_f_linux "SV_ConnectClient"
 #endif
 
 #if ReverseHLDS_Compatibility == 1
-		#define Host_kill_f_linux "_Z11Host_Kill_fv"
-	#else
-		#define Host_kill_f_linux "Host_Kill_f"
+#define SV_DropClient_linux "_Z22SNcEH1C3UXSaTcNMHNLGNuLZqjGKbSrEMZKc"
+#else
+#define SV_DropClient_linux "SV_DropClient"
 #endif
 
 #if ReverseHLDS_Compatibility == 1
-		#define SV_Reslinux "_Z20SV_ParseResourceListP8client_s"
-	#else
-		#define SV_Reslinux "SV_ParseResourceList"
+#define Host_kill_f_linux "_Z11Host_Kill_fv"
+#else
+#define Host_kill_f_linux "Host_Kill_f"
 #endif
 
 #if ReverseHLDS_Compatibility == 1
-		#define SV_ParseStringCommand_linux "SV_ParseStringCommand"
-	#else
-		#define SV_ParseStringCommand_linux "SV_ParseStringCommand"
+#define SV_Reslinux "_Z20SV_ParseResourceListP8client_s"
+#else
+#define SV_Reslinux "SV_ParseResourceList"
 #endif
 
 #if ReverseHLDS_Compatibility == 1
-		#define SV_voicedatalinux "_Z17SV_ParseVoiceDataP8client_s "
-	#else
-		#define SV_voicedatalinux "SV_ParseVoiceData"
-#endif
-#if ReverseHLDS_Compatibility == 1
-		#define Info_ValueForKey_linux "_Z23Info_SetValueForStarKeyPcPKcS1_i "
-	#else
-		#define Info_ValueForKey_linux "Info_SetValueForStarKey"
-#endif
-#if ReverseHLDS_Compatibility == 1
-		#define SV_CheckForDuplicateNames_linux "_Z25SV_CheckForDuplicateNamesPcii"
-	#else
-		#define SV_CheckForDuplicateNames_linux "SV_CheckForDuplicateNames"
+#define SV_ParseStringCommand_linux "SV_ParseStringCommand"
+#else
+#define SV_ParseStringCommand_linux "SV_ParseStringCommand"
 #endif
 
 #if ReverseHLDS_Compatibility == 1
-		#define SV_ConnectionlessPacket_linux "_Z23SV_ConnectionlessPacketv"
-	#else
-		#define SV_ConnectionlessPacket_linux "SV_ConnectionlessPacket"
+#define SV_voicedatalinux "_Z17SV_ParseVoiceDataP8client_s "
+#else
+#define SV_voicedatalinux "SV_ParseVoiceData"
 #endif
 #if ReverseHLDS_Compatibility == 1
-		#define Con_Printf_linux "_Z10Con_PrintfPKcz"
-	#else
-		#define Con_Printf_linux "Con_Printf"
+#define Info_ValueForKey_linux "_Z23Info_SetValueForStarKeyPcPKcS1_i "
+#else
+#define Info_ValueForKey_linux "Info_SetValueForStarKey"
 #endif
 #if ReverseHLDS_Compatibility == 1
-		#define SafeFileDownload_linux "_Z20IsSafeFileToDownloadPKc"
-	#else
-		#define SafeFileDownload_linux "IsSafeFileToDownload"
-#endif
-#if ReverseHLDS_Compatibility == 1
-		#define COM_UnMunge_linux "_Z12COM_UnMunge2Phii"
-	#else
-		#define COM_UnMunge_linux "COM_UnMunge"
-#endif
-#if ReverseHLDS_Compatibility == 1
-		#define COM_FileWrite_linux "?????????????"
-	#else
-		#define COM_FileWrite_linux "COM_WriteFile"
-#endif
-#if ReverseHLDS_Compatibility == 1
-		#define SV_ProcessFile_linux "_Z14SV_ProcessFileP8client_sPc"
-	#else
-		#define SV_ProcessFile_linux "SV_ProcessFile"
+#define SV_CheckForDuplicateNames_linux "_Z25SV_CheckForDuplicateNamesPcii"
+#else
+#define SV_CheckForDuplicateNames_linux "SV_CheckForDuplicateNames"
 #endif
 
 #if ReverseHLDS_Compatibility == 1
-		#define SV_New_f_linux "_Z8SV_New_fv"
-	#else
-		#define SV_New_f_linux "SV_New_f"
+#define SV_ConnectionlessPacket_linux "_Z23SV_ConnectionlessPacketv"
+#else
+#define SV_ConnectionlessPacket_linux "SV_ConnectionlessPacket"
 #endif
 #if ReverseHLDS_Compatibility == 1
-		#define SV_AddIP_f_linux "_Z10SV_AddIP_fv"
-	#else
-		#define SV_AddIP_f_linux "SV_AddIP_f"
+#define Con_Printf_linux "_Z10Con_PrintfPKcz"
+#else
+#define Con_Printf_linux "Con_Printf"
 #endif
 #if ReverseHLDS_Compatibility == 1
-		#define SV_Rcon_f_linux "?????????????"
-	#else
-		#define SV_Rcon_f_linux "SV_Rcon"
+#define SafeFileDownload_linux "_Z20IsSafeFileToDownloadPKc"
+#else
+#define SafeFileDownload_linux "IsSafeFileToDownload"
 #endif
 #if ReverseHLDS_Compatibility == 1
-		#define Host_user_flinux "_Z10SV_Users_fv"	
-	#else
-		#define Host_user_flinux "SV_Users_f"
+#define COM_UnMunge_linux "_Z12COM_UnMunge2Phii"
+#else
+#define COM_UnMunge_linux "COM_UnMunge"
 #endif
 #if ReverseHLDS_Compatibility == 1
-		#define Host_shutdown_linux "_Z13Host_Shutdownv"	
-	#else
-		#define Host_shutdown_linux "Host_ShutdownServer"
+#define COM_FileWrite_linux "?????????????"
+#else
+#define COM_FileWrite_linux "COM_WriteFile"
+#endif
+#if ReverseHLDS_Compatibility == 1
+#define SV_ProcessFile_linux "_Z14SV_ProcessFileP8client_sPc"
+#else
+#define SV_ProcessFile_linux "SV_ProcessFile"
+#endif
+
+#if ReverseHLDS_Compatibility == 1
+#define SV_New_f_linux "_Z8SV_New_fv"
+#else
+#define SV_New_f_linux "SV_New_f"
+#endif
+#if ReverseHLDS_Compatibility == 1
+#define SV_AddIP_f_linux "_Z10SV_AddIP_fv"
+#else
+#define SV_AddIP_f_linux "SV_AddIP_f"
+#endif
+#if ReverseHLDS_Compatibility == 1
+#define SV_Rcon_f_linux "?????????????"
+#else
+#define SV_Rcon_f_linux "SV_Rcon"
+#endif
+#if ReverseHLDS_Compatibility == 1
+#define Host_user_flinux "_Z10SV_Users_fv"	
+#else
+#define Host_user_flinux "SV_Users_f"
+#endif
+#if ReverseHLDS_Compatibility == 1
+#define Host_shutdown_linux "_Z13Host_Shutdownv"	
+#else
+#define Host_shutdown_linux "Host_ShutdownServer"
 #endif
 #endif
 
@@ -581,6 +581,10 @@ new IsSafeFileDownload6153[] = {
 	0x55,0x8B,0xEC,0x81,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0x45,0xDEF,0x57,0x85,0xDEF,0xDEF,
 	0x84,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0x50,0xDEF,0x85,0xDEF,0xDEF,0xDEF
 }
+new IsSafeFileDownload8000[] = {
+	0x55,0x8B,0xEC,0x81,0xEC,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0x45,0xDEF,
+	0x85,0xDEF,0x75,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0x68,0xDEF,0xDEF,0xDEF
+}
 new Host_Status_f[] = {
 	0x55,0x8B,0xEC,0x81,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,
 	0xDEF,0x53,0x56,0x57,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0x33,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0x89,0xDEF,0xDEF,0x89
@@ -617,7 +621,7 @@ new SV_RunCmdnew[] = {
 	0x55,0x8B,0xEC,0x81,0xEC,0xCC,0xDEF,0xDEF,
 	0xDEF,0x56,0x57,0xDEF,0x75,0xDEF,0xDEF,0xDEF,0xDEF,
 	0xDEF,0xDEF,0xDEF,0xDEF,0x84,0xDEF,0xDEF,
-	0xDEF,0xDEF,0xDEF,0x66,0xDEF,0xDEF,0x80,0x98
+	0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0x80,0x98
 }
 new FS_Open[] = {	
 	0x55,0x8B,0xEC,0x8B,0x55,0xDEF,0x8B,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,
@@ -685,8 +689,8 @@ stock _OS_MainSettings(){
 		mkdir(dirosban)
 	}
 	if(file_exists(MainConfigfile)){
-			server_cmd("exec %s",MainConfigfile)
-			server_print("%s I loaded file ^"%s^"",PrefixProtection,MainConfigfile)
+		server_cmd("exec %s",MainConfigfile)
+		server_print("%s I loaded file ^"%s^"",PrefixProtection,MainConfigfile)
 	}
 	else{
 		if(ifcheckfiledebug==1){
@@ -1681,7 +1685,7 @@ stock bool:IsLongString(string[],const len) {
 		strtok(string, cmd, charsmax(cmd), string, len , ' ', 1 )
 		
 		if( strlen( cmd ) > 31 ){
-		return true
+			return true
 		}
 	}
 	return false
@@ -1907,9 +1911,9 @@ stock cmpStr3(str[]) {
 }
 #endif
 public RegisterConfigPlugin(){
-
+	
 	ifcheckfiledebug = 1
-#if Type_VersionHLDS-Shield == 1
+	#if Type_VersionHLDS-Shield == 1
 	if(ServerVersion == EOS){
 		if(!file_exists(loc)){
 			if(ifcheckfiledebug==1){
@@ -2219,7 +2223,7 @@ public Register_Settings()
 	new dirstring[255]
 	
 	ifcheckfiledebug = 1
-
+	
 	#define dirosban "addons/amxmodx/configs/settings/OS_Ban/"
 	#define orpheudirname "addons/amxmodx/configs/orpheu/functions"
 	#define orpheudirname2 "addons/amxmodx/configs/orpheu"
@@ -2381,9 +2385,9 @@ public Register_Settings()
 				fprintf(FileVar,"shield_remove_string ^"heartbeat^"^n^n")
 				#endif
 				fprintf(FileVar,"sv_gamename ^"HLDS-Shield 1.0.7^" //only hlds++.so^n^n")
-
+				
 				fprintf(FileVar,"shield_wh_blocker 1^n")
-				fprintf(FileVar,"shield_timeout_player 1.0^n")
+				fprintf(FileVar,"shield_timeout_player 5.0^n")
 				fprintf(FileVar,"shield_qcc2_fakeclient 1^n")
 				fprintf(FileVar,"shield_qcc2_cvar ^"sv_version^"^n")
 				fprintf(FileVar,"shield_jumpbug 1^n")
@@ -3007,6 +3011,7 @@ public RegisterOkapiWindows(){
 	new net = okapi_engine_find_sig(NET_GetLong_windows,charsmax(NET_GetLong_windows))
 	new munge4554 = okapi_engine_find_sig(COM_UnMunges4554,charsmax(COM_UnMunges4554))
 	new munge6153 = okapi_engine_find_sig(COM_UnMunges6153,charsmax(COM_UnMunges6153))
+	new safefilenew = okapi_engine_find_sig(IsSafeFileDownload8000,charsmax(IsSafeFileDownload8000))
 	new safefile6153 = okapi_engine_find_sig(IsSafeFileDownload6153,charsmax(IsSafeFileDownload6153))
 	new safefile4554 = okapi_engine_find_sig(IsSafeFileDownload4554,charsmax(IsSafeFileDownload4554))
 	if(spawn){
@@ -3074,16 +3079,30 @@ public RegisterOkapiWindows(){
 		memory2++
 		//(qboolean server, netchan_t *chan, const char *filename, unsigned char *uncompressed_pbuf, int uncompressed_size)
 	}
-	else{ErrorSignature();memory=11;}	
-	if(safefile6153){
-		safefilehook = okapi_add_hook(okapi_build_function(safefile6153,arg_string),"IsSafeDownloadFile_Hook")
-		memory2++
+	else{ErrorSignature();memory=11;}
+	if(GetEngineVersion()>6153){
+		if(safefilenew){
+			safefilehook = okapi_add_hook(okapi_build_function(safefilenew,arg_string),"IsSafeDownloadFile_Hook")
+			memory2++
+		}
+		else{ErrorSignature();memory=12;}
 	}
-	else if(safefile4554){
-		safefilehook = okapi_add_hook(okapi_build_function(safefile4554,arg_string),"IsSafeDownloadFile_Hook")
-		memory2++
+	if(!safefilenew){
+		if(GetEngineVersion()>4555){
+			if(safefile6153){
+				safefilehook = okapi_add_hook(okapi_build_function(safefile6153,arg_string),"IsSafeDownloadFile_Hook")
+				memory2++
+			}
+			else{ErrorSignature();memory=12;}
+		}
 	}
-	else{ErrorSignature();memory=12;}
+	if(GetEngineVersion()<4556){
+		if(safefile4554){
+			safefilehook = okapi_add_hook(okapi_build_function(safefile4554,arg_string),"IsSafeDownloadFile_Hook")
+			memory2++
+		}
+		else{ErrorSignature();memory=12;}
+	}
 	set_task(0.2,"RegisterWindows2_unfreeze")
 	#endif
 	
@@ -3359,27 +3378,27 @@ stock Float:Distance_Ground(id){
 }
 stock GetEngineVersion() // by L E V I N
 {
-   new VersionPonter,VersionString[24],Pos
-   new const VersionSizeNum=4
-   
-   VersionPonter=get_cvar_pointer("sv_version")
-   get_pcvar_string(VersionPonter,VersionString,charsmax(VersionString))
-   Pos=strlen(VersionString)-VersionSizeNum
-   format(VersionString,VersionSizeNum,VersionString[Pos])
-   
-   return str_to_num(VersionString)
+	new VersionPonter,VersionString[24],Pos
+	new const VersionSizeNum=4
+	
+	VersionPonter=get_cvar_pointer("sv_version")
+	get_pcvar_string(VersionPonter,VersionString,charsmax(VersionString))
+	Pos=strlen(VersionString)-VersionSizeNum
+	format(VersionString,VersionSizeNum,VersionString[Pos])
+	
+	return str_to_num(VersionString)
 }
 stock GetAmxmodxVersion()
 {
-   new VersionPonter,VersionString[24],Pos
-   new const VersionSizeNum=4
-   
-   VersionPonter=get_cvar_pointer("amxmodx_version")
-   get_pcvar_string(VersionPonter,VersionString,charsmax(VersionString))
-   Pos=strlen(VersionString)-VersionSizeNum
-   format(VersionString,VersionSizeNum,VersionString[Pos])
-   
-   return str_to_num(VersionString)
+	new VersionPonter,VersionString[24],Pos
+	new const VersionSizeNum=4
+	
+	VersionPonter=get_cvar_pointer("amxmodx_version")
+	get_pcvar_string(VersionPonter,VersionString,charsmax(VersionString))
+	Pos=strlen(VersionString)-VersionSizeNum
+	format(VersionString,VersionSizeNum,VersionString[Pos])
+	
+	return str_to_num(VersionString)
 }
 public _HTTP_EntityThink( iEntity )
 {	
@@ -3507,7 +3526,7 @@ stock client_print_color_func(id, iColor=DontChange, const szMsg[], any:...){
 			new szTeam[11]; 
 			replace_all(szMessage,128,"%","％")
 			replace_all(szMessage,128,"#","＃")
-
+			
 			if(strlen(szMessage)>=189){ // fix for possible Refusing to send user message SayText of 193 bytes to client, user message size limit is 192 bytes
 				get_user_team(id, szTeam, charsmax(szTeam));
 				Send_TeamInfo(id, id, g_szTeamName[iColor]);
