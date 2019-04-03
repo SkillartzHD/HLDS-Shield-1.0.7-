@@ -731,9 +731,7 @@ public OrpheuHookReturn:Cmd_ExecuteString_Fix()
 #endif
 
 public plugin_cfg(){
-	if(file_exists(loc) || file_exists(unicodefile) || file_exists(rconfile)){
-		set_task(2.0,"RegisterConfigPlugin")
-	}
+	set_task(2.0,"RegisterConfigPlugin")
 }
 public SV_QC2Result(id, const cvar[], const value[]){
 	if(!is_user_bot(id)||!is_user_hltv(id)){
@@ -1323,9 +1321,7 @@ public SV_GetIDString_Hook(test)
 			if(get_pcvar_num(steamidgenerate)>EOS){
 				new data[net_adr],getip2[40],encryptsteamid[34]
 				if(ServerVersion == EOS){
-					#if Type_VersionHLDS-Shield == 1
 					okapi_get_ptr_array(net_adrr(),data,net_adr)
-					#endif
 					formatex(getip2,charsmax(getip2),"%d.%d.%d.%d",data[ip][0x00], data[ip][0x01], data[ip][0x02], data[ip][0x03])
 				}
 				else{
@@ -1393,21 +1389,17 @@ public IsSafeDownloadFile_Hook()
 						return okapi_ret_supercede
 					}
 					if(locala[id] >=get_pcvar_num(LimitExploit)){
-						#if Type_VersionHLDS-Shield == 1 
 						if(get_pcvar_num(SendBadDropClient)>EOS){
 							SV_Drop_function(id)
 						}
-						#endif
 					}
 					return okapi_ret_supercede
 				}
 				else{
 					if(locala[id] >=get_pcvar_num(LimitExploit)){
-						#if Type_VersionHLDS-Shield == 1 
 						if(get_pcvar_num(SendBadDropClient)>EOS){
 							SV_Drop_function(id)
 						}
-						#endif
 					}
 					if(id){
 						HLDS_Shield_func(id,2,safefile,1,5,1)
@@ -1437,21 +1429,17 @@ public IsSafeDownloadFile_Hook()
 					return okapi_ret_supercede
 				}
 				if(locala[id] >=get_pcvar_num(LimitExploit)){
-					#if Type_VersionHLDS-Shield == 1 
 					if(get_pcvar_num(SendBadDropClient)>EOS){
 						SV_Drop_function(id)
 					}
-					#endif
 				}
 				return okapi_ret_supercede
 			}
 			else{
 				if(locala[id] >=get_pcvar_num(LimitExploit)){
-					#if Type_VersionHLDS-Shield == 1 
 					if(get_pcvar_num(SendBadDropClient)>EOS){
 						SV_Drop_function(id)
 					}
-					#endif
 				}
 				if(id){
 					HLDS_Shield_func(id,2,safefile,1,5,1)
@@ -1478,11 +1466,9 @@ public IsSafeDownloadFile_Hook()
 			return okapi_ret_supercede;
 		}
 		else{
-			#if Type_VersionHLDS-Shield == 1 
 			if(get_pcvar_num(SendBadDropClient)>EOS){
 				SV_Drop_function(id)
 			}
-			#endif
 			if(id){
 				HLDS_Shield_func(id,2,safefile,1,5,1)
 			}
@@ -1503,11 +1489,9 @@ public IsSafeDownloadFile_Hook()
 		else{
 			HLDS_Shield_func(id,EOS,safefile,EOS,5,1)
 		}
-		#if Type_VersionHLDS-Shield == 1 
 		if(get_pcvar_num(SendBadDropClient)>EOS){
 			SV_Drop_function(id)
 		}
-		#endif
 		return okapi_ret_supercede
 	}
 	return okapi_ret_ignore
@@ -1531,30 +1515,24 @@ public SV_New_f_Hook()
 		localas[id]++
 		if(localas[id] >=get_pcvar_num(LimitPrintf)){
 			HLDS_Shield_func(id,1,newbug,1,EOS,1)
-			#if Type_VersionHLDS-Shield == 1 
 			if(get_pcvar_num(SendBadDropClient)>EOS){
 				SV_Drop_function(id)
 			}
-			#endif
 			return okapi_ret_supercede
 		}
 		else{
 			limitba[id]=EOS
 			if(!strlen(UserName(id))){
 				HLDS_Shield_func(id,1,newbug,1,3,1)
-				#if Type_VersionHLDS-Shield == 1 
 				if(get_pcvar_num(SendBadDropClient)>EOS){
 					SV_Drop_function(id)
 				}
-				#endif
 			}
 			else{
 				HLDS_Shield_func(id,2,newbug,1,5,1)
-				#if Type_VersionHLDS-Shield == 1 
 				if(get_pcvar_num(SendBadDropClient)>EOS){
 					SV_Drop_function(id)
 				}
-				#endif
 			}
 		}
 		return okapi_ret_supercede
@@ -2387,7 +2365,7 @@ public SV_FilterAddress(writememory){
 	return okapi_ret_ignore
 }
 #endif
-#if Type_VersionHLDS-Shield == 1 || Type_VersionHLDS-Shield == 1
+#if Type_VersionHLDS-Shield == 1
 public SV_ConnectionlessPacket_Hook()
 {
 	/* fix for
@@ -3260,9 +3238,7 @@ public SV_ConnectClient_Hook()
 	}
 	if(get_pcvar_num(HLProxyFilter)>EOS){
 		if((containi(value,"_ip") != -0x01)){
-			#if Type_VersionHLDS-Shield == 1 
 			SV_RejectConnection_Hook(1,"Hello") // work without dproto/reunion
-			#endif
 			if(ServerVersion == EOS){
 				okapi_get_ptr_array(net_adrr(),data,net_adr)
 				formatex(getip,charsmax(getip),"%d.%d.%d.%d",data[ip][EOS], data[ip][0x01], data[ip][0x02], data[ip][0x03])
@@ -3350,11 +3326,9 @@ public SV_SendRes_f_Hook(){
 	}
 	else{
 		if(locala[id] >=get_pcvar_num(LimitExploit)){
-			#if Type_VersionHLDS-Shield == 1 
 			if(get_pcvar_num(SendBadDropClient)>EOS){
 				SV_Drop_function(id)
 			}
-			#endif
 			
 			HLDS_Shield_func(id,1,hldsprintf,1,5,1)
 			
@@ -3431,11 +3405,9 @@ public Con_Printf_Hook(pfnprint[])
 				else
 				{
 					if(locala[id] >=get_pcvar_num(LimitExploit)){
-						#if Type_VersionHLDS-Shield == 1 
 						if(get_pcvar_num(SendBadDropClient)>EOS){
 							SV_Drop_function(id)
 						}
-						#endif
 						HLDS_Shield_func(id,1,hldsprintf,1,5,1)
 						return okapi_ret_supercede
 					}
@@ -3579,20 +3551,16 @@ public SV_Spawn_f_Hook()
 		}
 		else{
 			if(!strlen(UserName(id))){
-				#if Type_VersionHLDS-Shield == 1
 				if(get_pcvar_num(SendBadDropClient)>EOS){
 					SV_Drop_function(id)
 				}
-				#endif
 				HLDS_Shield_func(id,1,hldspawn,1,5,1)
 				return okapi_ret_supercede
 			}
 			else{
-				#if Type_VersionHLDS-Shield == 1
 				if(get_pcvar_num(SendBadDropClient)>EOS){
 					SV_Drop_function(id)
 				}
-				#endif
 				HLDS_Shield_func(id,2,hldspawn,1,5,1)
 				return okapi_ret_supercede
 			}
