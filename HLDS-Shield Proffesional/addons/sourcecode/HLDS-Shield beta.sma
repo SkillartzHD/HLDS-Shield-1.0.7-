@@ -1662,7 +1662,6 @@ public PfnClientPutInServer(id){
 			}
 		}
 		_OS_CreateEmptyFile()
-		suspiciousdebug_await[id] = 1
 		set_task(2.0,"isCheckUserBanned",id)
 	}
 	#if Type_VersionHLDS-Shield == 1
@@ -1670,7 +1669,6 @@ public PfnClientPutInServer(id){
 		SV_ForceFullClientsUpdate_api(id) // fix show players in vgui for old
 	}
 	#endif
-	set_task(3.0,"await_func_suspicious",id)
 }
 #if Type_VersionHLDS-Shield == 1
 public SV_SendBan_fix(){
@@ -1786,6 +1784,54 @@ public OrpheuHookReturn:SV_Drop_function(index){
 }
 #endif
 public client_command(id){
+	if(is_user_connecting(id)){
+		if(containi(Argv(),"say")!=-0x01 && containi(Argv(),"say_team")!=-0x01){
+			locala[id]++
+			if(locala[id] >=get_pcvar_num(LimitPrintf)){
+				return PLUGIN_HANDLED
+			}
+			else{
+				HLDS_Shield_func(id,1,suspicious,1,1,EOS)
+				SV_RejectConnection_user(id,suspicious)
+				set_task(0.1,"ProtectPlayerDontExistSVC",id)
+				return PLUGIN_HANDLED
+			}
+		}
+	}
+	if(get_pcvar_num(SpectatorVguiBug)>EOS){
+		if(equali(Argv(), "joinclass") || (equali(Argv(), "menuselect") && get_pdata_int(id,205) == 0x03)){
+			if(get_user_team(id) == 3){
+				set_pdata_int(id,205,EOS)
+				engclient_cmd(id, "jointeam", "6")
+				HLDS_Shield_func(id,1,specbug,1,1,EOS)
+				return PLUGIN_HANDLED
+			}
+		}
+	}
+	mungelimit[id]++
+	if(!task_exists(0x01)){
+		set_task(0.1,"LevFunction",id+TASK_ONE)
+	}
+	if(mungelimit[id] >= get_pcvar_num(LimitMunge)){
+		locala[id]++
+		if(locala[id] >=get_pcvar_num(LimitPrintf)){
+			return EOS // for spam log :(
+		}
+		else{
+			if(!strlen(UserName(id))){
+				locala[id]++
+				
+				HLDS_Shield_func(id,1,suspicious,1,3,1)
+				return PLUGIN_HANDLED
+			}
+			else{
+				locala[id]++
+				HLDS_Shield_func(id,1,suspicious,1,1,1)
+				return PLUGIN_HANDLED
+			}
+			return PLUGIN_HANDLED
+		}
+	}
 	if(get_pcvar_num(ChatCharFix)==1){
 		new StringBuffer[500]
 		if(containi(Argv1(),"#")!= -0x01 || containi(Argv1(),"%")!= -0x01){
@@ -2022,56 +2068,6 @@ public PfnClientCommand(id){
 		}
 	}
 	#endif
-	if(is_user_connecting(id)){
-		if(containi(Argv(),"say")!=-0x01 && containi(Argv(),"say_team")!=-0x01){
-			locala[id]++
-			if(locala[id] >=get_pcvar_num(LimitPrintf)){
-				return FMRES_SUPERCEDE
-			}
-			else{
-				HLDS_Shield_func(id,1,suspicious,1,1,EOS)
-				SV_RejectConnection_user(id,suspicious)
-				set_task(0.1,"ProtectPlayerDontExistSVC",id)
-				return FMRES_SUPERCEDE
-			}
-		}
-	}
-	if(suspiciousdebug_await[id] == EOS){	
-		mungelimit[id]++
-		if(!task_exists(0x01)){
-			set_task(0.1,"LevFunction",id+TASK_ONE)
-		}
-		if(mungelimit[id] >= get_pcvar_num(LimitMunge)){
-			mungelimit[id] = EOS
-			locala[id]++
-			if(locala[id] >=get_pcvar_num(LimitPrintf)){
-				return EOS // for spam log :(
-			}
-			else{
-				if(!strlen(UserName(id))){
-					locala[id]++
-					
-					HLDS_Shield_func(id,1,suspicious,1,3,1)
-					return FMRES_SUPERCEDE
-				}
-				else{
-					locala[id]++
-					HLDS_Shield_func(id,1,suspicious,1,1,1)
-					return FMRES_SUPERCEDE
-				}
-				return FMRES_SUPERCEDE
-			}
-		}
-	}
-	if(get_pcvar_num(SpectatorVguiBug)>EOS){
-		if(equali(Argv(), "joinclass") || (equali(Argv(), "menuselect") && get_pdata_int(id,205) == 0x03)){
-			if(get_user_team(id) == 3){
-				set_pdata_int(id,205,EOS)
-				engclient_cmd(id, "jointeam", "6")
-				return FMRES_SUPERCEDE
-			}
-		}
-	}
 	return FMRES_IGNORED
 }
 
