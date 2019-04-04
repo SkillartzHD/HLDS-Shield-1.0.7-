@@ -33,6 +33,7 @@
 #define newbug "#Cstrike_ConnectionSpam_IDLE"
 #define hldsoverflowed "#Cstrike_Overflowed"
 #define a2ack "#Cstrike_A2K"
+#define specbug "#Cstrike_SpectatorVGUI"
 #define ilegalban "#Cstrike_AMXXBan_Bug"
 #define hlproxy "#Cstrike_HLProxy"
 #define cmdrun "#Cstrike_RunCMDFlood"
@@ -259,7 +260,7 @@ new UserCheckImpulse[33],DuplicateSteamid,PrintErrorSysError,ServerVersion,Rando
 new Radio,convertortime[255],hour,minutes,day,year,month,bool:g_bTeamCheck,g_Alive,g_Team[33]
 new GetTimeFile[10],GetTimeReal[10],CvarAutoBuyBug
 new KillBug,locala[varmax],BanTime,LimitPrintf,LimitMunge,CmdLimitVar,CmdlimitDestroy,CmdLimitMax,usercheck[varmax],TimeNameChange,CvarTimeoutIDLE,CvarWHBlocker
-new LimitExploit,limitexecute[varmax],hola,mungelimit[varmax],GameData,UnicodeName,NameProtector,suspiciousdebug_await[33]
+new LimitExploit,limitexecute[varmax],hola,mungelimit[varmax],GameData,UnicodeName,NameProtector
 new Array:unicodenameblock,g_ConsoleStr2,limit[varmax],limitb[varmax],JumpBugCvar,stringbuffer2[200],NameUnLock[33]
 new Float:g_Flooding[33] = {0.0,...},g_Flood[33] = {0,...}
 new NoFloodTime,NoFlood,CvarOSBanIPAddress,NameBugShowMenu,CommandBug,NameCharFix
@@ -747,9 +748,6 @@ stock Add_SV_Drop_f(){
 	return 1
 }
 #endif
-public await_func_suspicious(id){
-	suspiciousdebug_await[id] = EOS
-}
 stock SV_UpTime(function){
 	new Float:ft = Float:engfunc(EngFunc_Time)
 	new it = floatround(ft)
