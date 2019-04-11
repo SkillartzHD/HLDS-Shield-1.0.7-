@@ -126,7 +126,7 @@
 #endif
 
 #if ReverseHLDS_Compatibility == 1
-#define SV_DropClient_linux "_Z22SNcEH1C3UXSaTcNMHNLGNuLZqjGKbSrEMZKc"
+#define SV_DropClient_linux "_Z22SV_DropClient_internalP8client_siPKc"
 #else
 #define SV_DropClient_linux "SV_DropClient"
 #endif
