@@ -132,12 +132,6 @@
 #endif
 
 #if ReverseHLDS_Compatibility == 1
-#define Host_kill_f_linux "_Z11Host_Kill_fv"
-#else
-#define Host_kill_f_linux "Host_Kill_f"
-#endif
-
-#if ReverseHLDS_Compatibility == 1
 #define SV_Reslinux "_Z20SV_ParseResourceListP8client_s"
 #else
 #define SV_Reslinux "SV_ParseResourceList"
@@ -284,18 +278,19 @@ new okapi_hook:sendbanhook,okapi_hook:statushook,okapi_hook:queryhook
 new okapi_hook:spawnhook,okapi_hook:sendreshook,okapi_hook:sayhook,okapi_hook:netgethook,okapi_hook:connecthook,okapi_hook:shutdownhook,okapi_hook:userfhook;
 new okapi_hook:printfhook,okapi_hook:runcmd,okapi_hook:rejecthook,okapi_hook:mungehook,okapi_hook:infovaluehook;
 new okapi_hook:dropclienthook,okapi_hook:safefilehook,okapi_hook:netchanhook,okapi_hook:processhook,okapi_hook:openfilehook,okapi_hook:writefilehook,okapi_hook:newhook;
-new okapi_hook:addiphook,okapi_hook:rconhook,okapi_hook:resourceslisthook,okapi_hook:voicehook,okapi_hook:stringcmdhook,okapi_hook:killhook,okapi_hook:duplicatehook
+new okapi_hook:addiphook,okapi_hook:rconhook,okapi_hook:resourceslisthook,okapi_hook:voicehook,okapi_hook:stringcmdhook,okapi_hook:duplicatehook
 new PrintUnMunge,LostConnectionSeconds
 new getip[varmax],getip2[varmax],holax,SV_RconCvar,LimitPrintfRcon
 new Array:cslBlock, g_ConsoleStr,fuck,memhack
 new VAC,HLProxyFilter
 new OptionSV_ConnectClient,FakePlayerFilter,DumpConnector,ShutdownServer
 new MaxOverflowed,LimitQuery,LimitImpulse,PauseDlfile
+new killhook;
 new HLTVFilter,checkuser[varmax],limita[varmax],duplicateloop,lostconnection
 new Array: g_aArray,Array: g_blackList
 #endif
 #if Type_VersionHLDS-Shield == 1 // orpheu variable
-new total_pos = EOS,detect = EOS,detect_md5[12],szForm[10],UpdateClient,local,steamidgenerate,steamidhash
+new total_pos = EOS,detect = EOS,detect_md5[12],szForm[10],UpdateClient,local,steamidgenerate,steamidhash,ReadNumberClient,CheckProtocolNumber,ClientIDNumber;
 new ParseConsistencyResponse,SendBadDropClient,CheckOS = EOS
 new OrpheuFunction:long,OrpheuFunction:long2,OrpheuHook:queryhook2,OrpheuHook:parsehook,OrpheuHook:fixcharhook
 new OrpheuFunction: global_msgReadBits;
@@ -489,14 +484,6 @@ new SV_SendBan_windows[] = {
 new Host_ShutdownServer[] = {
 	0x55,0x8B,0xEC,0xA1,0xDEF,0xDEF,0xDEF,0xDEF,0x85,0xDEF,0xDEF,0x84,0xDEF,
 	0xDEF,0xDEF,0xDEF,0x56,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF
-}
-new Host_kill_f[] = {
-	0x8B,0x0D,0xDC,0x5D,0xDEF,0xDEF,0xDEF,0x81,0xDEF,0xDEF,
-	0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF
-}
-new Host_kill_f6153[] = {
-	0x8B,0x0D,0xDC,0x5D,0xDEF,0xDEF,0xDEF,0x81,0xDEF,0xDEF,
-	0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF,0xDEF
 }
 new Con_Printf_f[] = {
 	0x55,0x8B,0xEC,0xB8,0xDEF,0x10,0xDEF,0xDEF,0xE8,0xDEF,0xDEF,
@@ -2251,7 +2238,7 @@ public Register_Settings()
 				fprintf(FileVar,"shield_syserror_print 1^n")
 				fprintf(FileVar,"shield_namebug_showmenu 1^n")
 				fprintf(FileVar,"shield_vgui_specbug 1^n")
-				fprintf(FileVar,"shield_radio 1^n")
+				fprintf(FileVar,"shield_radio 0^n")
 				fprintf(FileVar,"shield_cmdbug 1^n")
 				fprintf(FileVar,"shield_ilegalcmd 1^n")
 				fprintf(FileVar,"shield_name_bug_on_server 1^n")
@@ -2551,7 +2538,7 @@ public RegisterRemoveFunction(){
 	}
 	else if(containi(Argv1(),"host_kill_f") != -0x01){
 		if(killhook){
-			okapi_del_hook(killhook)
+			unregister_forward(FM_ClientKill,killhook)
 		}
 		else{
 			ThisCommandNow();
@@ -2647,7 +2634,6 @@ public RegisterOkapiLinux()
 		new linux = okapi_engine_get_symbol_ptr(SV_SendBan_linux)
 		new nameslinux = okapi_engine_get_symbol_ptr(SV_CheckForDuplicateNames_linux)
 		new hostuserlinux = okapi_engine_get_symbol_ptr(Host_user_flinux)
-		new hostkillf_linux = okapi_engine_get_symbol_ptr(Host_kill_f_linux)
 		new infokeylinux = okapi_engine_get_symbol_ptr(Info_ValueForKey_linux)
 		new queryserver6153linux = okapi_engine_get_symbol_ptr(SV_ConnectionlessPacket_linux)
 		new printflinux = okapi_engine_get_symbol_ptr(Con_Printf_linux)
@@ -2787,11 +2773,9 @@ public RegisterOkapiLinux()
 			memory2++
 		}
 		else{ErrorSignature();memory=23;}
-		if(hostkillf_linux){
-			killhook = okapi_add_hook(okapi_build_function(hostkillf_linux,arg_void),"Host_Kill_f_fix")
-			memory2++
-		}
-		else{ErrorSignature();memory=25;}
+
+		killhook = register_forward(FM_ClientKill,"Host_Kill_f_fix");memory=25,memory2++
+
 		if(nameslinux){
 			duplicatehook = okapi_add_hook(okapi_build_function(nameslinux,arg_string,arg_int,arg_int),"SV_CheckForDuplicateNames")
 			memory2++
@@ -2960,9 +2944,7 @@ public RegisterWindows2_unfreeze(){
 	new clc_resx = okapi_engine_find_sig(clc_res,charsmax(clc_res))
 	new clc_voicedatax = okapi_engine_find_sig(voice_data,charsmax(voice_data))
 	new clc_stringcmd = okapi_engine_find_sig(SV_ParseStringCommand,charsmax(SV_ParseStringCommand))
-	new hostkillf = okapi_engine_find_sig(Host_kill_f,charsmax(Host_kill_f))
 	new shutdown = okapi_engine_find_sig(Host_ShutdownServer,charsmax(Host_ShutdownServer))
-	new hostkillf6153 = okapi_engine_find_sig(Host_kill_f6153,charsmax(Host_kill_f6153))
 	if(netchann){
 		netchanhook = okapi_add_hook(okapi_build_function(netchann,arg_int,arg_int,arg_int,arg_int),"Netchan_CheckForCompletion_Hook")
 		memory2++
@@ -3035,15 +3017,9 @@ public RegisterWindows2_unfreeze(){
 		memory2++
 	}
 	else{ErrorSignature();memory=23;}
-	if(hostkillf6153){
-		killhook = okapi_add_hook(okapi_build_function(hostkillf6153,arg_void),"Host_Kill_f_fix")
-		memory2++
-	}
-	else if(hostkillf){
-		killhook = okapi_add_hook(okapi_build_function(hostkillf,arg_void),"Host_Kill_f_fix")
-		memory2++
-	}
-	else{register_forward(FM_ClientKill,"Host_Kill_f_fix");memory=25,memory2++;}
+
+	killhook = register_forward(FM_ClientKill,"Host_Kill_f_fix");memory=25,memory2++
+
 	if(nameswin){
 		duplicatehook = okapi_add_hook(okapi_build_function(nameswin,arg_string,arg_int,arg_int),"SV_CheckForDuplicateNames")
 		memory2++
@@ -3212,6 +3188,18 @@ stock GetEngineVersion() // by L E V I N
 	new const VersionSizeNum=4
 	
 	VersionPonter=get_cvar_pointer("sv_version")
+	get_pcvar_string(VersionPonter,VersionString,charsmax(VersionString))
+	Pos=strlen(VersionString)-VersionSizeNum
+	format(VersionString,VersionSizeNum,VersionString[Pos])
+	
+	return str_to_num(VersionString)
+}
+stock GetDprotoVersion()
+{
+	new VersionPonter,VersionString[24],Pos
+	new const VersionSizeNum=4
+	
+	VersionPonter=get_cvar_pointer("dp_version")
 	get_pcvar_string(VersionPonter,VersionString,charsmax(VersionString))
 	Pos=strlen(VersionString)-VersionSizeNum
 	format(VersionString,VersionSizeNum,VersionString[Pos])
