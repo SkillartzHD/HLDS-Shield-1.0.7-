@@ -308,17 +308,18 @@ public client_connect(id){
 			new getcvar[60]
 			get_pcvar_string(QQC2CvarCheck,getcvar,charsmax(getcvar))
 			query_client_cvar(id,getcvar,"SV_QC2Result")
+			
+			if(get_pcvar_num(CvarTimeoutIDLE)>EOS){
+				iClientTimeoutConnection[id] = 0
+				new TimeoutDelay = get_pcvar_num(CvarTimeoutIDLE)
+				set_task(float(TimeoutDelay),"SV_CheckConnectionIDLE",id)
+			}
 		}
 		else if(CheckProtocolNumber == 47){
 			log_to_file(settings,"%s Client (#%d - %s) skipping SV_QC2Result for using protocol 47",PrefixProtection,ClientIDNumber,UserName(id))
 		}
 	}
 	#endif
-	if(get_pcvar_num(CvarTimeoutIDLE)>EOS){
-		iClientTimeoutConnection[id] = 0
-		new TimeoutDelay = get_pcvar_num(CvarTimeoutIDLE)
-		set_task(float(TimeoutDelay),"SV_CheckConnectionIDLE",id)
-	}
 }
 public pfnClientConnect(id){
 	usercheck[id]=1
@@ -754,13 +755,6 @@ public SV_QC2Result(id, const cvar[], const value[]){
 	SV_CheckConnectionAllow(id)
 	return FMRES_IGNORED
 }
-#endif
-public plugin_cfg(){
-	set_task(2.0,"RegisterConfigPlugin")
-}
-public SV_CheckConnectionAllow(id){
-	iClientTimeoutConnection[id] = 1	
-}
 public SV_CheckConnectionIDLE(id){
 	if(get_pcvar_num(CvarQQC2Result)>EOS){
 		if(iClientTimeoutConnection[id]==0){
@@ -780,6 +774,13 @@ public SV_CheckConnectionIDLE(id){
 		}
 	}
 	return FMRES_IGNORED
+}
+#endif
+public plugin_cfg(){
+	set_task(2.0,"RegisterConfigPlugin")
+}
+public SV_CheckConnectionAllow(id){
+	iClientTimeoutConnection[id] = 1	
 }
 public _OS_VPNChecker(id){
 	if(containi(PlayerIP(id),"127.0.0.1") != -0x01
