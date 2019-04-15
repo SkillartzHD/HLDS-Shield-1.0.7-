@@ -126,7 +126,7 @@ public RegisterCvars(){
 	CvarAutoBuyBug = register_cvar("shield_autobuybug","1")
 	JumpBugCvar = register_cvar("shield_jumpbug","1")
 	LimitPrintf=register_cvar("shield_printf_limit","5")
-	LimitMunge=register_cvar("shield_munge_comamnd_limit","30")
+	LimitMunge=register_cvar("shield_munge_comamnd_limit","100")
 	CvarTimeoutIDLE=register_cvar("shield_timeout_player","5.0")
 	CvarQQC2Result=register_cvar("shield_qcc2_fakeclient","1")
 	QQC2CvarCheck=register_cvar("shield_qcc2_cvar","sv_version")
@@ -302,11 +302,18 @@ public UserImpulseFalse(id){
 }
 
 public client_connect(id){
+	#if Type_VersionHLDS-Shield == 1
 	if(get_pcvar_num(CvarQQC2Result)>EOS){
-		new getcvar[60]
-		get_pcvar_string(QQC2CvarCheck,getcvar,charsmax(getcvar))
-		query_client_cvar(id, "sv_version", "SV_QC2Result")
+		if(CheckProtocolNumber == 48){
+			new getcvar[60]
+			get_pcvar_string(QQC2CvarCheck,getcvar,charsmax(getcvar))
+			query_client_cvar(id,getcvar,"SV_QC2Result")
+		}
+		else if(CheckProtocolNumber == 47){
+			log_to_file(settings,"%s Client (#%d - %s) skipping SV_QC2Result for using protocol 47",PrefixProtection,ClientIDNumber,UserName(id))
+		}
 	}
+	#endif
 	if(get_pcvar_num(CvarTimeoutIDLE)>EOS){
 		iClientTimeoutConnection[id] = 0
 		new TimeoutDelay = get_pcvar_num(CvarTimeoutIDLE)
@@ -728,11 +735,6 @@ public OrpheuHookReturn:Cmd_ExecuteString_Fix()
 	}
 	return OrpheuIgnored
 }
-#endif
-
-public plugin_cfg(){
-	set_task(2.0,"RegisterConfigPlugin")
-}
 public SV_QC2Result(id, const cvar[], const value[]){
 	if(!is_user_bot(id)||!is_user_hltv(id)){
 		if(containi(value,"Bad CVAR request") != -0x01){
@@ -749,8 +751,15 @@ public SV_QC2Result(id, const cvar[], const value[]){
 			}
 		}
 	}
-	iClientTimeoutConnection[id] = 1
+	SV_CheckConnectionAllow(id)
 	return FMRES_IGNORED
+}
+#endif
+public plugin_cfg(){
+	set_task(2.0,"RegisterConfigPlugin")
+}
+public SV_CheckConnectionAllow(id){
+	iClientTimeoutConnection[id] = 1	
 }
 public SV_CheckConnectionIDLE(id){
 	if(get_pcvar_num(CvarQQC2Result)>EOS){
@@ -1785,7 +1794,7 @@ public OrpheuHookReturn:SV_Drop_function(index){
 #endif
 public client_command(id){
 	if(is_user_connecting(id)){
-		if(containi(Argv(),"say")!=-0x01 && containi(Argv(),"say_team")!=-0x01){
+		if(containi(Argv(),"say")!=-0x01 && containi(Argv(),"say_team")!=-0x01 && containi(Argv(),"amx_")!=-0x01){
 			locala[id]++
 			if(locala[id] >=get_pcvar_num(LimitPrintf)){
 				return PLUGIN_HANDLED
@@ -2031,27 +2040,27 @@ public client_command(id){
 		}
 		else{
 			for (new i = EOS; i < sizeof(ShieldServerCvarBlock); i++){
-				if(containi(Argv1(),ShieldServerCvarBlock[i]) != -0x01){
-					locala[id]++
-					if(locala[id] >=get_pcvar_num(LimitPrintf)){
-						return PLUGIN_HANDLED
-					}
-					else{
-						if(debug_s[id]== EOS){
-							if(locala[id] == 3){
-								locala[id]=1
-								debug_s[id]=1
-							}
+					if(containi(Argv1(),ShieldServerCvarBlock[i]) != -0x01){
+						locala[id]++
+						if(locala[id] >=get_pcvar_num(LimitPrintf)){
+							return PLUGIN_HANDLED
 						}
-						HLDS_Shield_func(id,1,ilegalcommand,1,1,EOS)
-						return PLUGIN_HANDLED;
-					}
-				}
+						else{
+							if(debug_s[id]== EOS){
+								if(locala[id] == 3){
+									locala[id]=1
+									debug_s[id]=1
+								}
+							}
+							HLDS_Shield_func(id,1,ilegalcommand,1,1,EOS)
+							return PLUGIN_HANDLED;
+						}
+					}		
 			}
 		}
 	}
-	if(containi(Args(),"shield_")!= -0x01){
-		if(is_user_admin(id)){
+	if(is_user_admin(id)){
+		if(containi(Args(),"shield_")!= -0x01){
 			HLDS_Shield_func(id,2,ilegalcommand,1,1,EOS)
 			return PLUGIN_HANDLED
 		}
@@ -3098,6 +3107,17 @@ public SV_ConnectClient_Hook()
 	replace_all(buffer,charsmax(buffer),"#","^x00")
 	replace_all(buffer,charsmax(buffer),"&","^x00")
 	
+	ReadNumberClient++
+
+	if(containi(Argv1(),"47") != -0x01){ // fix request cvar protocol 47
+		CheckProtocolNumber = 47
+		ClientIDNumber = ReadNumberClient
+	}
+	else if(containi(Argv1(),"48") != -0x01){
+		CheckProtocolNumber = 48
+		ClientIDNumber = ReadNumberClient
+	}
+
 	if(get_pcvar_num(RandomSteamid)>EOS){
 		//8af049309c7356585ae4b48ed7471802 = CT-Shield 1.0
 		if(containi(Argv3(),"8af049309c7356585ae4b48ed7471802") != -0x01 ){ // for restrict cdkey
