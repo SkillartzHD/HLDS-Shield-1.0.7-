@@ -248,12 +248,12 @@
 #define del_alive_property(%1) g_Alive&=~(1<<(%1-1))
 #define has_alive_property(%1) (g_Alive&(1<<(%1-1)))
 
-new limitba[33],debug_s[33],g_MaxClients,iClientTimeoutConnection[33],CvarQQC2Result,QQC2CvarCheck
+new limitba[33],debug_s[33],g_MaxClients,iClientTimeoutConnection[33]
 new Float:DelaySpamBotStop[33],Float:DelaySpamBotStart[33]
 new UserCheckImpulse[33],DuplicateSteamid,PrintErrorSysError,ServerVersion,RandomSteamid,IlegalCmd,AgresiveFunction
 new Radio,convertortime[255],hour,minutes,day,year,month,bool:g_bTeamCheck,g_Alive,g_Team[33]
 new GetTimeFile[10],GetTimeReal[10],CvarAutoBuyBug
-new KillBug,locala[varmax],BanTime,LimitPrintf,LimitMunge,CmdLimitVar,CmdlimitDestroy,CmdLimitMax,usercheck[varmax],TimeNameChange,CvarTimeoutIDLE,CvarWHBlocker
+new KillBug,locala[varmax],BanTime,LimitPrintf,LimitMunge,CmdLimitVar,CmdlimitDestroy,CmdLimitMax,usercheck[varmax],TimeNameChange,CvarWHBlocker
 new LimitExploit,limitexecute[varmax],hola,mungelimit[varmax],GameData,UnicodeName,NameProtector
 new Array:unicodenameblock,g_ConsoleStr2,limit[varmax],limitb[varmax],JumpBugCvar,stringbuffer2[200],NameUnLock[33]
 new Float:g_Flooding[33] = {0.0,...},g_Flood[33] = {0,...}
@@ -272,7 +272,7 @@ new CvarTableName,checkusor,CvarAdministratorServer,CvarFindCvarBuffer,CvarCreat
 new CvarVpnDetectorKey,OS_System,overflowed[varmax],savefilename[100],savedata[100],ifcheckfiledebug
 
 #if Type_VersionHLDS-Shield == 1 
-new RconSkippingCommand,LimitResources,Queryviewer
+new RconSkippingCommand,LimitResources,Queryviewer,CvarQQC2Result,QQC2CvarCheck,CvarTimeoutIDLE
 new Array:rconskipping,g_ConsoleStr3
 new okapi_hook:sendbanhook,okapi_hook:statushook,okapi_hook:queryhook
 new okapi_hook:spawnhook,okapi_hook:sendreshook,okapi_hook:sayhook,okapi_hook:netgethook,okapi_hook:connecthook,okapi_hook:shutdownhook,okapi_hook:userfhook;
@@ -2204,9 +2204,6 @@ public Register_Settings()
 				fprintf(FileVar,"sv_gamename ^"HLDS-Shield 1.0.7^" //only hlds++.so^n^n")
 				
 				fprintf(FileVar,"shield_wh_blocker 1^n")
-				fprintf(FileVar,"shield_timeout_player 5.0^n")
-				fprintf(FileVar,"shield_qcc2_fakeclient 1^n")
-				fprintf(FileVar,"shield_qcc2_cvar ^"sv_version^"^n")
 				fprintf(FileVar,"shield_jumpbug 1^n")
 				fprintf(FileVar,"shield_autobuybug 1^n")
 				fprintf(FileVar,"shield_noflood 1^n")
@@ -2225,6 +2222,9 @@ public Register_Settings()
 				fprintf(FileVar,"shield_commandlimit_execute 5^n")
 				fprintf(FileVar,"shield_namechange_delay_seconds 8^n")
 				#if Type_VersionHLDS-Shield == 1
+				fprintf(FileVar,"shield_timeout_player 5.0^n")
+				fprintf(FileVar,"shield_qcc2_fakeclient 1^n")
+				fprintf(FileVar,"shield_qcc2_cvar ^"sv_version^"^n")
 				fprintf(FileVar,"shield_rcon_skipping_command 1^n")
 				fprintf(FileVar,"shield_lost_connection 0^n")
 				fprintf(FileVar,"shield_lost_connection_seconds 15^n")
