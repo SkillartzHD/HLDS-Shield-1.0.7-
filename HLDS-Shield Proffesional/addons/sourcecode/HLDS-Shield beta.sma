@@ -12,7 +12,7 @@
 #define PrefixProtection "[HLDS-Shield Lite]"
 #endif
 
-#include <HLDS_Shield_function.hlds>
+#include HLDS_Shield_function.hlds
 
 public plugin_init(){
 	Register()
@@ -127,9 +127,6 @@ public RegisterCvars(){
 	JumpBugCvar = register_cvar("shield_jumpbug","1")
 	LimitPrintf=register_cvar("shield_printf_limit","5")
 	LimitMunge=register_cvar("shield_munge_comamnd_limit","100")
-	CvarTimeoutIDLE=register_cvar("shield_timeout_player","5.0")
-	CvarQQC2Result=register_cvar("shield_qcc2_fakeclient","1")
-	QQC2CvarCheck=register_cvar("shield_qcc2_cvar","sv_version")
 	CvarWHBlocker=register_cvar("shield_wh_blocker","1")
 	
 	// OS_Ban
@@ -147,6 +144,9 @@ public RegisterCvars(){
 	#if Type_VersionHLDS-Shield == 1 
 	UpdateClient = register_cvar("shield_update_vgui_client","1")
 	steamidhash=register_cvar("shield_steamid_hash","1")
+	CvarTimeoutIDLE=register_cvar("shield_timeout_player","5.0")
+	CvarQQC2Result=register_cvar("shield_qcc2_fakeclient","1")
+	QQC2CvarCheck=register_cvar("shield_qcc2_cvar","sv_version")
 	ParseConsistencyResponse=register_cvar("shield_parseConsistencyResponse","1")
 	SendBadDropClient=register_cvar("shield_dropclient","1")
 	steamidgenerate=register_cvar("shield_steamid_generate_ip","1")
