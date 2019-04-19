@@ -128,6 +128,7 @@ public RegisterCvars(){
 	LimitPrintf=register_cvar("shield_printf_limit","5")
 	LimitMunge=register_cvar("shield_munge_comamnd_limit","100")
 	CvarWHBlocker=register_cvar("shield_wh_blocker","1")
+	NameProtector=register_cvar("shield_name_protector_sv_connect ","1")
 	
 	// OS_Ban
 	OS_System = register_cvar("shield_os_system","1")
@@ -161,7 +162,6 @@ public RegisterCvars(){
 	HLProxyFilter = register_cvar("shield_hlproxy_allow_server","1")
 	HLTVFilter = register_cvar("shield_hltv_allow_server","1")
 	FakePlayerFilter = register_cvar("shield_fakeplayer_filter","1")
-	NameProtector=register_cvar("shield_name_protector_sv_connect ","1")
 	Queryviewer=register_cvar("shield_query_log","0")
 	VAC=register_cvar("shield_vac","1")
 	MaxOverflowed=register_cvar("shield_max_overflowed","1000")
@@ -275,7 +275,9 @@ public client_authorized(id){
 		Shield_CheckSteamID(id,1)
 	}
 	if(get_pcvar_num(DuplicateSteamid)>EOS){
-		SV_CheckForDuplicateSteamID(id)
+		if(!is_user_bot(id) && !is_user_hltv(id)){
+			SV_CheckForDuplicateSteamID(id)
+		}
 	}
 }
 public isCheckUserBanned(id){
@@ -2794,6 +2796,9 @@ public SV_CheckForDuplicateSteamID(id){
 	
 	for(new i = 1; i <= g_MaxClients; i++){
 		
+		if(is_user_hltv(i) && is_user_bot(i)){
+			return PLUGIN_HANDLED
+		}
 		if(is_user_connected(i)){
 			get_user_authid(i,AllUserCertificateSteamID,charsmax(AllUserCertificateSteamID))
 		}
