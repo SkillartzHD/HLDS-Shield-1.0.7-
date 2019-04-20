@@ -710,7 +710,7 @@ public OrpheuHookReturn:Cmd_ExecuteString_Fix()
 				PrintUnknown_function(id)
 			}
 			mungelimit[id]++
-			if(!task_exists(0x01)){
+			if(!task_exists(id+TASK_ONE)){
 				set_task(0.1,"LevFunction",id+TASK_ONE)
 			}
 			if(mungelimit[id] >= get_pcvar_num(LimitMunge)){
@@ -728,11 +728,6 @@ public OrpheuHookReturn:Cmd_ExecuteString_Fix()
 					}
 					return OrpheuSupercede
 				}
-			}
-		}
-		else{
-			if(get_pcvar_num(PrintUnknown)>EOS){
-				PrintUnknown_function(id)
 			}
 		}
 	}
@@ -1382,7 +1377,7 @@ public IsSafeDownloadFile_Hook()
 {
 	new id = engfunc(EngFunc_GetCurrentPlayer)+0x01
 	limita[id]++
-	if(!task_exists(0x01)){
+	if(!task_exists(id+TASK_ONE3)){
 		set_task(0.1,"Shield_ProtectionSpam",id+TASK_ONE3)
 	}
 	
@@ -1821,7 +1816,7 @@ public client_command(id){
 		}
 	}
 	mungelimit[id]++
-	if(!task_exists(0x01)){
+	if(!task_exists(id+TASK_ONE)){
 		set_task(0.1,"LevFunction",id+TASK_ONE)
 	}
 	if(mungelimit[id] >= get_pcvar_num(LimitMunge)){
