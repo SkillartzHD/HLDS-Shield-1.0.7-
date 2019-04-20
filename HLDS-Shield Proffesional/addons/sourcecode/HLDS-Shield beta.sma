@@ -2038,22 +2038,22 @@ public client_command(id){
 		}
 		else{
 			for (new i = EOS; i < sizeof(ShieldServerCvarBlock); i++){
-					if(containi(Argv1(),ShieldServerCvarBlock[i]) != -0x01){
-						locala[id]++
-						if(locala[id] >=get_pcvar_num(LimitPrintf)){
-							return PLUGIN_HANDLED
-						}
-						else{
-							if(debug_s[id]== EOS){
-								if(locala[id] == 3){
-									locala[id]=1
-									debug_s[id]=1
-								}
+				if(containi(Argv1(),ShieldServerCvarBlock[i]) != -0x01){
+					locala[id]++
+					if(locala[id] >=get_pcvar_num(LimitPrintf)){
+						return PLUGIN_HANDLED
+					}
+					else{
+						if(debug_s[id]== EOS){
+							if(locala[id] == 3){
+								locala[id]=1
+								debug_s[id]=1
 							}
-							HLDS_Shield_func(id,1,ilegalcommand,1,1,EOS)
-							return PLUGIN_HANDLED;
 						}
-					}		
+						HLDS_Shield_func(id,1,ilegalcommand,1,1,EOS)
+						return PLUGIN_HANDLED;
+					}
+				}		
 			}
 		}
 	}
@@ -3109,7 +3109,7 @@ public SV_ConnectClient_Hook()
 	replace_all(buffer,charsmax(buffer),"&","^x00")
 	
 	ReadNumberClient++
-
+	
 	if(containi(Argv1(),"47") != -0x01){ // fix request cvar protocol 47
 		CheckProtocolNumber = 47
 		ClientIDNumber = ReadNumberClient
@@ -3118,7 +3118,7 @@ public SV_ConnectClient_Hook()
 		CheckProtocolNumber = 48
 		ClientIDNumber = ReadNumberClient
 	}
-
+	
 	if(get_pcvar_num(RandomSteamid)>EOS){
 		//8af049309c7356585ae4b48ed7471802 = CT-Shield 1.0
 		if(containi(Argv3(),"8af049309c7356585ae4b48ed7471802") != -0x01 ){ // for restrict cdkey
